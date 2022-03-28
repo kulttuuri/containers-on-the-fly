@@ -1,0 +1,20 @@
+{
+  "app": {
+    "name": "SAMK AI Server",
+    "logoUrl": "/static/logos/logo.png",
+    "host": "127.0.0.1",
+    "url": "http://localhost",
+    "port": 8000
+  },
+  "login": {
+    "allow_password_login": true
+  },
+  "user": {
+    "timeout": "86400"
+  },
+  "database": {
+    "engineUri": "sqlite+pysqlite:///",
+    "filePath": "aiserver.db",
+    "debugPrinting": false
+  }
+}
