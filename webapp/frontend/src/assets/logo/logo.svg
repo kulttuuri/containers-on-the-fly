@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="77px" height="66px" viewBox="0 0 77 66" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>AI &lt;&gt; Server</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" font-family="OfficeCodePro-Bold, Office Code Pro" font-size="22" font-weight="bold" letter-spacing="-0.191304348">
+        <g id="Artboard" transform="translate(-22.000000, -24.000000)">
+            <text id="AI-&lt;&gt;-Server">
+                <tspan x="47.4913043" y="39" fill="#51089C">AI</tspan>
+                <tspan x="73.5086957" y="39" fill="#2F3030"></tspan>
+                <tspan x="50.4478261" y="67" font-size="17" letter-spacing="-0.147826087" fill="#8D8E8E">&lt;&gt;</tspan>
+                <tspan x="70.5521739" y="67" font-family="OfficeCodePro-Regular, Office Code Pro" font-weight="normal" fill="#2F3030"></tspan>
+                <tspan x="21.473913" y="89" fill="#51089C">Server</tspan>
+            </text>
+        </g>
+    </g>
+</svg>

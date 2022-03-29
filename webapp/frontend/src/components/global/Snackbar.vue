@@ -8,10 +8,10 @@
     :timeout="snackbar.timeout"
     :color="snackbar.color"
     :bottom="true"
-    :left="true"
+    :right="true"
     :multi-line="snackbar.multiline === true">
       {{ snackbar.text }}  
-      <v-btn v-if="snackbar.close" dark @click="closeMessage">Sulje</v-btn>
+      <v-btn v-if="snackbar.close" dark @click="closeMessage">Close</v-btn>
   </v-snackbar>
 </template>
 

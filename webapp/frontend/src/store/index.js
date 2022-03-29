@@ -29,6 +29,10 @@ export const store = new Vuex.Store({
   // # MUTATIONS #
   // #############
   mutations: {
+    // eslint-disable-next-line
+    initialiseStore(state, payload) {
+      // Apply all permanent localStorage items to store here
+    },
     // Shows global snackbar message
     showMessage(state, payload) {
       state.snackbar.text = payload.text;

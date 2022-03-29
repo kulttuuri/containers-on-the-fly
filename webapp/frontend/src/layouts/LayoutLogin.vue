@@ -1,12 +1,12 @@
 <template>
   <div>
-    <router-view></router-view>
+    <slot></slot>
+    <Snackbar></Snackbar>
   </div>
-  <Snackbar></Snackbar>
 </template>
 
 <script>
-  import Snackbar from '/src/global/Snackbar.vue';
+  import Snackbar from '/src/components/global/Snackbar.vue';
 
   export default {
     name: 'LayoutLogin',

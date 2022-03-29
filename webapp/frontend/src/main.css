@@ -1,0 +1,20 @@
+body {
+  background: black;
+}
+
+.background-violet {
+  background: #453080 !important;
+}
+
+.color-violet {
+  color: #885BF5
+}
+
+.dim {
+  opacity: .7;
+}
+
+.v-snack__content {
+  font-size: 16px !important;
+  padding: 18px !important;
+}

@@ -11,7 +11,10 @@ from settings import settings
 app = FastAPI()
 
 # Setup allowed origins
-origins = [settings.app["url"] + ":" + str(settings.app["port"])]
+origins = [
+    settings.app["url"] + ":" + str(settings.app["port"]),
+    "http://localhost:8080"
+]
 
 # Setup CORS
 app.add_middleware(

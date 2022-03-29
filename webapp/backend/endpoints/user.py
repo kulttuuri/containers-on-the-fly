@@ -1,7 +1,8 @@
-from fastapi import APIRouter
-from database import User, session
+from fastapi import APIRouter, Depends
 from helpers.server import Response
-from settings import settings
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+from endpoints.responses import user
 
 router = APIRouter(
     prefix="/api/user",
@@ -9,14 +10,20 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+security = HTTPBasic()
 @router.get("/login")
-async def login(email: str, password: str):
-  # TODO: Check user login method, password or AD, also settings.login["allow_password_login"]
-  user = session.query(User).filter( User.email == email, User.password == password ).first()
-  if user:
-    return Response(True, "Login succesfull.", { "token": "gen" })
-  else:
-    return Response(False, "Failed to login.", { "token": "none" })
+async def login(credentials: HTTPBasicCredentials = Depends(security)):
+  return user.login(credentials.username, credentials.password)
+
+@router.get("/check_token")
+async def login(credentials: HTTPBasicCredentials = Depends(security)):
+  return user.check_token(credentials.password)
+
+@router.get("/create_password")
+async def login(credentials: HTTPBasicCredentials = Depends(security)):
+  return user.create_password(credentials.password)
+
+
 
 @router.get("/profile")
 async def profile():
