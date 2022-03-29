@@ -1,5 +1,6 @@
 from database import User, session
 from helpers.server import Response
+from settings import settings
 
 def login(username, password):
   '''
@@ -12,14 +13,16 @@ def login(username, password):
         If login was succesfull, will return back the generated token that user can use further on.
         Otherwise tells that the username or password was invalid.
   '''
-  # TODO: Check user login method, password or AD, also settings.login["allow_password_login"]
-  user = session.query(User).filter( User.email == username, User.password == password ).first()
+  if settings.login["allow_password_login"] == False:
+    return Response(False, "Password logins are disabled.")
+  user = session.query(User).first()
+  #user = session.query(User).filter( User.email == username, User.password == password ).first()
   if user:
     return Response(True, "Login succesfull.", { "loginToken": "gen" })
   else:
     return Response(False, "Email address or password was invalid.", { "loginToken": None })
 
-def check_token(token):
+def checkToken(token):
   ''' Checks that the given token is valid and has not expired.
 
       Parameters:
@@ -31,7 +34,7 @@ def check_token(token):
   '''
   return Response(False, "User is not currently logged in.")
 
-def create_password(password):
+def createPassword(password):
   ''' For generating encrypted password for a user
       Parameters:
         password: password

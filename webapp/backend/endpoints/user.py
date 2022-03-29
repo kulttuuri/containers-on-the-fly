@@ -17,11 +17,11 @@ async def login(credentials: HTTPBasicCredentials = Depends(security)):
 
 @router.get("/check_token")
 async def login(credentials: HTTPBasicCredentials = Depends(security)):
-  return user.check_token(credentials.password)
+  return user.checkToken(credentials.password)
 
 @router.get("/create_password")
 async def login(credentials: HTTPBasicCredentials = Depends(security)):
-  return user.create_password(credentials.password)
+  return user.createPassword(credentials.password)
 
 
 

@@ -4,7 +4,9 @@
     "logoUrl": "/static/logos/logo.png",
     "host": "127.0.0.1",
     "url": "http://localhost",
-    "port": 8000
+    "port": 8000,
+    "production": false,
+    "addTestDataInDevelopment": true
   },
   "login": {
     "allow_password_login": true
