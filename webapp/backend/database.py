@@ -51,6 +51,7 @@ class UserRole(Base):
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
 class Container(Base):
+  # TODO: isPublished Boolean
   __tablename__ = "Container"
   containerId = Column(Integer, primary_key = True, autoincrement = True)
   imageName = Column(String, unique = True, nullable = False)
@@ -88,6 +89,7 @@ class Reservation(Base):
   reservedHardwareSpecs = relationship("HardwareSpec", secondary = "ReservedHardwareSpec", back_populates = "reservations", single_parent = True)
 
 class Computer(Base):
+  # TODO: isPublished Boolean
   __tablename__ = "Computer"
   computerId = Column(Integer, primary_key = True, autoincrement = True)
   name = Column(String, nullable = False, unique = True)
@@ -96,6 +98,7 @@ class Computer(Base):
   hardwareSpecs = relationship("HardwareSpec", back_populates = "computer")
 
 class HardwareSpec(Base):
+  # TODO: Optionality, does there require to be any space for reservation to be able to be created?
   __tablename__ = "HardwareSpec"
   hardwareSpecId = Column(Integer, primary_key = True, autoincrement = True)
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
