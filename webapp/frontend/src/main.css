@@ -18,3 +18,8 @@ body {
   font-size: 16px !important;
   padding: 18px !important;
 }
+
+.v-toolbar__content a {
+  color: white !important;
+  margin: 0px 15px !important;
+}

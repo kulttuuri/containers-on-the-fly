@@ -17,8 +17,8 @@
 
       <v-col class="mb-5" cols="12">
         <v-form ref="form" v-model="form['valid']" lazy-validation>
-          <v-text-field style="max-width: 300px; margin: 0 auto;" label="Email Address" v-model="form['email']" :rules="validation['email']" required></v-text-field>
-          <v-text-field style="max-width: 300px; margin: 0 auto;" label="Password" v-model="form['password']" :rules="validation['password']" required></v-text-field>
+          <v-text-field type="email" style="max-width: 300px; margin: 0 auto;" label="Email Address" v-model="form['email']" :rules="validation['email']" required></v-text-field>
+          <v-text-field type="password" style="max-width: 300px; margin: 0 auto;" label="Password" v-model="form['password']" :rules="validation['password']" required></v-text-field>
           <v-btn :disabled="!form['valid']" color="success" @click="submitLoginForm" label="Login">Login</v-btn>
         </v-form>
       </v-col>
@@ -51,34 +51,50 @@
     methods: {
       submitLoginForm() {
         if (!this.$refs.form.validate()) return
-        console.log(this.form.username)
-        //console.log(this.form.password)
-        console.log(this.form.valid)
         let _this = this
-        axios.get(this.AppSettings.APIServer.address + 'user/login', {
-          auth: {
-            username: this.form.email,
-            password: this.form.password,
-          }})
-          .then(function (response) {
+        let bodyFormData = new FormData()
+        bodyFormData.append("username", this.form.email)
+        bodyFormData.append("password", this.form.password)
+
+        axios({
+          method: "post",
+          url: this.AppSettings.APIServer.user.login,
+          data: bodyFormData,
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+        .then(function (response) {
             // Success
-            if (response.data && response.data.success) {
-              // Set user data and token to local storage, redirect to containers page
-              localStorage.setItem("loginToken", response.data.loginToken)
+            if (response.data && response.data.access_token) {
+              // Set user data
+              _this.$store.commit("setUser", { loginToken: response.data.access_token, callback: (res) => {
+                //console.log(res)
+                if (res.success)
+                  {
+                    _this.$router.push("/user/reservations");
+                  }
+                  else
+                  {
+                    _this.$store.commit('showMessage', { text: "Error logging in.", color: "red" })
+                  }
+                }
+              });
+              // TODO: Redirect to containers page
             }
             else {
               console.log("Failed to login.")
               _this.$store.commit('showMessage', { text: response.data.message, color: "red" })
             }
-          })
-          .catch(function (error) {
+        })
+        .catch(function (error) {
             // Error
-            console.log(error)
-            _this.$store.commit('showMessage', { text: "Unknown error.", color: "alert" })
-          })
-          .then(function () {
-            // always executed
-          });
+            if (error.response && error.response.status == 400) {
+              _this.$store.commit('showMessage', { text: error.response.data.detail, color: "alert" })
+            }
+            else {
+              console.log(error)
+              _this.$store.commit('showMessage', { text: "Unknown error.", color: "alert" })
+            }
+        });
       }
     }
   }

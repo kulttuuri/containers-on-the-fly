@@ -5,21 +5,18 @@
         <PageLogin />
       </v-slide-x-transition>
     </div>
-    <Footer />
   </LayoutLogin>
 </template>
 
 <script>
   import LayoutLogin from '/src/layouts/LayoutLogin'
   import PageLogin from '/src/pages/common/PageLogin'
-  import Footer from '/src/components/global/Footer'
 
   export default {
     name: 'ViewLogin',
 
     components: {
       PageLogin,
-      Footer,
       LayoutLogin,
     },
     mounted() {

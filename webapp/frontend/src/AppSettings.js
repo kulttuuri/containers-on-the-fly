@@ -11,7 +11,11 @@ AppSettings.General = {
 }
 
 AppSettings.APIServer = {
-  address: "http://localhost:8000/api/"
+  baseAddress: "http://localhost:8000/api/",
 }
+AppSettings.APIServer.user = {}
+let baseUrl = AppSettings.APIServer.baseAddress
+AppSettings.APIServer.user.login = baseUrl + "user/login"
+AppSettings.APIServer.user.check_token = baseUrl + "user/check_token"
 
 export default AppSettings;
