@@ -19,9 +19,6 @@
       PageLogin,
       LayoutLogin,
     },
-    mounted() {
-      // TODO: If user is already logged in, redirect to app
-    },
   }
 </script>
 

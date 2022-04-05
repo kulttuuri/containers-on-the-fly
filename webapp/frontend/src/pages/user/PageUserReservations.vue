@@ -22,6 +22,7 @@
     methods: {
       createReservation() {
         console.log("Redirect to creation...")
+        this.$router.push("/user/reserve")
       }
     }
   }

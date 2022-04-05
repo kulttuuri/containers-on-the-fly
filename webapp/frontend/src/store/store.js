@@ -53,9 +53,10 @@ export const store = new Vuex.Store({
     user: state => {
       return state.user || null;
     },
-    // Check if user is logged in or not
+    // Check if user is logged in or not, only in clientside
     isLoggedIn: state => {
-      return state.user ? true : false
+      if (state.user && state.user.loginToken) return true;
+      else return false;
     },
   },
   // #############

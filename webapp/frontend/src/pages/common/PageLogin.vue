@@ -17,8 +17,8 @@
 
       <v-col class="mb-5" cols="12">
         <v-form ref="form" v-model="form['valid']" lazy-validation>
-          <v-text-field type="email" style="max-width: 300px; margin: 0 auto;" label="Email Address" v-model="form['email']" :rules="validation['email']" required></v-text-field>
-          <v-text-field type="password" style="max-width: 300px; margin: 0 auto;" label="Password" v-model="form['password']" :rules="validation['password']" required></v-text-field>
+          <v-text-field v-on:keyup.enter="submitLoginForm" type="email" style="max-width: 300px; margin: 0 auto;" label="Email Address" v-model="form['email']" :rules="validation['email']" required></v-text-field>
+          <v-text-field v-on:keyup.enter="submitLoginForm" type="password" style="max-width: 300px; margin: 0 auto;" label="Password" v-model="form['password']" :rules="validation['password']" required></v-text-field>
           <v-btn :disabled="!form['valid']" color="success" @click="submitLoginForm" label="Login">Login</v-btn>
         </v-form>
       </v-col>
@@ -48,6 +48,17 @@
         ],
       }
     }),
+    mounted() {
+      // If user is already logged in, redirect to /user/reservations page.
+      if (this.isLoggedIn) {
+        this.$router.push("/user/reservations")
+      }
+    },
+    computed: {
+      isLoggedIn() {
+        return this.$store.getters.isLoggedIn || false;
+      }
+    },
     methods: {
       submitLoginForm() {
         if (!this.$refs.form.validate()) return
@@ -68,17 +79,14 @@
               // Set user data
               _this.$store.commit("setUser", { loginToken: response.data.access_token, callback: (res) => {
                 //console.log(res)
-                if (res.success)
-                  {
-                    _this.$router.push("/user/reservations");
-                  }
-                  else
-                  {
-                    _this.$store.commit('showMessage', { text: "Error logging in.", color: "red" })
-                  }
+                // Token OK, redirect user to reservations page
+                if (res.success) {
+                  _this.$router.push("/user/reservations");
                 }
-              });
-              // TODO: Redirect to containers page
+                else {
+                  _this.$store.commit('showMessage', { text: "Error logging in.", color: "red" })
+                }
+              }});
             }
             else {
               console.log("Failed to login.")

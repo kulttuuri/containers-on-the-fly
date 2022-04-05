@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app v-if="isLoggedIn">
     <v-app-bar app elevation="4">
       <a @click="reservations">Reservations</a>
       <a @click="profile">Profile</a>
@@ -27,8 +27,14 @@
       Snackbar,
       Footer,
     },
+    data: () => ({
+      show: true,
+    }),
     mounted() {
-      // TODO: Check that user is logged in, if not, redirect to /login
+      if (!this.isLoggedIn) {
+        console.log("User is not logged in and trying to access logged-in users page")
+        this.$router.push("/user/logout")
+      }
     },
     methods: {
       logout() {
@@ -42,6 +48,21 @@
         //this.$router.push("/user/reservations")
       }
     },
+    computed: {
+      isLoggedIn() {
+        return this.$store.getters.isLoggedIn || false;
+      }
+    },
+    beforeRouteUpdate(to, from, next) {
+      this.show = false
+      next()
+    },
+    watch: {
+      $route (to, from) {
+        this.show = true
+        console.log(to, from)
+      }
+    }
   }
 </script>
 

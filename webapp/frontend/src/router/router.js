@@ -3,8 +3,6 @@ import VueRouter from 'vue-router'
 
 Vue.use(VueRouter)
 
-// TODO: 404 / default route and view for it
-
 const routes = [
   {
     path: '/',
@@ -12,15 +10,21 @@ const routes = [
     component: () => import(/* webpackChunkName: "login" */ '../views/ViewLogin.vue')
   },
   {
+    path: '/user/logout',
+    name: 'user/logout',
+    component: () => import(/* webpackChunkName: "userlogout" */ '../views/user/ViewUserLogout.vue')
+  },
+  {
     path: '/user/reservations',
     name: 'user/reservations',
     component: () => import(/* webpackChunkName: "userreservations" */ '../views/user/ViewUserReservations.vue')
   },
   {
-    path: '/user/logout',
-    name: 'user/logout',
-    component: () => import(/* webpackChunkName: "userlogout" */ '../views/user/ViewUserLogout.vue')
-  }
+    // path: "*",
+    path: "/:catchAll(.*)",
+    name: "NotFound",
+    component: () => import(/* webpackChunkName: "pagenotfound" */ '../views/ViewPageNotFound.vue')
+  },
 ]
 
 const router = new VueRouter({

@@ -19,9 +19,6 @@
       LayoutApp,
       PageUserReservations,
     },
-    mounted() {
-      // TODO: Check user login, redirect back to /login if user is not logged in
-    },
   }
 </script>
 
