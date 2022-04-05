@@ -20,6 +20,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "userreservations" */ '../views/user/ViewUserReservations.vue')
   },
   {
+    path: '/user/reserve',
+    name: 'user/reserve',
+    component: () => import(/* webpackChunkName: "userreserve" */ '../views/user/ViewUserReserve.vue')
+  },
+  {
     // path: "*",
     path: "/:catchAll(.*)",
     name: "NotFound",

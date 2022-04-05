@@ -8,7 +8,7 @@
 
     <v-row class="text-center mt-10">
       <v-col class="mb-4">
-        <h1>Your Reservations</h1>
+        <h2>Your Reservations</h2>
         <p class="dim">No servers reserved yet.</p>
       </v-col>
     </v-row>
@@ -21,7 +21,6 @@
 
     methods: {
       createReservation() {
-        console.log("Redirect to creation...")
         this.$router.push("/user/reserve")
       }
     }
