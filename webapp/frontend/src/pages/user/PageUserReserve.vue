@@ -45,25 +45,71 @@
     </v-row>
 
     <!-- For how long -->
-    <v-row v-if="reserveDate != null">
+    <v-row v-if="reserveDate != null" class="section">
       <v-col cols="3" style="margin: 0 auto">
         <h2>Reservation duration</h2>
-        <v-select v-model="duration" :items="reservableHours" item-text="text" item-value="value" label="Duration"></v-select>
+        <v-select v-model="reserveDuration" :items="reservableHours" item-text="text" item-value="value" label="Duration"></v-select>
       </v-col>
     </v-row>
 
-    <!-- Select hardware specs & submit -->
-    <!-- TODO: Loader before we fetch the available resources from the server... -->
-    <v-row v-if="reserveDate != null && duration !== null" class="section">
-      <v-col>
-        <h2>Select Harware</h2>
+    <!-- Get available computers and resources -->
+    <v-row v-if="reserveDate != null && reserveDuration" class="section">
+      <v-col cols="12">
+        <v-btn color="primary" @click="fetchAvailableHardware">Get available computers and hardware</v-btn>
       </v-col>
     </v-row>
+
+    <!-- Loading computers and their hardware specs... -->
+    <v-row v-if="reserveDate && reserveDuration && fetchingComputers" class="section">
+      <v-col>
+        <Loading />
+      </v-col>
+    </v-row>
+
+    <!-- Select computer, hardware specs & submit -->
+    <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers" class="section">
+      <v-col cols="12">
+        <h2>Select Computer</h2>
+        <v-row>
+          <v-col cols="3" style="margin: 0 auto">
+            <v-select v-model="computer" v-on:change="computerChanged" :items="computers" item-text="text" item-value="value" label="Computer"></v-select>
+          </v-col>
+        </v-row>
+      </v-col>
+
+      <v-row class="section" v-if="computer && hardwareData">
+        <v-col cols="12">
+          <h2>Select Hardware</h2>
+          <v-row v-for="spec in hardwareData" :key="spec.name" class="spec-row">
+            <v-col cols="12">
+              <h3>{{ spec.type }}</h3>
+            </v-col>
+            <v-col cols="6" style="margin: 0 auto">
+              <v-slider :min="spec.minimumAmount" :thumb-size="60" ticks="always" :value="spec.defaultAmountForUser" v-model="selectedHardwareSpecs[spec.type]" :max="spec.maximumAmountForUser" thumb-label="always">
+                <template v-slot:thumb-label="{ value }">
+                  {{ value + " " + spec.format }}
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
+    </v-row>
+
+    <v-row class="section" v-if="computer && hardwareData">
+      <v-col cols="12">
+        <v-btn color="primary" @click="submitReservation">Create Reservation</v-btn>
+      </v-col>
+    </v-row>
+
   </v-container>
 </template>
 
 <script>
   import CalendarReservations from '/src/components/user/CalendarReservations.vue';
+  import Loading from '/src/components/global/Loading.vue';
+
+  const axios = require('axios').default;
   import dayjs from "dayjs";
   var utc = require('dayjs/plugin/utc')
   var timezone = require('dayjs/plugin/timezone')
@@ -76,6 +122,7 @@
     name: 'PageUserReserve',
     components: {
       CalendarReservations,
+      Loading,
     },
     data: () => ({
       reserveDate: null,
@@ -85,7 +132,13 @@
       pickedHour: {},
       reservableHours: [],
       hours: [],
-      duration: null,
+      reserveDuration: null,
+      fetchingComputers: false, // True if we are fetching computers and their hardware data from the server
+      allComputers: null, // Contains all computers from server and their hardware data
+      computer: null, // Model for the current selected computer dropdown
+      computers: null, // Contains a list of all computer items for the computer dropdown
+      hardwareData: null, // Contains hardware data for the currently selected computer
+      selectedHardwareSpecs: {} // Selected hardware specs for the current computer
     }),
     mounted() {
       let d = new Date()
@@ -103,33 +156,89 @@
         dayHours.push( { "text": i + ":00", "value": current } )
       }
       this.hours = dayHours
-      this.pickedHour = d.getHours()
+      this.pickedHour = d.getHours() < 10 ? "0"+d.getHours() : d.getHours.toString()
     },
     methods: {
+      computerChanged() {
+        let currentComputerId = this.computer
+        let data = null
+        this.allComputers.forEach((comp) => {
+          if (comp.computerId == currentComputerId) data = comp.hardwareSpecs
+        })
+        this.hardwareData = data
+        
+        // TODO: Also set default values for the models
+        this.selectedHardwareSpecs = {}
+
+      },
       toggleReservationCalendar() {
         this.showReservationCalendar = !this.showReservationCalendar
       },
       reserveNow() {
         this.reserveDate = dayjs().toISOString()
         this.reserveType = "now"
-        this.duration = null
+        this.reserveDuration = null
       },
       reserveLater() {
         this.reserveDate = null
         this.reserveType = "pickdate"
-        this.duration = null
+        this.reserveDuration = null
       },
       reserveSelectedTime() {
-        console.log("Reserve this..")
+        if (!this.pickedDate) return this.$store.commit('showMessage', { text: "Please select day.", color: "red" })
+        if (!this.pickedHour) return this.$store.commit('showMessage', { text: "Please select hour.", color: "red" })
         let d = dayjs(this.pickedDate + " " + this.pickedHour, "YYYY-MM-DD HH")
-        console.log(this.pickedDate)
-        console.log(this.pickedHour)
         this.reserveDate = d.toISOString()
+      },
+      fetchAvailableHardware() {
+        this.fetchingComputers = true
+        let _this = this
+        this.computer = null
+        let currentUser = this.$store.getters.user
+        
+        axios({
+          method: "get",
+          url: this.AppSettings.APIServer.reservation.get_available_hardware,
+          params: { "date": dayjs(this.reserveDate).tz("GMT+0").toISOString() },
+          headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
+        })
+        .then(function (response) {
+          //console.log(response)
+            // Success
+            if (response.data.status == true) {
+              _this.allComputers = response.data.data.computers
+              let computers = []
+              _this.allComputers.forEach((computer) => {
+                computers.push({ "value": computer.computerId, "text": computer.name })
+              });
+              _this.computers = computers
+            }
+            // Fail
+            else {
+              console.log("Failed getting hardware data...")
+              _this.$store.commit('showMessage', { text: "There was an error getting the hardware specs.", color: "red" })
+            }
+            _this.fetchingComputers = false
+        })
+        .catch(function (error) {
+            // Error
+            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
+              _this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
+            }
+            else {
+              console.log(error)
+              _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
+            }
+            _this.fetchingComputers = false
+        });
+
       },
       submitReservation() {
         console.log("IMPLEMENT: submit reservation")
+        console.log("selected computerId: ", this.computer)
+        console.log("Selected hardware specs", this.selectedHardwareSpecs)
         // Date picked converted to GMT+0:
-        console.log(this.datePicked.tz("GMT+0"))
+        console.log(dayjs(this.datePicked).tz("GMT+0"))
       },
     },
   }
@@ -137,6 +246,14 @@
 
 <style scoped lang="scss">
   .section {
-    margin-bottom: 30px;
+    margin-bottom: 50px;
+  }
+
+  h2 {
+    margin-bottom: 10px;
+  }
+  
+  .spec-row {
+    margin-bottom: 10px;
   }
 </style>

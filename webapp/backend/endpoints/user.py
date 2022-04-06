@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from helpers.server import Response
+from helpers.server import Response, ForceAuthentication
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-from endpoints.responses import user
+from endpoints.responses import user as functionality
 
 router = APIRouter(
     prefix="/api/user",
@@ -12,19 +12,20 @@ router = APIRouter(
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-  return user.login(form_data.username, form_data.password)
+  return functionality.login(form_data.username, form_data.password)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/login")
 
 @router.get("/check_token")
 async def checkToken(token: str = Depends(oauth2_scheme)):
-  return user.checkToken(token)
+  return functionality.checkToken(token)
 
 @router.post("/create_password")
-async def createPassword(password: str):
-  return user.createPassword(password)
+async def createPassword(password: str, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
+  return functionality.createPassword(password)
 
 @router.get("/profile")
-async def profile():
-  # TODO: Check for auth key from the Authentication header
+async def profile(token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
   return Response(False, "IMPLEMENT")

@@ -1,13 +1,17 @@
 from fastapi import APIRouter
-from endpoints import user
+from endpoints import user, reservation
 from settings import settings
-from helpers.auth import HashPassword, IsCorrectPassword
+from helpers.auth import HashPassword
 from database import session, User, Role, Computer, HardwareSpec, UserStorage, Container
 
 router = APIRouter()
 router.include_router(user.router)
+router.include_router(reservation.router)
 
 # Run code here when server starts
+
+if settings.app["production"] == True:
+  print("Running server in production mode")
 
 # Add test data if running in development mode
 if settings.app["production"] == False:
@@ -65,25 +69,28 @@ if settings.app["production"] == False:
   if len(computer.hardwareSpecs) == 0:
     print("Creating test data: hardware specs for a computer")
     computer.hardwareSpecs.append(HardwareSpec(
-      type = "gpu",
+      type = "GPU",
       maximumAmount = 6,
       maximumAmountForUser = 2,
       defaultAmountForUser = 1,
+      minimumAmount = 0,
       format = "GPUs",
     ))
     computer.hardwareSpecs.append(HardwareSpec(
-      type = "ram",
+      type = "RAM",
       maximumAmount = 500,
       maximumAmountForUser = 50,
       defaultAmountForUser = 10,
+      minimumAmount = 2,
       format = "GB",
     ))
     computer.hardwareSpecs.append(HardwareSpec(
-      type = "cpuThreads",
+      type = "CPU threads",
       maximumAmount = 80,
       maximumAmountForUser = 10,
       defaultAmountForUser = 5,
-      format = "CPU Threads",
+      minimumAmount = 1,
+      format = "Threads",
     ))
     session.commit()
 

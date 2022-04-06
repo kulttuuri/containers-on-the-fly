@@ -104,6 +104,7 @@ class HardwareSpec(Base):
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
   type = Column(String, nullable = False)
   maximumAmount = Column(Float, nullable = False)
+  minimumAmount = Column(Float, nullable = False) # TODO: Document in the graph
   maximumAmountForUser = Column(Float, nullable = False)
   defaultAmountForUser = Column(Float, nullable = False)
   format = Column(String, nullable = False)

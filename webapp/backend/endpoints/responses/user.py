@@ -1,7 +1,7 @@
 from database import User, session
 from helpers.server import Response
 from settings import settings
-from helpers.auth import CreateLoginToken, HashPassword, IsCorrectPassword
+from helpers.auth import CreateLoginToken, HashPassword, IsCorrectPassword, CheckToken
 from fastapi import HTTPException, status
 from datetime import datetime
 
@@ -50,13 +50,9 @@ def checkToken(token):
         If token was ok, returns also back information about the user.
         Otherwise tells that the user is not currently logged in.
   '''
-  if token == "" or token is None: return Response(False, "token cannot be empty.")
-  user = session.query(User).filter( User.loginToken == token ).first()
+  tokenCheck = CheckToken(token)
 
-  # TODO: Add also timeouts for tokens, like 24 hours... Configurable through settings.json
-
-  if user is not None:
-    return Response(True, "Token OK.", { "email": user.email, "studentId": user.studentId })
+  if (tokenCheck["status"] == True): return tokenCheck
   else:
     raise HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
