@@ -77,7 +77,7 @@
         </v-row>
       </v-col>
 
-      <v-row class="section" v-if="computer && hardwareData">
+      <v-row v-if="computer && hardwareData">
         <v-col cols="12">
           <h2>Select Hardware</h2>
           <v-row v-for="spec in hardwareData" :key="spec.name" class="spec-row">
@@ -85,7 +85,7 @@
               <h3>{{ spec.type }}</h3>
             </v-col>
             <v-col cols="6" style="margin: 0 auto">
-              <v-slider :min="spec.minimumAmount" :thumb-size="60" ticks="always" :value="spec.defaultAmountForUser" v-model="selectedHardwareSpecs[spec.type]" :max="spec.maximumAmountForUser" thumb-label="always">
+              <v-slider :min="spec.minimumAmount" :thumb-size="60" ticks="always" v-model="selectedHardwareSpecs[spec.type]" :max="spec.maximumAmountForUser" thumb-label="always">
                 <template v-slot:thumb-label="{ value }">
                   {{ value + " " + spec.format }}
                 </template>
@@ -96,7 +96,7 @@
       </v-row>
     </v-row>
 
-    <v-row class="section" v-if="computer && hardwareData">
+    <v-row v-if="computer && hardwareData">
       <v-col cols="12">
         <v-btn color="primary" @click="submitReservation">Create Reservation</v-btn>
       </v-col>
@@ -138,7 +138,8 @@
       computer: null, // Model for the current selected computer dropdown
       computers: null, // Contains a list of all computer items for the computer dropdown
       hardwareData: null, // Contains hardware data for the currently selected computer
-      selectedHardwareSpecs: {} // Selected hardware specs for the current computer
+      selectedHardwareSpecs: {}, // Selected hardware specs for the current computer
+      isSubmittingReservation: false, // Set to true when user is submitting the reservation
     }),
     mounted() {
       let d = new Date()
@@ -168,8 +169,11 @@
         this.hardwareData = data
         
         // TODO: Also set default values for the models
-        this.selectedHardwareSpecs = {}
-
+        let selectedHardwareSpecs = {}
+        this.hardwareData.forEach((spec) => {
+          selectedHardwareSpecs[spec.type] = spec.defaultAmountForUser
+        })
+        this.selectedHardwareSpecs = selectedHardwareSpecs
       },
       toggleReservationCalendar() {
         this.showReservationCalendar = !this.showReservationCalendar
@@ -234,11 +238,58 @@
 
       },
       submitReservation() {
-        console.log("IMPLEMENT: submit reservation")
+        this.isSubmittingReservation = true
+        let _this = this
+        let currentUser = this.$store.getters.user
+        let computerId = this.computer
         console.log("selected computerId: ", this.computer)
-        console.log("Selected hardware specs", this.selectedHardwareSpecs)
-        // Date picked converted to GMT+0:
-        console.log(dayjs(this.datePicked).tz("GMT+0"))
+        console.log("Selected hardware specs", {...this.selectedHardwareSpecs})
+        console.log("Duration:", this.reserveDuration)
+        let params = {
+          "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(),
+          "computerId": computerId,
+          "duration": this.reserveDuration,
+          "hardwareSpecs": {...this.selectedHardwareSpecs}
+        }
+
+        axios({
+          method: "post",
+          url: this.AppSettings.APIServer.reservation.create_reservation,
+          params: params,
+          headers: {
+            "Authorization" : `Bearer ${currentUser.loginToken}`,
+            "Content-Type": "multipart/form-data"
+            }
+        })
+        .then(function (response) {
+          //console.log(response)
+            // Success
+            if (response.data.status == true) {
+              _this.allComputers = response.data.data.computers
+              let computers = []
+              _this.allComputers.forEach((computer) => {
+                computers.push({ "value": computer.computerId, "text": computer.name })
+              });
+              _this.computers = computers
+            }
+            // Fail
+            else {
+              console.log("Failed getting hardware data...")
+              _this.$store.commit('showMessage', { text: "There was an error getting the hardware specs.", color: "red" })
+            }
+            _this.fetchingComputers = false
+        })
+        .catch(function (error) {
+            // Error
+            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
+              _this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
+            }
+            else {
+              console.log(error)
+              _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
+            }
+            _this.fetchingComputers = false
+        });
       },
     },
   }

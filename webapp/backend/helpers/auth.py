@@ -47,7 +47,7 @@ def CheckToken(token : str) -> object:
   # TODO: Add also timeouts for tokens, like 24 hours... Configurable through settings.json
 
   if user is not None:
-    return helpers.server.Response(True, "Token OK.", { "email": user.email, "studentId": user.studentId })
+    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "studentId": user.studentId })
   else:
     return helpers.server.Response(False, "Invalid token.")
 
