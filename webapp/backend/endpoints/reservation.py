@@ -21,11 +21,12 @@ async def getAvailableHardware(date : str, token: str = Depends(oauth2_scheme)):
   return functionality.getAvailableHardware(date)
 
 @router.post("/create_reservation")
-async def getAvailableHardware(date: str, duration: int, computerId: int, hardwareSpecs, token: str = Depends(oauth2_scheme)):
+async def getAvailableHardware(date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
   try:
-    ForceAuthentication(token)
     hardwareSpecs = json.loads(hardwareSpecs)
-    userId = CheckToken(token)["data"]["userId"]
-    return functionality.createReservation(userId, date, duration, computerId, hardwareSpecs)
   except:
     return Response(False, "Error.")
+  
+  userId = CheckToken(token)["data"]["userId"]
+  return functionality.createReservation(userId, date, duration, containerId, computerId, hardwareSpecs)

@@ -4,7 +4,7 @@ engine = create_engine(settings.database["engineUri"] + settings.database["fileP
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, UniqueConstraint, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -51,9 +51,9 @@ class UserRole(Base):
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
 class Container(Base):
-  # TODO: isPublished Boolean
   __tablename__ = "Container"
   containerId = Column(Integer, primary_key = True, autoincrement = True)
+  public = Column(Boolean, nullable = False) # TODO: Document in the graph
   imageName = Column(String, unique = True, nullable = False)
   name = Column(String, nullable = False)
   description = Column(String, nullable = True)
@@ -67,9 +67,9 @@ class ReservedContainer(Base):
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   startedAt = Column(DateTime, nullable = True)
   stoppedAt = Column(DateTime, nullable = True)
-  status = Column(String, nullable = True)
-  dockerContainerId = Column(String)
-  sshPassword = Column(String, nullable = False)
+  status = Column(String, nullable = True) # reserved, started, stopped, crashed
+  containerId = Column(ForeignKey("Container.containerId"), nullable = False)
+  sshPassword = Column(String, nullable = True)
   reservation = relationship("Reservation", back_populates = "reservedContainer")
   container = relationship("Container", back_populates = "reservedContainers")
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
@@ -79,6 +79,7 @@ class Reservation(Base):
   __tablename__ = "Reservation"
   reservationId = Column(Integer, primary_key = True, autoincrement = True)
   reservedContainerId = Column(ForeignKey("ReservedContainer.reservedContainerId"), nullable = False)
+  computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
   userId = Column(ForeignKey("User.userId"), nullable = False)
   startDate = Column(DateTime, nullable = False)
   endDate = Column(DateTime, nullable = False)
@@ -87,18 +88,19 @@ class Reservation(Base):
   user = relationship("User", back_populates = "reservations")
   reservedContainer = relationship("ReservedContainer", back_populates = "reservation")
   reservedHardwareSpecs = relationship("HardwareSpec", secondary = "ReservedHardwareSpec", back_populates = "reservations", single_parent = True)
+  computer = relationship("Computer", back_populates = "reservations")
 
 class Computer(Base):
-  # TODO: isPublished Boolean
   __tablename__ = "Computer"
   computerId = Column(Integer, primary_key = True, autoincrement = True)
+  public = Column(Boolean, nullable = False) # TODO: Document in the graph
   name = Column(String, nullable = False, unique = True)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
   hardwareSpecs = relationship("HardwareSpec", back_populates = "computer")
+  reservations = relationship("Reservation", back_populates = "computer")
 
 class HardwareSpec(Base):
-  # TODO: Optionality, does there require to be any space for reservation to be able to be created?
   __tablename__ = "HardwareSpec"
   hardwareSpecId = Column(Integer, primary_key = True, autoincrement = True)
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
@@ -108,7 +110,7 @@ class HardwareSpec(Base):
   maximumAmountForUser = Column(Float, nullable = False)
   defaultAmountForUser = Column(Float, nullable = False)
   format = Column(String, nullable = False)
-  computer = relationship("Computer", back_populates = "hardwareSpecs")
+  computer = relationship("Computer", back_populates = "hardwareSpecs") # TODO: Document in the graph
   reservations = relationship("Reservation", secondary = "ReservedHardwareSpec", back_populates = "reservedHardwareSpecs", single_parent = True)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
@@ -118,7 +120,8 @@ class ReservedHardwareSpec(Base):
   reservedHardwareSpecId = Column(Integer, primary_key = True, autoincrement = True)
   reservationId = Column(ForeignKey("Reservation.reservationId"), nullable = False)
   hardwareSpecId = Column(ForeignKey("HardwareSpec.hardwareSpecId"), nullable = False)
-  UniqueConstraint('reservationId', 'hardwareSpecId', name='uniqueHardwareSpec')
+  amount = Column(Float, nullable = False)
+  #UniqueConstraint('reservationId', 'hardwareSpecId', name='uniqueHardwareSpec')
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 

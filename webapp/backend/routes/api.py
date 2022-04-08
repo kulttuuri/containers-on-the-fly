@@ -60,7 +60,7 @@ if settings.app["production"] == False:
   computer = session.query(Computer).filter( Computer.name == "aiserver" ).first()
   if computer is None:
     print("Creating test data: computer named aiserver")
-    computer = Computer( name = "aiserver" )
+    computer = Computer( name = "aiserver", public = True )
     session.add(computer)
     session.commit()
 
@@ -99,6 +99,7 @@ if settings.app["production"] == False:
   if container is None:
     print("Creating test data: container with name Ubuntu 20.04")
     container = Container(
+      public = True,
       imageName = "ubuntu2004",
       name = "Ubuntu 20.04",
       description = "Empty Ubuntu 20.04 container"

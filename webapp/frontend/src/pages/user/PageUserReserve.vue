@@ -66,8 +66,20 @@
       </v-col>
     </v-row>
 
+    <!-- Select container -->
+    <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers">
+      <v-col cols="12">
+        <h2>Select Container</h2>
+        <v-row>
+          <v-col cols="3" style="margin: 0 auto">
+            <v-select v-model="container" :items="containers" item-text="text" item-value="value" label="Container"></v-select>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
+
     <!-- Select computer, hardware specs & submit -->
-    <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers" class="section">
+    <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers && container" class="section">      
       <v-col cols="12">
         <h2>Select Computer</h2>
         <v-row>
@@ -85,7 +97,7 @@
               <h3>{{ spec.type }}</h3>
             </v-col>
             <v-col cols="6" style="margin: 0 auto">
-              <v-slider :min="spec.minimumAmount" :thumb-size="60" ticks="always" v-model="selectedHardwareSpecs[spec.type]" :max="spec.maximumAmountForUser" thumb-label="always">
+              <v-slider :min="spec.minimumAmount" :thumb-size="60" ticks="always" v-model="selectedHardwareSpecs[spec.hardwareSpecId]" :max="spec.maximumAmountForUser" thumb-label="always">
                 <template v-slot:thumb-label="{ value }">
                   {{ value + " " + spec.format }}
                 </template>
@@ -135,8 +147,11 @@
       reserveDuration: null,
       fetchingComputers: false, // True if we are fetching computers and their hardware data from the server
       allComputers: null, // Contains all computers from server and their hardware data
-      computer: null, // Model for the current selected computer dropdown
+      allContainers: null, // Contains all containers from server and their hardware data
+      computer: null, // Model for the currently selected computer dropdown
       computers: null, // Contains a list of all computer items for the computer dropdown
+      container: null, // Model for the currently selected container dropdown
+      containers: null, // Contains a list of all container items for the container dropdown
       hardwareData: null, // Contains hardware data for the currently selected computer
       selectedHardwareSpecs: {}, // Selected hardware specs for the current computer
       isSubmittingReservation: false, // Set to true when user is submitting the reservation
@@ -168,10 +183,10 @@
         })
         this.hardwareData = data
         
-        // TODO: Also set default values for the models
+        // Set default values for hardware specs
         let selectedHardwareSpecs = {}
         this.hardwareData.forEach((spec) => {
-          selectedHardwareSpecs[spec.type] = spec.defaultAmountForUser
+          selectedHardwareSpecs[spec.hardwareSpecId] = spec.defaultAmountForUser
         })
         this.selectedHardwareSpecs = selectedHardwareSpecs
       },
@@ -211,11 +226,18 @@
             // Success
             if (response.data.status == true) {
               _this.allComputers = response.data.data.computers
+              _this.allContainers = response.data.data.containers
               let computers = []
               _this.allComputers.forEach((computer) => {
                 computers.push({ "value": computer.computerId, "text": computer.name })
               });
               _this.computers = computers
+              
+              let containers = []
+              _this.allContainers.forEach((container) => {
+                containers.push({ "value": container.containerId, "text": container.name })
+              });
+              _this.containers = containers
             }
             // Fail
             else {
@@ -235,7 +257,6 @@
             }
             _this.fetchingComputers = false
         });
-
       },
       submitReservation() {
         this.isSubmittingReservation = true
@@ -243,12 +264,14 @@
         let currentUser = this.$store.getters.user
         let computerId = this.computer
         console.log("selected computerId: ", this.computer)
+        console.log("selected containerId: ", this.container)
         console.log("Selected hardware specs", {...this.selectedHardwareSpecs})
         console.log("Duration:", this.reserveDuration)
         let params = {
           "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(),
           "computerId": computerId,
           "duration": this.reserveDuration,
+          "containerId": this.container,
           "hardwareSpecs": {...this.selectedHardwareSpecs}
         }
 
