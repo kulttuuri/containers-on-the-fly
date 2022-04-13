@@ -67,7 +67,8 @@ class ReservedContainer(Base):
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   startedAt = Column(DateTime, nullable = True)
   stoppedAt = Column(DateTime, nullable = True)
-  status = Column(String, nullable = True) # reserved, started, stopped, crashed
+  containerStatus = Column(String, nullable = True) # Coming from Docker
+  containerDockerId = Column(String, nullable = True) # Coming from Docker, TODO: Document in the graph
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   sshPassword = Column(String, nullable = True)
   reservation = relationship("Reservation", back_populates = "reservedContainer")
@@ -85,6 +86,7 @@ class Reservation(Base):
   endDate = Column(DateTime, nullable = False)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
+  status = Column(String, nullable = False) # reserved, started, stopped
   user = relationship("User", back_populates = "reservations")
   reservedContainer = relationship("ReservedContainer", back_populates = "reservation")
   reservedHardwareSpecs = relationship("HardwareSpec", secondary = "ReservedHardwareSpec", back_populates = "reservations", single_parent = True)

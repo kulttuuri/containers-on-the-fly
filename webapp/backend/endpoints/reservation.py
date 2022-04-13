@@ -3,8 +3,6 @@ from helpers.server import Response, ForceAuthentication
 from helpers.auth import CheckToken
 from fastapi.security import OAuth2PasswordBearer
 from endpoints.responses import reservation as functionality
-from pydantic import BaseModel
-from typing import List
 import json
 
 router = APIRouter(
@@ -20,6 +18,12 @@ async def getAvailableHardware(date : str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
   return functionality.getAvailableHardware(date)
 
+@router.get("/get_own_reservations")
+async def getOwnReservations(token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
+  userId = CheckToken(token)["data"]["userId"]
+  return functionality.getOwnReservations(userId)
+
 @router.post("/create_reservation")
 async def getAvailableHardware(date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
@@ -30,3 +34,9 @@ async def getAvailableHardware(date: str, duration: int, computerId: int, contai
   
   userId = CheckToken(token)["data"]["userId"]
   return functionality.createReservation(userId, date, duration, containerId, computerId, hardwareSpecs)
+
+@router.post("/cancel_reservation")
+async def cancelReservation(reservationId: str, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
+  userId = CheckToken(token)["data"]["userId"]
+  return functionality.cancelReservation(userId, reservationId)

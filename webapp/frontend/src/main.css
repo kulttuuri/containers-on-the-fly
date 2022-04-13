@@ -23,3 +23,7 @@ body {
   color: white !important;
   margin: 0px 15px !important;
 }
+
+body .section {
+  margin-bottom: 50px;
+}

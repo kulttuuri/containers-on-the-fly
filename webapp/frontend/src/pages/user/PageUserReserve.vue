@@ -263,10 +263,10 @@
         let _this = this
         let currentUser = this.$store.getters.user
         let computerId = this.computer
-        console.log("selected computerId: ", this.computer)
+        /*console.log("selected computerId: ", this.computer)
         console.log("selected containerId: ", this.container)
         console.log("Selected hardware specs", {...this.selectedHardwareSpecs})
-        console.log("Duration:", this.reserveDuration)
+        console.log("Duration:", this.reserveDuration)*/
         let params = {
           "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(),
           "computerId": computerId,
@@ -288,17 +288,15 @@
           //console.log(response)
             // Success
             if (response.data.status == true) {
-              _this.allComputers = response.data.data.computers
-              let computers = []
-              _this.allComputers.forEach((computer) => {
-                computers.push({ "value": computer.computerId, "text": computer.name })
-              });
-              _this.computers = computers
+              _this.$router.push("/user/reservations")
+              _this.$store.commit('showMessage', { text: "Reservation created succesfully!", color: "green" })
             }
             // Fail
             else {
               console.log("Failed getting hardware data...")
-              _this.$store.commit('showMessage', { text: "There was an error getting the hardware specs.", color: "red" })
+              console.log(response)
+              let msg = response && response.data && response.data.message ? response.data.message : "There was an error getting the hardware specs."
+              _this.$store.commit('showMessage', { text: msg, color: "red" })
             }
             _this.fetchingComputers = false
         })
@@ -319,10 +317,6 @@
 </script>
 
 <style scoped lang="scss">
-  .section {
-    margin-bottom: 50px;
-  }
-
   h2 {
     margin-bottom: 10px;
   }

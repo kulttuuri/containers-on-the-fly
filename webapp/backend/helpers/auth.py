@@ -67,8 +67,6 @@ def HashPassword(password: str) -> Tuple[bytes, bytes]:
   Hash the provided password with a randomly-generated salt and return the
   salt and hash to store in the database.
   
-  Taken from here: https://stackoverflow.com/questions/9594125/salt-and-hash-a-password-in-python/18488878#18488878
-  
   Example usage:
     hash = HashPassword('correct horse battery staple')
   """
@@ -80,8 +78,6 @@ def IsCorrectPassword(salt: bytes, pw_hash: bytes, password: str) -> bool:
   """
   Given a previously-stored salt and hash, and a password provided by a user
   trying to log in, check whether the password is correct.
-
-  Taken from here: https://stackoverflow.com/questions/9594125/salt-and-hash-a-password-in-python/18488878#18488878
 
   Example usage:
     if IsCorrectPassword(hash['salt'], hash['hashedPassword'], 'correct horse battery staple') == True
