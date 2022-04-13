@@ -89,7 +89,7 @@ class Reservation(Base):
   status = Column(String, nullable = False) # reserved, started, stopped
   user = relationship("User", back_populates = "reservations")
   reservedContainer = relationship("ReservedContainer", back_populates = "reservation")
-  reservedHardwareSpecs = relationship("HardwareSpec", secondary = "ReservedHardwareSpec", back_populates = "reservations", single_parent = True)
+  reservedHardwareSpecs = relationship("ReservedHardwareSpec", back_populates = "reservation")
   computer = relationship("Computer", back_populates = "reservations")
 
 class Computer(Base):
@@ -113,7 +113,7 @@ class HardwareSpec(Base):
   defaultAmountForUser = Column(Float, nullable = False)
   format = Column(String, nullable = False)
   computer = relationship("Computer", back_populates = "hardwareSpecs") # TODO: Document in the graph
-  reservations = relationship("Reservation", secondary = "ReservedHardwareSpec", back_populates = "reservedHardwareSpecs", single_parent = True)
+  reservations = relationship("ReservedHardwareSpec", back_populates = "hardwareSpec")
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -126,6 +126,8 @@ class ReservedHardwareSpec(Base):
   #UniqueConstraint('reservationId', 'hardwareSpecId', name='uniqueHardwareSpec')
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
+  hardwareSpec = relationship("HardwareSpec", back_populates = "reservations")
+  reservation = relationship("Reservation", back_populates = "reservedHardwareSpecs")
 
 # Create the tables
 Base.metadata.create_all(engine)

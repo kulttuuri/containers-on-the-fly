@@ -1,4 +1,4 @@
-from docker.dockerUtils import getReservationsRequiringStart, startDockerContainer
+from docker.dockerUtils import getReservationsRequiringStart, getReservationsRequiringStop, stopDockerContainer, startDockerContainer
 
 from time import sleep
 run = True
@@ -19,12 +19,15 @@ def startNewServers():
   reservations = getReservationsRequiringStart()
   for reservation in reservations:
     print(timeNow(), ": Starting Docker server for reservation with reservationId: ",  reservation.reservationId)
-    print(reservation.startDate)
     startDockerContainer(reservation.reservationId)
 
 def stopFinishedServers():
-  #print("Stopping finished servers...")
-  return None
+  reservations = getReservationsRequiringStop()
+  for reservation in reservations:
+    print(timeNow(), ": Stopping Docker server for reservation with reservationId: ",  reservation.reservationId)
+    stopDockerContainer(reservation.reservationId)
 
 if __name__ == "__main__":
+  print("AI Server Docker utility started.")
+  print("This software will run infinitely and start / stop servers for reservations.")
   main()
