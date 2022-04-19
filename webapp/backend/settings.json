@@ -9,7 +9,17 @@
     "addTestDataInDevelopment": true
   },
   "login": {
-    "allow_password_login": true
+    "loginType": "LDAP",
+    "useWhitelist": true,
+    "ldap": {
+      "url": "ldaps://dc6.ad.local",
+      "usernameFormat": "{username}@ad.local",
+      "passwordFormat": "{password}",
+      "ldapDomain": "dc=ad,dc=local",
+      "searchMethod": "(sAMAccountName={username})",
+      "accountField": "sAMAccountName",
+      "emailField": "mail"
+    }
   },
   "user": {
     "timeout": "86400"

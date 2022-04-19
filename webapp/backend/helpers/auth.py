@@ -4,8 +4,10 @@ import hashlib
 import hmac
 import random
 import string
-from database import User, session
+from database import User, session, UserWhitelist
 import helpers.server
+import ldap
+from settings import settings
 
 def IsAdmin(email : str) -> bool:
   '''
@@ -86,3 +88,53 @@ def IsCorrectPassword(salt: bytes, pw_hash: bytes, password: str) -> bool:
     pw_hash,
     hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
   )
+
+def GetLDAPUser(username, password):
+  set = settings.login["ldap"]
+  useWhitelisting = settings.login["useWhitelist"]
+  # Disable certificate checks
+  ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+  l = ldap.initialize(set["url"])
+  l.set_option(ldap.OPT_NETWORK_TIMEOUT, 6)
+  l.set_option(ldap.OPT_TIMEOUT, 6)
+  l.set_option(ldap.OPT_REFERRALS, ldap.OPT_OFF)
+  print(os.getcwd())
+  #l.set_option(ldap.OPT_X_TLS_CACERTFILE, os.getcwd()+"/certificate.pem")
+
+  try:
+    l.simple_bind_s(set["usernameFormat"].replace("{username}", username), set["passwordFormat"].replace("{password}", password))
+    result = l.search_s(set["ldapDomain"], ldap.SCOPE_SUBTREE, set["searchMethod"].replace("{username}", username), [set["accountField"], set["emailField"]])
+    account = result[0][1][set["accountField"]][0].decode("utf-8")
+    if account != username:
+      print("Wrong username / ldap username association!")
+      return False, "Wrong username / ldap username association"
+    
+    email = result[0][1][set["emailField"]][0].decode("utf-8")
+    whitelistEmail = session.query(UserWhitelist).filter( UserWhitelist.email == email ).first()
+    if useWhitelisting and whitelistEmail == None:
+      return False, "You are not allowed to login (not whitelisted, LDAP)."
+
+    session.commit()
+    user = session.query(User).filter( User.email == email ).first()
+    # User not found? Create it and return the newly created user
+    if user == None:
+      print("User created")
+      newUser = User(
+        email = email
+      )
+      session.add(newUser)
+      session.commit()
+      return True, session.query(User).filter( User.email == email ).first()
+    # User found? Return it
+    else:
+      return True, user
+  except ldap.INVALID_CREDENTIALS:
+    print('Wrong password or username')
+    return False, "Wrong username or password."
+  except ldap.SERVER_DOWN:
+    print("Timeout")
+    return False, "Timeout."
+  except Exception as e:
+    print(e)
+    return False, "Unknown error with the LDAP login!"
+  return False, "Unknown error."

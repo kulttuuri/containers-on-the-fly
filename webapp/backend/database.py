@@ -23,6 +23,13 @@ class User(Base):
   roles = relationship("Role", secondary = "UserRole", back_populates = "users", single_parent=True)
   reservations = relationship("Reservation", back_populates = "user")
 
+# If whitelisting is enabled, then only the email addresses specified here can login
+# TODO: Add to specs
+class UserWhitelist(Base):
+  __tablename__ = "UserWhitelist"
+  userWhitelistId = Column(Integer, primary_key = True, autoincrement = True)
+  email = Column(String, nullable = True, unique = True)
+
 class UserStorage(Base):
   __tablename__ = "UserStorage"
   userStorageId = Column(Integer, primary_key = True, autoincrement = True)

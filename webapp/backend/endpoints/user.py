@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
 from helpers.server import Response, ForceAuthentication
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
 from endpoints.responses import user as functionality
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/login")
 
 router = APIRouter(
     prefix="/api/user",
@@ -13,8 +14,6 @@ router = APIRouter(
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
   return functionality.login(form_data.username, form_data.password)
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/login")
 
 @router.get("/check_token")
 async def checkToken(token: str = Depends(oauth2_scheme)):

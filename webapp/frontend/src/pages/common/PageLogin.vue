@@ -17,9 +17,9 @@
 
       <v-col class="mb-5" cols="12">
         <v-form ref="form" v-model="form['valid']" lazy-validation>
-          <v-text-field v-on:keyup.enter="submitLoginForm" type="email" style="max-width: 300px; margin: 0 auto;" label="Email Address" v-model="form['email']" :rules="validation['email']" required></v-text-field>
+          <v-text-field v-on:keyup.enter="submitLoginForm" type="email" style="max-width: 300px; margin: 0 auto;" label="Username" v-model="form['email']" :rules="validation['email']" required></v-text-field>
           <v-text-field v-on:keyup.enter="submitLoginForm" type="password" style="max-width: 300px; margin: 0 auto;" label="Password" v-model="form['password']" :rules="validation['password']" required></v-text-field>
-          <v-btn :disabled="!form['valid']" color="success" @click="submitLoginForm" label="Login">Login</v-btn>
+          <v-btn :disabled="!form['valid'] || isLoggingIn" color="success" @click="submitLoginForm" label="Login">Login</v-btn>
         </v-form>
       </v-col>
     </v-row>
@@ -34,6 +34,7 @@
 
     data: () => ({
       snackbar: true,
+      isLoggingIn: false,
       form: {
         email: "",
         password: "",
@@ -66,6 +67,7 @@
         let bodyFormData = new FormData()
         bodyFormData.append("username", this.form.email)
         bodyFormData.append("password", this.form.password)
+        this.isLoggingIn = true
 
         axios({
           method: "post",
@@ -92,6 +94,7 @@
               console.log("Failed to login.")
               _this.$store.commit('showMessage', { text: response.data.message, color: "red" })
             }
+            _this.isLoggingIn = false
         })
         .catch(function (error) {
             // Error
@@ -102,6 +105,7 @@
               console.log(error)
               _this.$store.commit('showMessage', { text: "Unknown error.", color: "alert" })
             }
+            _this.isLoggingIn = false
         });
       }
     }
