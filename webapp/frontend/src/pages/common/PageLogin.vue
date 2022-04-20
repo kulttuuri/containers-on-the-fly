@@ -17,7 +17,7 @@
 
       <v-col class="mb-5" cols="12">
         <v-form ref="form" v-model="form['valid']" lazy-validation>
-          <v-text-field v-on:keyup.enter="submitLoginForm" type="email" style="max-width: 300px; margin: 0 auto;" label="Username" v-model="form['email']" :rules="validation['email']" required></v-text-field>
+          <v-text-field v-on:keyup.enter="submitLoginForm" type="text" style="max-width: 300px; margin: 0 auto;" label="Username" v-model="form['email']" :rules="validation['email']" required></v-text-field>
           <v-text-field v-on:keyup.enter="submitLoginForm" type="password" style="max-width: 300px; margin: 0 auto;" label="Password" v-model="form['password']" :rules="validation['password']" required></v-text-field>
           <v-btn :disabled="!form['valid'] || isLoggingIn" color="success" @click="submitLoginForm" label="Login">Login</v-btn>
         </v-form>
@@ -42,7 +42,7 @@
       },
       validation: {
         email: [
-          v => !!v || 'Email is required',
+          v => !!v || 'Username is required',
         ],
         password: [
           v => !!v || 'Password is required',
