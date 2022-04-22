@@ -6,7 +6,7 @@ import random
 import string
 from database import User, session, UserWhitelist
 import helpers.server
-import ldap
+import ldap3 as ldap
 from settings import settings
 
 def IsAdmin(email : str) -> bool:

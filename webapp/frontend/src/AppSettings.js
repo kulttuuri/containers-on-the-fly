@@ -20,6 +20,7 @@ let baseUrl = AppSettings.APIServer.baseAddress
 AppSettings.APIServer.user.login = baseUrl + "user/login"
 AppSettings.APIServer.user.check_token = baseUrl + "user/check_token"
 AppSettings.APIServer.reservation.get_available_hardware = baseUrl + "reservation/get_available_hardware"
+AppSettings.APIServer.reservation.get_current_reservations = baseUrl + "reservation/get_current_reservations"
 AppSettings.APIServer.reservation.create_reservation = baseUrl + "reservation/create_reservation"
 AppSettings.APIServer.reservation.get_own_reservations = baseUrl + "reservation/get_own_reservations"
 AppSettings.APIServer.reservation.cancel_reservation = baseUrl + "reservation/cancel_reservation"

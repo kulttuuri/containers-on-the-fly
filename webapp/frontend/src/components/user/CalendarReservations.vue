@@ -2,35 +2,16 @@
   <v-row class="fill-height">
     <v-col>
       <v-sheet height="64">
-        <v-toolbar
-          flat
-        >
-          <v-btn
-            outlined
-            class="mr-4"
-            color="grey darken-2"
-            @click="setToday"
-          >
+        <v-toolbar flat>
+          <v-btn outlined class="mr-4" color="grey darken-2" @click="setToday">
             Today
           </v-btn>
-          <v-btn
-            fab
-            text
-            small
-            color="grey darken-2"
-            @click="prev"
-          >
+          <v-btn fab text small color="grey darken-2" @click="prev">
             <v-icon small>
               mdi-chevron-left
             </v-icon>
           </v-btn>
-          <v-btn
-            fab
-            text
-            small
-            color="grey darken-2"
-            @click="next"
-          >
+          <v-btn fab text small color="grey darken-2" @click="next">
             <v-icon small>
               mdi-chevron-right
             </v-icon>
@@ -39,17 +20,9 @@
             {{ $refs.calendar.title }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-menu
-            bottom
-            right
-          >
+          <v-menu bottom right>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                outlined
-                color="grey darken-2"
-                v-bind="attrs"
-                v-on="on"
-              >
+              <v-btn outlined color="grey darken-2" v-bind="attrs" v-on="on">
                 <span>{{ typeToLabel[type] }}</span>
                 <v-icon right>
                   mdi-menu-down
@@ -65,9 +38,6 @@
               </v-list-item>
               <v-list-item @click="type = 'month'">
                 <v-list-item-title>Month</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="type = '4day'">
-                <v-list-item-title>4 days</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -85,22 +55,15 @@
           @click:more="viewDay"
           @click:date="viewDay"
           @change="updateRange"
-        ></v-calendar>
-        <v-menu
-          v-model="selectedOpen"
-          :close-on-content-click="false"
-          :activator="selectedElement"
-          offset-x
         >
-          <v-card
-            color="grey lighten-4"
-            min-width="350px"
-            flat
-          >
-            <v-toolbar
-              :color="selectedEvent.color"
-              dark
-            >
+          <template #event="event">
+            <b>Reservation</b>
+            <p v-html="getReservationSpecs(event.eventParsed.input.reservationId)" />
+          </template>
+        </v-calendar>
+        <v-menu v-model="selectedOpen" :close-on-content-click="false" :activator="selectedElement" offset-x>
+          <v-card color="grey lighten-4" min-width="350px" flat>
+            <v-toolbar :color="selectedEvent.color" dark>
               <v-btn icon>
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
@@ -117,11 +80,7 @@
               <span v-html="selectedEvent.details"></span>
             </v-card-text>
             <v-card-actions>
-              <v-btn
-                text
-                color="secondary"
-                @click="selectedOpen = false"
-              >
+              <v-btn text color="secondary" @click="selectedOpen = false">
                 Cancel
               </v-btn>
             </v-card-actions>
@@ -135,26 +94,44 @@
 <script>
   export default {
     name: 'CalendarReservations',
+    props: {
+      propReservations: {
+        type: Array,
+        required: true
+      },
+    },
     data: () => ({
       focus: '',
-      type: 'month',
+      type: 'week',
       typeToLabel: {
         month: 'Month',
         week: 'Week',
         day: 'Day',
-        '4day': '4 Days',
       },
       selectedEvent: {},
       selectedElement: null,
       selectedOpen: false,
       events: [],
-      colors: ['blue',],
-      names: ['Reservation',],
     }),
     mounted () {
       this.$refs.calendar.checkChange()
     },
     methods: {
+      // eslint-disable-next-line
+      getReservationSpecs( reservationId ) {
+        let returnData = ""
+        console.log(this.propReservations)
+        this.propReservations.forEach((res) => {
+          console.log(reservationId, res.reservationId)
+          if (res.reservationId == reservationId) {
+            res.hardwareSpecs.forEach((spec) => {
+              console.log(spec)
+              returnData += spec.amount + " " + spec.format + "<br>"
+            })
+          }
+        })
+        return returnData
+      },
       viewDay ({ date }) {
         this.focus = date
         this.type = 'day'
@@ -189,6 +166,8 @@
       },
       updateRange ({ start, end }) {
         const events = []
+        let ret = true
+        if (ret) return
 
         const min = new Date(`${start.date}T23:00:00`)
         const max = new Date(`${end.date}T23:59:59`)
@@ -217,6 +196,26 @@
         return Math.floor((b - a + 1) * Math.random()) + a
       },
     },
+    watch: {
+      propReservations: {
+        immediate: true,
+        handler (newVal) {
+          //console.log(newVal)
+          let events = []
+          newVal.forEach((res) => {
+            events.push({
+              name: "Reservation",
+              reservationId: res.reservationId,
+              start: new Date(res.startDate),
+              end: new Date(res.endDate),
+              color: "blue",
+              timed: true,
+            })
+          })
+          this.events = events
+        }
+      }
+    }
     }
 </script>
 

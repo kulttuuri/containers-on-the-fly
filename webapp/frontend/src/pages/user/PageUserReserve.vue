@@ -11,7 +11,7 @@
       <a color="primary" style="margin-bottom: 20px" @click="toggleReservationCalendar">
         {{ !showReservationCalendar ? "Show" : "Hide" }} Reservation Calendar
       </a>
-      <CalendarReservations v-if="showReservationCalendar" />
+      <CalendarReservations v-if="showReservationCalendar && allReservations" :propReservations="allReservations" />
     </v-col>
   </v-row>
 
@@ -145,6 +145,8 @@
       reservableHours: [],
       hours: [],
       reserveDuration: null,
+      fetchingReservations: false, // True if we are fetching all current and upcoming reservations
+      allReservations: null, // Contains all current reservations
       fetchingComputers: false, // True if we are fetching computers and their hardware data from the server
       allComputers: null, // Contains all computers from server and their hardware data
       allContainers: null, // Contains all containers from server and their hardware data
@@ -173,6 +175,9 @@
       }
       this.hours = dayHours
       this.pickedHour = d.getHours() < 10 ? "0"+d.getHours() : d.getHours.toString()
+
+      // TODO: Repeat every 15 seconds
+      this.fetchReservations()
     },
     methods: {
       computerChanged() {
@@ -209,12 +214,49 @@
         let d = dayjs(this.pickedDate + " " + this.pickedHour, "YYYY-MM-DD HH")
         this.reserveDate = d.toISOString()
       },
+      fetchReservations() {
+        this.fetchingReservations = true
+        let _this = this
+        let currentUser = this.$store.getters.user
+
+        axios({
+          method: "get",
+          url: this.AppSettings.APIServer.reservation.get_current_reservations,
+          headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
+        })
+        .then(function (response) {
+          //console.log(response)
+            // Success
+            if (response.data.status == true) {
+              _this.allReservations = response.data.data.reservations
+              //console.log(_this.allReservations)
+              _this.fetchingReservations = false
+            }
+            // Fail
+            else {
+              console.log("Failed getting reservations...")
+              //_this.$store.commit('showMessage', { text: "There was an error getting the reservations.", color: "red" })
+            }
+            _this.fetchingReservations = false
+        })
+        .catch(function (error) {
+            // Error
+            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
+              //_this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
+            }
+            else {
+              console.log(error)
+              //_this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
+            }
+            _this.fetchingReservations = false
+        });
+      },
       fetchAvailableHardware() {
         this.fetchingComputers = true
         let _this = this
         this.computer = null
         let currentUser = this.$store.getters.user
-        
+
         axios({
           method: "get",
           url: this.AppSettings.APIServer.reservation.get_available_hardware,

@@ -2,6 +2,8 @@ from database import session, Computer, User, Reservation, Container, ReservedCo
 from helpers.server import Response, ORMObjectToDict
 from dateutil import parser
 from dateutil.relativedelta import *
+import datetime
+from datetime import timezone, timedelta
 
 def getAvailableHardware(date) -> object:
   # TODO: Get only available resources for this time period
@@ -35,6 +37,35 @@ def getOwnReservations(userId) -> object:
     reservations.append(reservation)
   
   return Response(True, "Hardware resources fetched.", { "reservations": reservations })
+
+def getCurrentReservations() -> object:
+  session.commit()
+  reservations = []
+
+  def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
+  minStartDate = timeNow() - timedelta(days=14)
+
+  query = session.query(Reservation).filter(
+    ((Reservation.status == "reserved") | (Reservation.status == "started")),
+    (Reservation.startDate > minStartDate)
+  )
+  for reservation in query:
+    specs = []
+    for spec in reservation.reservedHardwareSpecs:
+      specs.append({
+        "type": spec.hardwareSpec.type,
+        "format": spec.hardwareSpec.format,
+        "amount": spec.amount,
+      })
+    res = {
+      "reservationId": reservation.reservationId,
+      "startDate": reservation.startDate,
+      "endDate": reservation.endDate,
+      "hardwareSpecs": specs,
+    }
+    reservations.append(res)
+  
+  return Response(True, "Current reservations fetched.", { "reservations": reservations })
 
 def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs):
   session.commit()

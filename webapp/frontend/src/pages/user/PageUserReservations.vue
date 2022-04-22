@@ -93,7 +93,7 @@
         this.isFetchingReservations = false
       },
       cancelReservation(reservationId) {
-        let result = window.confirm("Do you really want to remove this confirmation?")
+        let result = window.confirm("Do you really want to cancel this reservation?")
         if (!result) return
         let params = {
           "reservationId": reservationId,
