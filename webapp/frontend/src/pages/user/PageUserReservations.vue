@@ -32,7 +32,7 @@
   const axios = require('axios').default;
   import Loading from '/src/components/global/Loading.vue';
   import UserReservationTable from '/src/components/user/UserReservationTable.vue';
-
+  
   export default {
     name: 'PageUserReservations',
 
@@ -53,7 +53,17 @@
     },
     methods: {
       createReservation() {
-        this.$router.push("/user/reserve")
+        let hasActiveReservations = false
+        this.reservations.forEach((res) => {
+          if (res.status == "started" || res.status == "reserved") hasActiveReservations = true
+        })
+
+        let currentUser = this.$store.getters.user
+
+        if (!hasActiveReservations || currentUser.role == "admin")
+          this.$router.push("/user/reserve")
+        else
+          this.$store.commit('showMessage', { text: "You can only have one reserved or started reservation at a time. Cancel the current if you need new.", color: "red" })
       },
       fetchReservations() {
         let _this = this

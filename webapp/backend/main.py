@@ -30,5 +30,10 @@ app.include_router(api_router)
 
 # Start the app
 if __name__ == '__main__':
-    uvicorn.run("main:app", host=settings.app["host"], port=int(settings.app["port"]), log_level="info", reload=True)
+    production = settings.app["production"]
+    logLevel = "info"
+    reload = True
+    if production == True: logLevel = "critical"
+    if production == True: reload = False
+    uvicorn.run("main:app", host=settings.app["host"], port=int(settings.app["port"]), log_level=logLevel, reload=reload)
     print("running")

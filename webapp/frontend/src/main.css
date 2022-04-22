@@ -27,3 +27,17 @@ body {
 body .section {
   margin-bottom: 50px;
 }
+
+.v-event-timed {
+  word-break: break-all !important;
+  white-space: normal !important;
+}
+
+.v-calendar-daily__day-interval {
+  transition: 0.3s all ease;
+}
+
+.v-calendar-daily__day-interval:hover {
+  cursor: pointer;
+  background: #5e5e5e;
+}

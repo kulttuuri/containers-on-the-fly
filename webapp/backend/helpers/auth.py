@@ -6,7 +6,7 @@ import random
 import string
 from database import User, session, UserWhitelist
 import helpers.server
-import ldap3 as ldap
+import ldap
 from settings import settings
 
 def IsAdmin(email : str) -> bool:
@@ -15,11 +15,27 @@ def IsAdmin(email : str) -> bool:
   Returns:
     true if is admin, false otherwise.
   '''
-  user = session.query(User).find( User.email == email )
+  user = session.query(User).filter( User.email == email ).first()
+  if (user == None): return False
+
   isAdmin = False
   for role in user.roles:
-    if role.name == "Admin": isAdmin = True
+    if role.name == "admin": isAdmin = True
   return isAdmin
+
+def GetRole(email : str) -> string:
+  '''
+  Gets the role (first found role from the database) for the user with the given email.
+  Returns:
+    'user' if role was not found for the user, otherwise the name of the role.
+  '''
+  user = session.query(User).filter( User.email == email ).first()
+  if (user == None): return "user"
+
+  userRole = "user"
+  if (len(user.roles) > 0):
+    userRole = user.roles[0].name
+  return userRole
 
 def IsLoggedIn(token : str):
   '''
@@ -49,7 +65,8 @@ def CheckToken(token : str) -> object:
   # TODO: Add also timeouts for tokens, like 24 hours... Configurable through settings.json
 
   if user is not None:
-    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "studentId": user.studentId })
+    userRole = GetRole(user.email)
+    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "studentId": user.studentId, "role": userRole })
   else:
     return helpers.server.Response(False, "Invalid token.")
 

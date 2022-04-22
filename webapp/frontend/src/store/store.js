@@ -41,6 +41,7 @@ export const store = new Vuex.Store({
     user: {
       loginToken: "",
       email: "",
+      role: "",
       studentId: "",
       loggedinAt: null
     }
@@ -73,6 +74,7 @@ export const store = new Vuex.Store({
           this.commit("setUser", {
             "loginToken": user.loginToken,
             "email": user.email,
+            "role": user.role,
             "studentId": user.studentId,
             "loggedinAt": user.loggedinAt
           });
@@ -89,7 +91,7 @@ export const store = new Vuex.Store({
 
       if (!payload.loginToken) return payload.callback(Response(false, "loginToken was missing"));
       let _this = this;
-
+      
       axios({
         method: "get",
         url: AppSettings.APIServer.user.check_token,
@@ -101,6 +103,7 @@ export const store = new Vuex.Store({
             state.user.loginToken = payload.loginToken
             state.user.email = response.data.data.email
             state.user.studentId = response.data.data.studentId
+            state.user.role = response.data.data.role
             state.user.loggedinAt = new Date()
             localStorage.setItem("user", JSON.stringify(state.user))
             return payload.callback(Response(true, "Login token OK!"));

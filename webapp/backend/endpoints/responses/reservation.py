@@ -1,5 +1,6 @@
 from database import session, Computer, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec
 from helpers.server import Response, ORMObjectToDict
+from helpers.auth import IsAdmin
 from dateutil import parser
 from dateutil.relativedelta import *
 import datetime
@@ -70,19 +71,21 @@ def getCurrentReservations() -> object:
 def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs):
   session.commit()
 
-  # Make sure that user can only have one queued / started server at once
+  date = parser.parse(date)
+  endDate = date+relativedelta(hours=+duration)
+  user = session.query(User).filter( User.userId == userId ).first()
+  if (user == None): return Response(False, "User not found.")
+  isAdmin = IsAdmin(user.email)
+
+  # TODO: Make sure that there are enough resources for the reservation
+
+  # Make sure that user can only have one queued / started server at once (admins can have unlimited)
   userActiveReservations = session.query(Reservation).filter(
     (Reservation.userId == userId),
     ( (Reservation.status == "reserved") | (Reservation.status == "started") )
   ).count()
-  if userActiveReservations > 0:
+  if userActiveReservations > 0 and isAdmin == False:
     return Response(False, "You can only have one queued or started reservation.")
-
-  # TODO: Make sure that there are enough resources for the reservation
-
-  date = parser.parse(date)
-  endDate = date+relativedelta(hours=+duration)
-  user = session.query(User).filter( User.userId == userId ).first()
 
   # Create the base reservation
   reservation = Reservation(

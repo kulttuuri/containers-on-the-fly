@@ -2,12 +2,16 @@
   <v-data-table
     :headers="table.headers"
     :items="reservations"
-    :sort-by="'startDate'"
+    :sort-by="'createdAt'"
     :sort-desc="true"
     class="elevation-1">
     <!-- Status -->
     <template v-slot:item.status="{item}">
       <v-chip :color="getStatusColor(item.status)">{{item.status}}</v-chip>
+    </template>
+    <!-- Reserve date -->
+    <template v-slot:item.createdAt="{item}">
+      {{ parseTime(item.createdAt) }}
     </template>
     <!-- Start date -->
     <template v-slot:item.startDate="{item}">
@@ -47,8 +51,9 @@
             sortable: false,
             value: 'status',
           },
-          { text: 'Starting Date', value: 'startDate' },
-          { text: 'Ending Date', value: 'endDate' },
+          { text: 'Reserved', value: 'createdAt' },
+          { text: 'Starts', value: 'startDate' },
+          { text: 'Ends', value: 'endDate' },
           { text: 'actions', value: 'actions' },
         ],
       }

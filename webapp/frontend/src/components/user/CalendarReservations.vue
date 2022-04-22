@@ -31,12 +31,15 @@
           :event-color="getEventColor"
           :type="type"
           :weekdays="weekdays"
-          @click:more="viewDay"
-          @click:date="viewDay"
           @mouseup:time="selectSlot"
+          event-overlap-mode="column"
+          first-interval="0"
+          interval-minutes="30"
+          interval-count="48"
+          :interval-format="intervalFormat"
         >
           <template #event="event">
-            <b>Reservation</b>
+            <p><b>{{event.eventParsed.input.name}}</b></p>
             <p v-html="getReservationSpecs(event.eventParsed.input.reservationId)" />
           </template>
         </v-calendar>
@@ -72,6 +75,12 @@
 
 <script>
   import dayjs from "dayjs";
+  var utc = require('dayjs/plugin/utc')
+  var timezone = require('dayjs/plugin/timezone')
+  dayjs.extend(utc)
+  var customParseFormat = require('dayjs/plugin/customParseFormat')
+  dayjs.extend(timezone)
+  dayjs.extend(customParseFormat)
 
   export default {
     name: 'CalendarReservations',
@@ -94,14 +103,16 @@
       selectedElement: null,
       selectedOpen: false,
       events: [],
+      colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1', 'red darken-2', 'teal', 'brown', 'pink darken-2'],
     }),
     mounted () {
       this.$refs.calendar.checkChange()
     },
     methods: {
+      intervalFormat(interval) {
+        return interval.time
+      },
       selectSlot( event ) {
-        console.log("Select slot:")
-        console.log(event)
         let now = dayjs()
         let selectedTime = dayjs(event.date + " " + event.time)
         // Round to nearest 30 minutes
@@ -114,7 +125,7 @@
           this.$store.commit('showMessage', { text: "Can only make reservations into future.", color: "red" })
           return
         }
-        
+
         this.$emit("slotSelected", selectedTime)
       },
       getReservationSpecs( reservationId ) {
@@ -144,6 +155,9 @@
       next () {
         this.$refs.calendar.next()
       },
+      rnd (a, b) {
+        return Math.floor((b - a + 1) * Math.random()) + a
+      },
     },
     watch: {
       propReservations: {
@@ -152,12 +166,14 @@
           //console.log(newVal)
           let events = []
           newVal.forEach((res) => {
+            console.log(res.startDate)
             events.push({
-              name: "Reservation",
+              name: "Reservation #" + res.reservationId,
               reservationId: res.reservationId,
+              // res.startDate in format: 2022-04-29T02:00:00
               start: new Date(res.startDate),
               end: new Date(res.endDate),
-              color: "blue",
+              color: this.colors[this.rnd(0, this.colors.length - 1)],
               timed: true,
             })
           })
