@@ -3,20 +3,18 @@
     <v-row>
       <v-col>
         <h1>Reserve Server</h1>
+        <p class="dim">Click on a time on the calendar or <a @click="reserveNow">click here</a> to make a reservation right now.</p>
       </v-col>
     </v-row>
 
   <v-row>
     <v-col class="section">
-      <a color="primary" style="margin-bottom: 20px" @click="toggleReservationCalendar">
-        {{ !showReservationCalendar ? "Show" : "Hide" }} Reservation Calendar
-      </a>
-      <CalendarReservations v-if="showReservationCalendar && allReservations" :propReservations="allReservations" />
+      <CalendarReservations v-if="allReservations" :propReservations="allReservations" @slotSelected="slotSelected" />
     </v-col>
   </v-row>
 
     <!-- Reserve now or for later? -->
-    <v-row class="section">
+    <!--<v-row class="section">
       <v-col cols="12">
         <h2>When do you need the server?</h2>
       </v-col>
@@ -24,7 +22,7 @@
         <v-btn :color="reserveType == 'now' ? 'success' : 'primary'" style="margin: 0px 10px" @click="reserveNow">Reserve Now</v-btn>
         <v-btn :color="reserveType == 'pickdate' ? 'success' : 'primary'" @click="reserveLater">Reserve for later</v-btn>
       </v-col>
-    </v-row>
+    </v-row>-->
 
     <!-- Pick a Date -->
     <v-row v-if="reserveType == 'pickdate'" class="section">
@@ -46,6 +44,10 @@
 
     <!-- For how long -->
     <v-row v-if="reserveDate != null" class="section">
+      <v-col cols="12" style="margin: 0 auto">
+        <h2>Reservation Time</h2>
+        <p>{{parsedTime}}</p>
+      </v-col>
       <v-col cols="3" style="margin: 0 auto">
         <h2>Reservation duration</h2>
         <v-select v-model="reserveDuration" :items="reservableHours" item-text="text" item-value="value" label="Duration"></v-select>
@@ -139,7 +141,6 @@
     data: () => ({
       reserveDate: null,
       reserveType: "",
-      showReservationCalendar: false,
       pickedDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
       pickedHour: {},
       reservableHours: [],
@@ -180,6 +181,10 @@
       this.fetchReservations()
     },
     methods: {
+      slotSelected(time) {
+        console.log("SLOT SELECTED:", time)
+        this.reserveDate = time.toISOString()
+      },
       computerChanged() {
         let currentComputerId = this.computer
         let data = null
@@ -354,6 +359,11 @@
             _this.fetchingComputers = false
         });
       },
+    },
+    computed: {
+      parsedTime() {
+        return dayjs(this.reserveDate).format("DD.MM.YYYY HH:mm")
+      }
     },
   }
 </script>
