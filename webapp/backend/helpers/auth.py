@@ -139,7 +139,6 @@ def GetLDAPUser(username, password):
     user = session.query(User).filter( User.email == email ).first()
     # User not found? Create it and return the newly created user
     if user == None:
-      print("User created")
       newUser = User(
         email = email
       )
@@ -150,12 +149,11 @@ def GetLDAPUser(username, password):
     else:
       return True, user
   except ldap.INVALID_CREDENTIALS:
-    print('Wrong password or username')
     return False, "Wrong username or password."
   except ldap.SERVER_DOWN:
     #print("Timeout")
     return False, "Failed to connect to LDAP authentication service: Timeout."
   except Exception as e:
-    print(e)
+    #print(e)
     return False, "Unknown error with the LDAP login!"
   return False, "Unknown error."

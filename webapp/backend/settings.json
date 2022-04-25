@@ -12,7 +12,7 @@
     "loginType": "LDAP",
     "useWhitelist": true,
     "ldap": {
-      "url": "ldaps://dc6.ad.local",
+      "url": "ldaps://193.166.149.121",
       "usernameFormat": "{username}@ad.local",
       "passwordFormat": "{password}",
       "ldapDomain": "dc=ad,dc=local",
