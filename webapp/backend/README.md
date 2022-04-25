@@ -9,14 +9,28 @@ Add the correct permissions to the file, if required: `chmod +x start`
 
 ## Starting server in production
 
+### Requirements
+
+- ``NPM``
+- ``pm2`` process manager
+
 ### Configurations
 
 Make configurations in the file `settings.py`
 
 ### Start command
 
+Starting the backend server:
+
 ```
-pm2 start "npm run production" --name frontend
+pm2 start "python3 main.py" --name frontend
+pm2 save
+```
+
+Starting the Docker helper:
+
+```
+pm2 start "python3 dockerUtil.py" --name backendDockerUtil
 pm2 save
 ```
 
@@ -24,6 +38,10 @@ pm2 save
 
 ```
 pm2 logs backend
+```
+
+```
+pm2 logs backendDockerUtil
 ```
 
 Or to monitor the resource usage:

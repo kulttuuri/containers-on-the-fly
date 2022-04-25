@@ -20,11 +20,11 @@ Add the correct permissions to the file, if required: `chmod +x start`
 
 ### Requirements
 
-- **pm2** process manager
-- **NPM**
-- **NodeJS**
+- ``pm2`` process manager
+- ``NPM``
+- ``NodeJS``
 
-Note that after installing **pm2** you should also run the command ``pm2 startup`` to start pm2 on system reboot.
+Note that after installing ``pm2`` you should also run the command ``pm2 startup`` to start pm2 on system reboot.
 
 ### Configurations
 
