@@ -1,15 +1,32 @@
 # AI Server - Frontend
 
-## Starting the server in development
+## Starting server in development
 ```
 ./start
 ```
 
 Add the correct permissions to the file, if required: `chmod +x start`
 
-## Production
+## Starting server in production
 
-TODO: Describe how to start the server in production
+### Start command
+
+```
+pm2 start "npm run production" --name frontend
+pm2 save
+```
+
+### Monitoring the started server
+
+```
+pm2 logs frontend
+```
+
+Or to monitor the resource usage:
+
+```
+pm2 monit
+```
 
 ## Settings
 

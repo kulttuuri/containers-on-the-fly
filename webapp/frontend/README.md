@@ -1,6 +1,6 @@
 # AI Server - Frontend
 
-## Starting the server in development
+## Starting server in development
 
 First, to install the npm packages:
 ```
@@ -16,12 +16,31 @@ The server will start by default in port **8080**
 
 Add the correct permissions to the file, if required: `chmod +x start`
 
-## Compiling and minifying for production
+## Starting server in production
+
+### Requirements
+
+- **pm2** process manager
+- **NPM**
+- **NodeJS**
+
+Note that after installing **pm2** you should also run the command ``pm2 startup`` to start pm2 on system reboot.
+
+### Start command
+
 ```
-npm run build
+pm2 start "npm run production" --name frontend
+pm2 save
 ```
 
-### Linting and fix files
+### Monitoring the started server
+
 ```
-npm run lint
+pm2 logs frontend
+```
+
+Or to monitor the resource usage:
+
+```
+pm2 monit
 ```
