@@ -153,7 +153,7 @@ def GetLDAPUser(username, password):
     print('Wrong password or username')
     return False, "Wrong username or password."
   except ldap.SERVER_DOWN:
-    print("Timeout")
+    #print("Timeout")
     return False, "Failed to connect to LDAP authentication service: Timeout."
   except Exception as e:
     print(e)
