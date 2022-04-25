@@ -9,6 +9,10 @@ Add the correct permissions to the file, if required: `chmod +x start`
 
 ## Starting server in production
 
+### Configurations
+
+Make configurations in the file `settings.py`
+
 ### Start command
 
 ```
@@ -19,7 +23,7 @@ pm2 save
 ### Monitoring the started server
 
 ```
-pm2 logs frontend
+pm2 logs backend
 ```
 
 Or to monitor the resource usage:

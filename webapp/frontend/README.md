@@ -26,6 +26,10 @@ Add the correct permissions to the file, if required: `chmod +x start`
 
 Note that after installing **pm2** you should also run the command ``pm2 startup`` to start pm2 on system reboot.
 
+### Configurations
+
+Make configurations in the file `src/AppSettings.js`
+
 ### Start command
 
 ```
