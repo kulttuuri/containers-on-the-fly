@@ -30,7 +30,11 @@ def getOwnReservations(userId) -> object:
   session.commit()
   reservations = []
 
-  query = session.query(Reservation).filter( Reservation.userId == userId )
+  # Limit listing to 90 days
+  def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
+  minStartDate = timeNow() - timedelta(days=90)
+
+  query = session.query(Reservation).filter( Reservation.userId == userId, Reservation.startDate > minStartDate )
   for reservation in query:
     res = ORMObjectToDict(reservation)
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)

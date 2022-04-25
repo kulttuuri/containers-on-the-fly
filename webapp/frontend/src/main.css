@@ -22,6 +22,11 @@ body {
 .v-toolbar__content a {
   color: white !important;
   margin: 0px 15px !important;
+  transition: 0.3s all ease;
+}
+
+.v-toolbar__content a:hover {
+  color: #2096f3 !important;
 }
 
 body .section {

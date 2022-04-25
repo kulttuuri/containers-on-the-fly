@@ -18,9 +18,12 @@
       {{ parseTime(item.startDate) }}
     </template>
     <!-- End date -->
-    <!-- Start date -->
     <template v-slot:item.endDate="{item}">
       {{ parseTime(item.endDate) }}
+    </template>
+    <!-- Container Status -->
+    <template v-slot:item.containerStatus="{item}">
+      {{ item.reservedContainer.containerStatus }}
     </template>
     <!-- Actions -->
     <template v-slot:item.actions="{item}">
@@ -54,6 +57,7 @@
           { text: 'Reserved', value: 'createdAt' },
           { text: 'Starts', value: 'startDate' },
           { text: 'Ends', value: 'endDate' },
+          { text: 'Container Status', value: 'containerStatus' },
           { text: 'actions', value: 'actions' },
         ],
       }

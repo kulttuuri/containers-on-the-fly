@@ -63,6 +63,8 @@ def updateRunningContainerStatus(reservationId: str):
   print("IMPLEMENT")
   session.commit()
   reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
+  print(ORMObjectToDict(reservation))
+  print(ORMObjectToDict(reservation.reservedContainer))
   reservation.reservedContainer.containerStatus = "Container status here..."
   session.commit()
 

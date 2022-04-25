@@ -12,13 +12,14 @@
 
       <v-col class="mb-4">
         <h3 class="color-violet dim">Login to</h3>
-        <h1 class="color-violet">SAMK AI Server</h1>
+        <h1 class="color-violet">{{appName}}</h1>
+        <p class="color-violet dim" style="margin-top: 10px; font-size: 90%;">{{loginText}}</p>
       </v-col>
 
       <v-col class="mb-5" cols="12">
         <v-form ref="form" v-model="form['valid']" lazy-validation>
-          <v-text-field v-on:keyup.enter="submitLoginForm" type="text" style="max-width: 300px; margin: 0 auto;" label="Username" v-model="form['email']" :rules="validation['email']" required></v-text-field>
-          <v-text-field v-on:keyup.enter="submitLoginForm" type="password" style="max-width: 300px; margin: 0 auto;" label="Password" v-model="form['password']" :rules="validation['password']" required></v-text-field>
+          <v-text-field v-on:keyup.enter="submitLoginForm" type="text" style="max-width: 300px; margin: 0 auto;" :label="usernameField" v-model="form['email']" :rules="validation['email']" required></v-text-field>
+          <v-text-field v-on:keyup.enter="submitLoginForm" type="password" style="max-width: 300px; margin: 0 auto;" :label="passwordField" v-model="form['password']" :rules="validation['password']" required></v-text-field>
           <v-btn :disabled="!form['valid'] || isLoggingIn" color="success" @click="submitLoginForm" label="Login">Login</v-btn>
         </v-form>
       </v-col>
@@ -28,6 +29,7 @@
 
 <script>
   const axios = require('axios').default;
+  import AppSettings from '/src/AppSettings.js'
   
   export default {
     name: 'PageLogin',
@@ -58,6 +60,18 @@
     computed: {
       isLoggedIn() {
         return this.$store.getters.isLoggedIn || false;
+      },
+      appName() {
+        return AppSettings.General.appName
+      },
+      loginText() {
+        return AppSettings.Login.loginText || ""
+      },
+      usernameField() {
+        return AppSettings.Login.usernameField || "Username"
+      },
+      passwordField() {
+        return AppSettings.Login.passwordField || "Password"
       }
     },
     methods: {
@@ -91,7 +105,7 @@
               }});
             }
             else {
-              console.log("Failed to login.")
+              //console.log("Failed to login.")
               _this.$store.commit('showMessage', { text: response.data.message, color: "red" })
             }
             _this.isLoggingIn = false

@@ -2,8 +2,13 @@
   <v-app v-if="isLoggedIn">
     <v-app-bar app elevation="4">
       <a @click="reservations">Reservations</a>
-      <a @click="profile">Profile</a>
+      <!--<a @click="profile">Profile</a>-->
       <a @click="logout">Logout</a>
+      <p class="loggedInText" v-if="isLoggedIn == true">
+        Logged in as
+        <br />
+        <span>{{userEmail}}</span>
+      </p>
     </v-app-bar>
 
     <v-main>
@@ -51,7 +56,11 @@
     computed: {
       isLoggedIn() {
         return this.$store.getters.isLoggedIn || false;
-      }
+      },
+      userEmail() {
+        if (!this.$store.getters.user) return ""
+        return this.$store.getters.user.email || "";
+      },
     },
     beforeRouteUpdate(to, from, next) {
       this.show = false
@@ -67,4 +76,16 @@
 </script>
 
 <style scoped lang="scss">
+.loggedInText {
+  margin-left: auto;
+  margin-top: 15px;
+  font-size: 80%;
+  color: #717171;
+  text-align: right;
+  padding-right: 10px;
+}
+.loggedInText span {
+  color: white;
+  opacity: 80%;
+}
 </style>

@@ -8,6 +8,8 @@ from database import User, session, UserWhitelist
 import helpers.server
 import ldap
 from settings import settings
+from datetime import timedelta
+import datetime
 
 def IsAdmin(email : str) -> bool:
   '''
@@ -60,9 +62,11 @@ def CheckToken(token : str) -> object:
     { success: True, message: "Token OK.", data: { email: "test", "studentId": "test" } }
   '''
   if token == "" or token is None: return helpers.server.Response(False, "Token cannot be empty.")
-  user = session.query(User).filter( User.loginToken == token ).first()
 
-  # TODO: Add also timeouts for tokens, like 24 hours... Configurable through settings.json
+  def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
+  minStartDate = timeNow() - timedelta(minutes=settings.session["timeoutMinutes"])
+
+  user = session.query(User).filter( User.loginToken == token, User.loginTokenCreatedAt > minStartDate ).first()
 
   if user is not None:
     userRole = GetRole(user.email)
@@ -150,7 +154,7 @@ def GetLDAPUser(username, password):
     return False, "Wrong username or password."
   except ldap.SERVER_DOWN:
     print("Timeout")
-    return False, "Timeout."
+    return False, "Failed to connect to LDAP authentication service: Timeout."
   except Exception as e:
     print(e)
     return False, "Unknown error with the LDAP login!"

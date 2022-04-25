@@ -74,6 +74,7 @@
 </template>
 
 <script>
+  import { TimestampToLocalTimeZone } from '/src/helpers/time.js'
   import dayjs from "dayjs";
   var utc = require('dayjs/plugin/utc')
   var timezone = require('dayjs/plugin/timezone')
@@ -103,7 +104,9 @@
       selectedElement: null,
       selectedOpen: false,
       events: [],
-      colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1', 'red darken-2', 'teal', 'brown', 'pink darken-2'],
+      colors: ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue',
+               'light-blue', 'cyan', 'teal', 'green', 'light-green darken-1',
+               'lime darken-2', 'yellow darken-3', 'amber darken-2', 'orange darken-3', 'deep-orange', 'brown', 'grey', 'blue-grey'],
     }),
     mounted () {
       this.$refs.calendar.checkChange()
@@ -115,10 +118,11 @@
       selectSlot( event ) {
         let now = dayjs()
         let selectedTime = dayjs(event.date + " " + event.time)
-        // Round to nearest 30 minutes
-        let unit = "minutes"
-        let amount = 30
-        selectedTime = selectedTime.add(amount - (selectedTime.get(unit) % amount), unit).startOf(unit);
+        // Round to nearest 30 minutes (down)
+        if (selectedTime.get("minutes") < 30)
+          selectedTime = selectedTime.set("minute", 0)
+        else
+          selectedTime = selectedTime.set("minute", 30)
         
         // Check that reservation is not made into past
         if (selectedTime < now) {
@@ -166,14 +170,14 @@
           //console.log(newVal)
           let events = []
           newVal.forEach((res) => {
-            console.log(res.startDate)
+            let color = this.colors[this.rnd(0, this.colors.length - 1)]
             events.push({
               name: "Reservation #" + res.reservationId,
               reservationId: res.reservationId,
               // res.startDate in format: 2022-04-29T02:00:00
-              start: new Date(res.startDate),
-              end: new Date(res.endDate),
-              color: this.colors[this.rnd(0, this.colors.length - 1)],
+              start: dayjs(TimestampToLocalTimeZone(res.startDate)).toDate(),
+              end: dayjs(TimestampToLocalTimeZone(res.endDate)).toDate(),
+              color: color,
               timed: true,
             })
           })
