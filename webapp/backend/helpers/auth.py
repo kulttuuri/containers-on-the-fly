@@ -59,7 +59,7 @@ def CheckToken(token : str) -> object:
   Returns:
     Returns back a Response.
   Example return:
-    { success: True, message: "Token OK.", data: { email: "test", "studentId": "test" } }
+    { success: True, message: "Token OK.", data: { email: "test" } }
   '''
   if token == "" or token is None: return helpers.server.Response(False, "Token cannot be empty.")
 
@@ -70,7 +70,7 @@ def CheckToken(token : str) -> object:
 
   if user is not None:
     userRole = GetRole(user.email)
-    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "studentId": user.studentId, "role": userRole })
+    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "role": userRole })
   else:
     return helpers.server.Response(False, "Invalid token.")
 

@@ -43,7 +43,6 @@ export const store = new Vuex.Store({
       loginToken: "",
       email: "",
       role: "",
-      studentId: "",
       loggedinAt: null
     }
   },
@@ -80,7 +79,6 @@ export const store = new Vuex.Store({
             "loginToken": user.loginToken,
             "email": user.email,
             "role": user.role,
-            "studentId": user.studentId,
             "loggedinAt": user.loggedinAt
           });
         }
@@ -110,7 +108,6 @@ export const store = new Vuex.Store({
           if (response.data.status == true) {
             state.user.loginToken = payload.loginToken
             state.user.email = response.data.data.email
-            state.user.studentId = response.data.data.studentId
             state.user.role = response.data.data.role
             state.user.loggedinAt = new Date()
             localStorage.setItem("user", JSON.stringify(state.user))
@@ -141,7 +138,6 @@ export const store = new Vuex.Store({
 
       /*state.user.token = payload.loginToken
       state.user.email = payload.email
-      state.user.studentId = payload.studentId
       localStorage.setItem("user", state.user)
       payload.callback(Response(true, "User details updated.", { "user": state.user }));*/
     },
@@ -151,7 +147,6 @@ export const store = new Vuex.Store({
       state.user.loginToken = ""
       state.user.email = ""
       state.user.loggedinAt = ""
-      state.user.studentId = ""
       localStorage.removeItem("user")
       payload.callback(Response(true, "User logged out succesfully", {  }));
     },

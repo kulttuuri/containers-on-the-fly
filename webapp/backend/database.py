@@ -14,7 +14,6 @@ class User(Base):
   email = Column(String, nullable = False)
   password = Column(String, nullable = True)
   passwordSalt = Column(String, nullable = True)
-  studentId = Column(String, nullable = True)
   loginToken = Column(String, nullable = True)
   loginTokenCreatedAt = Column(DateTime, nullable = True)
   userCreatedAt = Column(DateTime(timezone=True), server_default=func.now())
