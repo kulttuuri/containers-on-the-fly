@@ -37,6 +37,7 @@ export const store = new Vuex.Store({
       timeout: 5000, // Default timeout for snackbars
       multiline: false, // Is this multiline, automatically set below
     },
+    initializing: true, // Set to false after we have initialized the app / store
     // Information about the currently logged-in user
     user: {
       loginToken: "",
@@ -52,12 +53,16 @@ export const store = new Vuex.Store({
   getters: {
     // Gets current user data or null
     user: state => {
-      return state.user || null;
+      return state.user || null
     },
     // Check if user is logged in or not, only in clientside
     isLoggedIn: state => {
-      if (state.user && state.user.loginToken) return true;
-      else return false;
+      if (state.user && state.user.loginToken) return true
+      else return false
+    },
+    // true if we are loading the app, false otherwise
+    isInitializing: state => {
+      return state.initializing
     },
   },
   // #############
@@ -78,6 +83,9 @@ export const store = new Vuex.Store({
             "studentId": user.studentId,
             "loggedinAt": user.loggedinAt
           });
+        }
+        else {
+          state.initializing = false
         }
       }
       // eslint-disable-next-line
@@ -106,12 +114,14 @@ export const store = new Vuex.Store({
             state.user.role = response.data.data.role
             state.user.loggedinAt = new Date()
             localStorage.setItem("user", JSON.stringify(state.user))
+            if (state.initializing) state.initializing = false
             return payload.callback(Response(true, "Login token OK!"));
           }
           // Fail
           else {
             console.log("Invalid token – logging user out.")
             _this.commit("logoutUser")
+            if (state.initializing) state.initializing = false
             return payload.callback(Response(false, "Invalid login token."));
           }
       })

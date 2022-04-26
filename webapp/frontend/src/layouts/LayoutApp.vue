@@ -1,25 +1,27 @@
 <template>
-  <v-app v-if="isLoggedIn">
-    <v-app-bar app elevation="4">
-      <a @click="reservations">Reservations</a>
-      <!--<a @click="profile">Profile</a>-->
-      <a @click="logout">Logout</a>
-      <p class="loggedInText" v-if="isLoggedIn == true">
-        Logged in as
-        <br />
-        <span>{{userEmail}}</span>
-      </p>
-    </v-app-bar>
+  <div v-if="!isInitializing">
+    <v-app v-if="isLoggedIn">
+      <v-app-bar app elevation="4">
+        <a @click="reservations">Reservations</a>
+        <!--<a @click="profile">Profile</a>-->
+        <a @click="logout">Logout</a>
+        <p class="loggedInText" v-if="isLoggedIn == true">
+          Logged in as
+          <br />
+          <span>{{userEmail}}</span>
+        </p>
+      </v-app-bar>
 
-    <v-main>
-      <v-container>
-        <slot></slot>
-      </v-container>
-    </v-main>
-    
-    <Footer />
-    <Snackbar></Snackbar>
-  </v-app>
+      <v-main>
+        <v-container>
+          <slot></slot>
+        </v-container>
+      </v-main>
+      
+      <Footer />
+      <Snackbar></Snackbar>
+    </v-app>
+  </div>
 </template>
 
 <script>
@@ -36,9 +38,11 @@
       show: true,
     }),
     mounted() {
-      if (!this.isLoggedIn) {
-        console.log("User is not logged in and trying to access logged-in users page")
-        this.$router.push("/user/logout")
+      if (!this.isInitializing) {
+        if (!this.isLoggedIn) {
+          console.log("User is not logged in and trying to access logged-in users page")
+          this.$router.push("/user/logout")
+        }
       }
     },
     methods: {
@@ -54,12 +58,15 @@
       }
     },
     computed: {
+      isInitializing() {
+        return this.$store.getters.isInitializing
+      },
       isLoggedIn() {
-        return this.$store.getters.isLoggedIn || false;
+        return this.$store.getters.isLoggedIn || false
       },
       userEmail() {
         if (!this.$store.getters.user) return ""
-        return this.$store.getters.user.email || "";
+        return this.$store.getters.user.email || ""
       },
     },
     beforeRouteUpdate(to, from, next) {
@@ -70,7 +77,10 @@
       $route (to, from) {
         this.show = true
         console.log(to, from)
-      }
+      },
+      isInitializing() {
+        //console.log("new val: " + newVal)
+      },
     }
   }
 </script>
