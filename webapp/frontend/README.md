@@ -1,5 +1,52 @@
 # AI Server - Frontend
 
+## Settings File
+
+The settings file should be first created in order to start working with the project. File should be created in location ``webapp/frontend/src/AppSettings.js``. Below is an example of this file:
+
+```javascript
+ var AppSettings = {};
+
+AppSettings.General = {
+  // Email address of the contact person
+  contactEmail: "Email address of the contact person",
+  // Name of the app
+  appName: "Name of the app",
+  // Timezone for the frontend
+  timezone: "Europe/Helsinki", // https://day.js.org/docs/en/timezone/timezone
+}
+
+AppSettings.Login = {
+  // Description text to the login page (can be empty)
+  loginText: "",
+  // Overrides the text Username on the login form. Default: Username
+  usernameField: "",
+  // Overrides the text Password on the login form. Default: Password
+  passwordField: ""
+}
+
+AppSettings.APIServer = {
+  // URL pointing to your API Server (with trailing slash)
+  baseAddress: "http://localhost:8000/api/",
+}
+
+// Pre-set settings for the app, no need to modify these
+AppSettings.APIServer.user = {}
+AppSettings.APIServer.reservation = {}
+let baseUrl = AppSettings.APIServer.baseAddress
+let baseUserUrl = baseUrl + "user/"
+AppSettings.APIServer.user.login = baseUserUrl + "login"
+AppSettings.APIServer.user.check_token = baseUserUrl + "check_token"
+let baseReservationUrl = baseUrl + "reservation/"
+AppSettings.APIServer.reservation.get_available_hardware = baseReservationUrl + "get_available_hardware"
+AppSettings.APIServer.reservation.get_current_reservations = baseReservationUrl + "get_current_reservations"
+AppSettings.APIServer.reservation.create_reservation = baseReservationUrl + "create_reservation"
+AppSettings.APIServer.reservation.get_own_reservations = baseReservationUrl + "get_own_reservations"
+AppSettings.APIServer.reservation.cancel_reservation = baseReservationUrl + "cancel_reservation"
+
+export default AppSettings;
+```
+
 ## Starting server in development
 
 First, to install the npm packages:

@@ -2,3 +2,5 @@
 __pycache__
 venv/
 webapp/backend/aiserver.db
+webapp/frontend/src/AppSettings.js
+webapp/backend/settings.json
