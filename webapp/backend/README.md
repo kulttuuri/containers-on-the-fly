@@ -111,11 +111,20 @@ The following software needs to be installed to run the server:
 - ``pip``
 
 ## Starting server in development
+
+First, install the pip packages written in the ``requirements.txt`` file (you only need to do this once, or after more requirements have been added):
+
+```
+pip install -r requirements.txt
+```
+
+After that, server can be started be using pre-made start script:
+
 ```
 ./start
 ```
 
-Add the correct permissions to the file, if required: `chmod +x start`
+Also – add the correct permissions to the file, if required: `chmod +x start`
 
 ## Starting server in production
 
