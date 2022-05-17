@@ -120,7 +120,7 @@ First, install the pip packages written in the ``requirements.txt`` file (you on
 pip install -r requirements.txt
 ```
 
-After that, server can be started be using pre-made start script:
+After that, server can be started by using the pre-made start script:
 
 ```
 ./start
