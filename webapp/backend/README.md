@@ -112,6 +112,8 @@ The following software needs to be installed to run the server:
 
 ## Starting server in development
 
+> It is recommended to run the software in virtual environment.
+
 First, install the pip packages written in the ``requirements.txt`` file (you only need to do this once, or after more requirements have been added):
 
 ```
