@@ -105,7 +105,7 @@ By setting the ``login.loginType`` to ``LDAP``, external LDAP or LDAPS can be us
 
 ## Requirements
 
-The following software needs to be installed:
+The following software needs to be installed to run the server:
 
 - ``Python 3``
 - ``pip``
