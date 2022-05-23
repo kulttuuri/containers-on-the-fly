@@ -34,3 +34,10 @@ def removeFromAdminRole(email: str):
     if (role.name == "admin"): user.roles.remove(role)
     session.commit()
   print("Removed user from the admin role: " + email)
+
+def printStats():
+  # TODO: Print here the count of records in each table
+  # For example:
+  print("\nAmount of records in each table:")
+  print("Users: 3 records")
+  print("Containers: 1 records")

@@ -1,0 +1,1 @@
+# Computer table management functionality

@@ -1,0 +1,1 @@
+# Hardware specs table management functionality

@@ -1,0 +1,1 @@
+# User storage table management functionality
