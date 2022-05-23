@@ -47,6 +47,13 @@ AppSettings.APIServer.reservation.cancel_reservation = baseReservationUrl + "can
 export default AppSettings;
 ```
 
+## Requirements
+
+You need to at least have the following software installed:
+
+- ``NPM``
+- ``NodeJS``
+
 ## Starting server in development
 
 First, to install the npm packages:
@@ -68,8 +75,6 @@ Add the correct permissions to the file, if required: `chmod +x start`
 ### Requirements
 
 - ``pm2`` process manager
-- ``NPM``
-- ``NodeJS``
 
 Note that after installing ``pm2`` you should also run the command ``pm2 startup`` to start pm2 on system reboot.
 

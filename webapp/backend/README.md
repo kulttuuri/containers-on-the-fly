@@ -1,5 +1,7 @@
 # AI Server - Backend
 
+Backend server for AI Docker server reservation software, written in Python 3. FastAPI is being used for the API implementation.
+
 ## Settings File
 
 The settings file should be first created in order to start working with the project. File should be created in location ``webapp/backend/settings.json``. Below is an example of this file:
@@ -101,12 +103,30 @@ By setting the ``login.loginType`` to ``LDAP``, external LDAP or LDAPS can be us
 
 **Description**: ``session.timeoutMinutes`` determines how long will logged-in user stay logged in (in minutes). This is set to 1440 minutes by default which means 24 hours.
 
+## Requirements
+
+The following software needs to be installed to run the server:
+
+- ``Python 3``
+- ``pip``
+
 ## Starting server in development
+
+> It is recommended to run the software in virtual environment.
+
+First, install the pip packages written in the ``requirements.txt`` file (you only need to do this once, or after more requirements have been added):
+
+```
+pip install -r requirements.txt
+```
+
+After that, server can be started by using the pre-made start script:
+
 ```
 ./start
 ```
 
-Add the correct permissions to the file, if required: `chmod +x start`
+Also – add the correct permissions to the file, if required: `chmod +x start`
 
 ## Starting server in production
 
