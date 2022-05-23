@@ -32,6 +32,7 @@ class UserStorage(Base):
   __tablename__ = "UserStorage"
   userStorageId = Column(Integer, primary_key = True, autoincrement = True)
   userId = Column(ForeignKey('User.userId'), unique = True, nullable = False)
+  location = Column(String, nullable = False) # TODO: Add to diagram
   maxSpace = Column(Float, nullable = False)
   maxSpaceFormat = Column(String, nullable = False)
   UniqueConstraint('userStorageId', 'userId', name='uniqueUserStorage')
