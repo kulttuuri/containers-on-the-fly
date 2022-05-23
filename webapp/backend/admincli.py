@@ -10,7 +10,7 @@ def main():
   if (selection == "users"): users()
 
 def users():
-  print("Managing users")
+  print("\nManaging users")
   print("What  do you want to do?")
   print("1) List all users")
     # 1) List all users
@@ -21,5 +21,11 @@ def users():
   print("4) Edit user")
   print("5) Go back")
   selection = input()
+
+def reservations():
+  print("\nManaging reservations")
+  print("What  do you want to do?")
+  print("1) List all reservations")
+
 
 main()
