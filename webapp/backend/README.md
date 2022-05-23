@@ -120,6 +120,8 @@ First, install the pip packages written in the ``requirements.txt`` file (you on
 pip install -r requirements.txt
 ```
 
+Then, to install the python-ldap package, on Ubuntu you have to run ``apt install python3-ldap``, but on other operating systems you have to run: ``pip3 install python-ldap``.
+
 After that, server can be started by using the pre-made start script:
 
 ```
