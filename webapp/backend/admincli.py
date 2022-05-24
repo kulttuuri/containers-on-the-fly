@@ -20,12 +20,12 @@ def main():
     selection = input()
     if (selection == "users"): CLIusers()
     if (selection == "userstorages"): CLIuserstorages()
+    elif (selection == "whitelisting"): CLIuserwhitelisting()
+    elif (selection == "containers"): CLIcontainers()
+    elif (selection == "hardwarespecs"): CLIhardwarespecs()
     elif (selection == "reservations"): CLIreservations()
-    elif (selection == "whitelisting"): CLIucontainers()
-    elif (selection == "whitelisting"): CLIhardwarespecs()
-    elif (selection == "whitelisting"): CLIreservations()
-    elif (selection == "whitelisting"): CLIroles()
-    elif (selection == "whitelisting"): CLIcomputers()
+    elif (selection == "roles"): CLIroles()
+    elif (selection == "computers"): CLIcomputers()
     elif (selection == "stats"): stats()
     elif (selection == "exit"): breakLoop = True
 
