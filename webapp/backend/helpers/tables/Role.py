@@ -36,7 +36,7 @@ def removeRole(role):
   '''
   Removes the given role in the system.
     Parameters:
-      id: The id of the role to be removed.
+      role: The role object of the role to be removed.
     Returns:
       Nothing
   '''
@@ -47,7 +47,7 @@ def editRole(role, new_name):
   '''
   Edits the given role in the system.
     Parameters:
-      id: The id of the role to be edited.
+      role: The role object of the role to be edited.
       new_name: The new name for the given role. #is this too hardcoded..?
     Returns:
       The edited role object fetched from database.

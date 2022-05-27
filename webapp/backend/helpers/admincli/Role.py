@@ -55,7 +55,6 @@ def CLIAddRoles():
 
 def CLIPrintAllRoles():
   roles = getRoles()
-  print(roles)
   for role in roles:
     print("id:", role.roleId, "- name:", role.name, "- created at:", role.createdAt, "- updated at:", role.updatedAt)
 
@@ -63,7 +62,6 @@ def CLIPrintRolesBySearch():
   print("\nWhat is the name of the role you are looking for? (case-sensitive)")
   filter = input()
   roles = getRoles(filter) #a bit hardcoded perhaps
-  print(roles)
   if roles != None:
     for role in roles:
         print("id:", role.roleId, "- name:", role.name, "- created at:", role.createdAt, "- updated at:", role.updatedAt)
