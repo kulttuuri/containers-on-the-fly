@@ -38,6 +38,8 @@ def login(username, password):
   # User found
   if user:
     # Check that the password is correct (only for password logins)
+    if (loginType == "password" and (user.password == "" or user.password is None)):
+      raise HTTPException(status_code=400, detail="User password was not set yet. Please set the password first to login.")
     if loginType == "password" and IsCorrectPassword(user.passwordSalt, user.password, password) == False:
       raise HTTPException(status_code=400, detail="Incorrect password.")
 
