@@ -3,11 +3,11 @@ from database import Computer, session
 
 def getComputers(filter = None):
   '''
-  Finds roles with the given optional filter. If no filter is given, finds all roles in the system.
+  Finds computers with the given optional filter. If no filter is given, finds all computers in the system.
     Parameters:
       filter: Additional filters. Example usage: ...
     Returns:
-      All found roles in a list.
+      All found computers in a list.
   '''
   if filter != None:
     computers = session.query(Computer).filter(Computer.name == filter).first()
@@ -35,7 +35,7 @@ def addComputer(name, public):
 
 def removeComputer(computer):
   '''
-  Removes the given role in the system.
+  Removes the given computer in the system.
     Parameters:
       computer: The computer object of the computer to be removed.
     Returns:
@@ -46,13 +46,13 @@ def removeComputer(computer):
 
 def editComputer(computer, new_name = None, new_public = None):
   '''
-  Edits the given role in the system.
+  Edits the given computer in the system.
     Parameters:
-      role: The role object of the role to be edited.
-      new_name: The new name for the given role. #is this too hardcoded..?
+      computer: The computer object of the computer to be edited.
+      new_name: The new name for the given computer.
       new_public: The new boolean for publicity of the computer.
     Returns:
-      The edited role object fetched from database. Or None if name or publicity isn't provided.
+      The edited computer object fetched from database. Or None if name or publicity isn't provided.
   '''
   if new_name != None: computer.name = new_name
   if new_public != None: computer.public = new_public
