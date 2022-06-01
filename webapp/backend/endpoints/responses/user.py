@@ -1,7 +1,7 @@
 from database import User, session, UserWhitelist
-from helpers.server import Response
+from helpers.server import Response, ORMObjectToDict
 from settings import settings
-from helpers.auth import CreateLoginToken, HashPassword, IsCorrectPassword, CheckToken, GetLDAPUser
+from helpers.auth import CreateLoginToken, HashPassword, IsCorrectPassword, CheckToken, GetLDAPUser, GetRole
 from fastapi import HTTPException, status
 from datetime import datetime
 
@@ -38,6 +38,8 @@ def login(username, password):
   # User found
   if user:
     # Check that the password is correct (only for password logins)
+    if (loginType == "password" and (user.password == "" or user.password is None)):
+      raise HTTPException(status_code=400, detail="User password was not set yet. Please set the password first to login.")
     if loginType == "password" and IsCorrectPassword(user.passwordSalt, user.password, password) == False:
       raise HTTPException(status_code=400, detail="Incorrect password.")
 
@@ -85,3 +87,18 @@ def createPassword(password):
     "password": str(hash["hashedPassword"]),
     "salt": str(hash['salt'])
   })
+
+def profile(token):
+  ''' For getting information about user with the given token.
+      Parameters:
+        token: User login token
+  '''
+  user = session.query(User).filter( User.loginToken == token ).first()
+  if user is None: return Response(False, "User not found.")
+  else:
+    userDetails = {}
+    userDetails["userId"] = user.userId
+    userDetails["email"] = user.email
+    userDetails["createdAt"] = user.userCreatedAt
+    userDetails["role"] = GetRole(user.email)
+    return Response(True, "User details found", { "user": userDetails })
