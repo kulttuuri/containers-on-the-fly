@@ -27,4 +27,4 @@ async def createPassword(password: str, token: str = Depends(oauth2_scheme)):
 @router.get("/profile")
 async def profile(token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
-  return Response(False, "IMPLEMENT")
+  return functionality.profile(token)

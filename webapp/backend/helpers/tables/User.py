@@ -1,3 +1,4 @@
+from helpers.server import Response
 # User table management functionality
 
 def getUsers(filter = None):
@@ -8,7 +9,7 @@ def getUsers(filter = None):
     Returns:
       All found users in a list.
   '''
-  return []
+  return Response(True, "Got users", { "users": [], "userCount": 3 })
 
 def addUser():
   '''
