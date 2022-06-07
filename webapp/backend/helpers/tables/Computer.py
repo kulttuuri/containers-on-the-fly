@@ -12,7 +12,14 @@ def getComputers(filter = None):
   if filter != None:
     computers = session.query(Computer).filter(Computer.name == filter).first()
     if computers != None: return [computers]
-    else: return None
+    #else: return None
+    else:
+      try:
+        computers = session.query(Computer).filter(Computer.computerId == int(filter)).first()
+        if computers != None: return [computers]
+        else: return None
+      except:
+        return None
   else: computers = session.query(Computer).all()
   return computers
 
