@@ -12,7 +12,13 @@ def getContainers(filter = None):
   if filter != None:
     containers = session.query(Container).filter(Container.name == filter).first()
     if containers != None: return [containers]
-    else: return None
+    else:
+      try:
+        containers = session.query(Container).filter(Container.containerId == int(filter)).first()
+        if containers != None: return [containers]
+        else: return None
+      except:
+        return None
   else: containers = session.query(Container).all()
   return containers
 

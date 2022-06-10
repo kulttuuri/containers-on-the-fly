@@ -12,7 +12,13 @@ def getRoles(filter = None):
   if filter != None:
     roles = session.query(Role).filter(Role.name == filter).first()
     if roles != None: return [roles]
-    else: return None
+    else:
+      try:
+        roles = session.query(Role).filter(Role.roleId == int(filter)).first()
+        if roles != None: return [roles]
+        else: return None
+      except:
+        return None
   else: roles = session.query(Role).all()
   return roles
 

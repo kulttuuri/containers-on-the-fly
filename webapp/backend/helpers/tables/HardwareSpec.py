@@ -73,6 +73,3 @@ def editHardwarespec(hardwarespec, new_computer, new_type, new_max, new_min, new
   if new_format != None: hardwarespec.format = new_format
   session.commit()
   return hardwarespec
-
-#Database fields: 
-#hardwareSpecId (PK), computerId (PK, FK), type, maximumAmount, minimumAmount, maximumAmountForUser, defaultAmountForUser, format, createdAt, updatedAt
