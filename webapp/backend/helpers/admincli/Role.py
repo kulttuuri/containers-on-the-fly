@@ -3,7 +3,7 @@ from helpers.tables.Role import *
 def CLIroles():
   breakLoop = False
   while breakLoop == False:
-    print("\nManaging roles  (? roles in database)")
+    print(f"\nManaging roles  ({len(getRoles())} roles in database)")
     print("What do you want to do?")
     print("1) List roles")
     print("2) Add new role")
@@ -59,9 +59,9 @@ def CLIPrintAllRoles():
     print("id:", role.roleId, "- name:", role.name, "- created at:", role.createdAt, "- updated at:", role.updatedAt)
 
 def CLIPrintRolesBySearch():
-  print("\nWhat is the name of the role you are looking for? (case-sensitive)")
+  print("\nWhat is the id or name of the role you are looking for? (name is case-sensitive)")
   filter = input()
-  roles = getRoles(filter) #a bit hardcoded perhaps
+  roles = getRoles(filter)
   if roles != None:
     for role in roles:
         print("id:", role.roleId, "- name:", role.name, "- created at:", role.createdAt, "- updated at:", role.updatedAt)
@@ -76,7 +76,7 @@ def CLIremoveRole():
     selection = input()
     
     if (selection == "1"):
-      print("\nWhat is the name of the role you want to delete? (case-sensitive)")
+      print("\nWhat is the id or name of the role you want to delete? (name is case-sensitive)")
       name = input()
       role = getRoles(name)
       if role != None:
@@ -95,14 +95,14 @@ def CLIeditRole():
     selection = input()
 
     if (selection == "1"):
-      print("\nWhat is the name of the role you want to edit? (case-sensitive)")
-      name = input()
-      role = getRoles(name)
+      print("\nWhat is the id or name of the role you want to edit? (name is case-sensitive)")
+      filter = input()
+      role = getRoles(filter)
       if role != None:
         role = role[0]
-        print("\nWhat do you want to edit", role.name, "to?")
+        print("\nWhat do you want to edit " + role.name + "'s name to?")
         new_name = input()
         editRole(role, new_name)
         print("Role successfully edited.")
-      else: print("No match found for:", name)
+      else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True

@@ -3,7 +3,7 @@ from helpers.tables.Container import *
 def CLIcontainers():
   breakLoop = False
   while breakLoop == False:
-    print("\nManaging containers  (? containers in database)")
+    print(f"\nManaging containers  ({len(getContainers())} containers in database)")
     print("What do you want to do?")
     print("1) List containers")
     print("2) Add new container")
@@ -42,9 +42,9 @@ def CLIPrintAllContainers():
     print("created at:", container.createdAt, "- updated at:", container.updatedAt)
 
 def CLIPrintContainerBySearch():
-  print("\nWhat is the name of the container you are looking for? (case-sensitive)")
+  print("\nWhat is the id or name of the container you are looking for? (name is case-sensitive)")
   filter = input()
-  containers = getContainers(filter) #a bit hardcoded perhaps
+  containers = getContainers(filter)
   if containers != None:
     for container in containers:
       if container.public:
@@ -102,14 +102,14 @@ def CLIremoveContainer():
     selection = input()
     
     if (selection == "1"):
-      print("\nWhat is the name of the container you want to delete? (case-sensitive)")
-      name = input()
-      container = getContainers(name)
+      print("\nWhat is the id or name of the container you want to delete? (name is case-sensitive)")
+      filter = input()
+      container = getContainers(filter)
       if container != None:
         container = container[0]
         removeContainer(container)
         print("Container successfully removed.")
-      else: print("No match found for:", name)
+      else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
 
 def CLIeditContainer():
@@ -121,13 +121,13 @@ def CLIeditContainer():
     selection = input()
 
     if (selection == "1"):
-      print("\nWhat is the name of the container you want to edit? (case-sensitive)")
-      name = input()
-      container = getContainers(name)
+      print("\nWhat is the id or name of the container you want to edit? (name is case-sensitive)")
+      filter = input()
+      container = getContainers(filter)
       if container != None:
         container = container[0]
         CLIEditContainers(container)
-      else: print("No match found for:", name)
+      else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
 
 def CLIEditContainers(container):
@@ -136,7 +136,6 @@ def CLIEditContainers(container):
     print("\nWhich part of", container.name, "do you want to edit?")
     print("1) Edit name")
     print("2) Edit publicity")
-#Database fields: containerId (PK), public, name (unique), description, imageName, createdAt, updatedAt
     print("3) Edit description")
     print("4) Edit image name")
     print("5) Edit all of the above")
@@ -194,7 +193,3 @@ def CLIEditContainers(container):
         editContainer(container, new_name, new_public, new_description, new_image_name)
         print("Container successfully edited.")
     elif (selection == "6"): breakLoop = True
-
-
-
-#Database fields: containerId (PK), public, name (unique), description, imageName, createdAt, updatedAt

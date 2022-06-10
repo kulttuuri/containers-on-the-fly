@@ -3,7 +3,7 @@ from helpers.tables.Computer import *
 def CLIcomputers():
   breakLoop = False
   while breakLoop == False:
-    print("\nManaging computers  (? computers in database)")
+    print(f"\nManaging computers  ({len(getComputers())} computers in database)")
     print("What do you want to do?")
     print("1) List computers")
     print("2) Add new computer")
@@ -41,9 +41,9 @@ def CLIPrintAllComputers():
     print("id:", computer.computerId, "-", public, "- name:", computer.name, "- created at:", computer.createdAt, "- updated at:", computer.updatedAt)
 
 def CLIPrintComputerBySearch():
-  print("\nWhat is the name of the computer you are looking for? (case-sensitive)")
+  print("\nWhat is the id or name of the computer you are looking for? (name is case-sensitive)")
   filter = input()
-  computers = getComputers(filter) #a bit hardcoded perhaps
+  computers = getComputers(filter)
   if computers != None:
     for computer in computers:
       if computer.public:
@@ -94,14 +94,14 @@ def CLIremoveComputer():
     selection = input()
     
     if (selection == "1"):
-      print("\nWhat is the name of the computer you want to delete? (case-sensitive)")
-      name = input()
-      computer = getComputers(name)
+      print("\nWhat is the id or name of the computer you want to delete? (name is case-sensitive)")
+      filter = input()
+      computer = getComputers(filter)
       if computer != None:
         computer = computer[0]
         removeComputer(computer)
         print("Computer successfully removed.")
-      else: print("No match found for:", name)
+      else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
 
 def CLIeditComputer():
@@ -113,13 +113,13 @@ def CLIeditComputer():
     selection = input()
 
     if (selection == "1"):
-      print("\nWhat is the name of the computer you want to edit? (case-sensitive)")
-      name = input()
-      computer = getComputers(name)
+      print("\nWhat is the id or name of the computer you want to edit? (name is case-sensitive)")
+      filter = input()
+      computer = getComputers(filter)
       if computer != None:
         computer = computer[0]
         CLIEditComputers(computer)
-      else: print("No match found for:", name)
+      else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
 
 def CLIEditComputers(computer):

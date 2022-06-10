@@ -50,11 +50,11 @@ def CLIaddHardwarespec():
     elif (selection == "2"): breakLoop = True
 
 def CLIAddHardwarespecs():
-  print("\nWhat computer (id or name) should be associated with this hardware?")
-  computerId = input()
-  doesComputerExist = getComputers(computerId)
+  print("\nWhat computer id or name should be associated with this hardware? (name is case-sensitive)")
+  filter = input()
+  doesComputerExist = getComputers(filter)
   if doesComputerExist == None: 
-    print("No computer with that id, exiting creation...")
+    print("No computer found with that search, exiting creation...")
     return
   else: computerId = doesComputerExist[0].computerId
   print("\nWhat type of hardware is this?")
@@ -188,6 +188,3 @@ def CLIEditHardwarespecs(hardwarespec):
       except:
         print("Something failed while editing this hardware")
     elif (selection == "2"): breakLoop = True
-
-#Database fields: 
-#hardwareSpecId (PK), computerId (PK, FK), type, maximumAmount, minimumAmount, maximumAmountForUser, defaultAmountForUser, format, createdAt, updatedAt
