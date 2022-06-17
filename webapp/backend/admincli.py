@@ -8,44 +8,55 @@ from helpers.admincli.User import *
 from helpers.admincli.UserStorage import *
 from helpers.admincli.UserWhitelist import *
 from helpers.server import *
-import requests
-import json
+from helpers.auth import *
+from getpass import getpass
+from settings import settings
+import sys
 
 print("Welcome to AI Reservation Server Admin CLI")
 
 def main():
   breakLoop = False
-  token = ""
+  default = True
   while breakLoop == False:
-    if token == "":
+    if settings.adminToken == "":
       print("\nWhat would you like to do?")
       print("1) Login")
       print("2) Exit")
       selection = input()
       if selection == "1":
         print("\nLogin menu:")
-        print("What is your username?")
+        if "username" in settings.admincli: # Check whether the default option exists
+          print('What is your username? (default username is: "'+ settings.admincli["username"] + '", leave empty to proceed with default.')
+        else: 
+          default = False
+          print("What is your username?")
         username = input()
         #username = "aiserveradmin@samk.fi"
+        if username == "" and default == True:
+          username = settings.admincli["username"]
         print("What is your password?")
-        password = input()
+        password = getpass()
         #password = "test"
       
         # Making a get request
         #Login details: username = aiserveradmin@samk.fi and password = test
-        response = requests.post("http://127.0.0.1:8000/api/user/login", data= {"username":username,"password":password})
-        if response.ok != False:
-          token = json.loads(response.text)["access_token"]
-          auth = ForceAuthentication(token, "admin")
-          if auth == HTTPException:
-            print("Account is not an admin.")
-            continue
-          else: print("\nLogged in successfully.")
-        else:
-          print("Login not successful, try again.")
-          continue
+        login = CallAdminAPI("post", "user/login", data= {"username": username, "password": password}, headers=False)
+        settings.adminToken = login["access_token"]
+        response = CheckToken(settings.adminToken)
+        if response["status"] != True:
+          print("\nLogin token invalid. Exiting...")
+          sys.exit()
+        elif response["data"]["role"] != "admin":
+          print("\nUser isn't an admin. Exiting...")
+          sys.exit()
+        else: print("\nLogged in successfully.")
       elif selection == "2": breakLoop = True
     else:
+      if not CheckToken(settings.adminToken)["status"]:
+        print("Login token no longer valid. Please login again.")
+        settings.adminToken = ""
+        continue
       print("\nWhat do you want to do?")
       print("You can type these commands to manage the tables:")
       print("users, userstorages, whitelisting, containers, hardwarespecs, reservations, roles, computers")
