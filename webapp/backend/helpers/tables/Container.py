@@ -39,22 +39,23 @@ def addContainer(name, public, description, imageName):
   session.commit()
   return session.query(Container).filter(Container.name == name).first()
 
-def removeContainer(container):
+def removeContainer(container_id):
   '''
   Removes the given container in the system.
     Parameters:
-      container: The container object of the container to be removed.
+      container_id: The container id to be removed.
     Returns:
       Nothing
   '''
+  container = session.query(Container).filter(Container.containerId == container_id).first()
   session.delete(container)
   session.commit()
 
-def editContainer(container, new_name = None, new_public = None, new_description = None, new_image_name = None):
+def editContainer(container_id, new_name = None, new_public = None, new_description = None, new_image_name = None):
   '''
   Edits the given container in the system.
     Parameters:
-      container: The container object of the container to be edited.
+      container_id: The container id to be edited.
       new_name: The new name for the given container.
       new_public: The new boolean for publicity of the container.
       new_description: The new description for the given container.
@@ -62,6 +63,7 @@ def editContainer(container, new_name = None, new_public = None, new_description
     Returns:
       The edited container object fetched from database. Or None if name or publicity isn't provided.
   '''
+  container = session.query(Container).filter(Container.containerId == container_id).first()
   if new_name != None: container.name = new_name
   if new_public != None: container.public = new_public
   if new_description != None: container.description = new_description

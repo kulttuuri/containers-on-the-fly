@@ -1,4 +1,6 @@
 from helpers.tables.Computer import *
+from helpers.server import *
+from settings import settings
 
 def CLIcomputers():
   breakLoop = False
@@ -33,23 +35,24 @@ def CLIcomputersList():
 
 def CLIPrintAllComputers():
   computers = getComputers()
+  computers = CallAdminAPI("get", "admin/get_computers", settings.adminToken)
   public = "Not public"
   for computer in computers:
-    if computer.public:
+    if computer["public"]:
       public = "Public"
     else: public = "Not public"
-    print("id:", computer.computerId, "-", public, "- name:", computer.name, "- created at:", computer.createdAt, "- updated at:", computer.updatedAt)
+    print("id:", computer["computerId"], "-", public, "- name:", computer["name"], "- created at:", computer["createdAt"], "- updated at:", computer["updatedAt"])
 
 def CLIPrintComputerBySearch():
   print("\nWhat is the id or name of the computer you are looking for? (name is case-sensitive)")
   filter = input()
-  computers = getComputers(filter)
+  computers = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
   if computers != None:
     for computer in computers:
-      if computer.public:
+      if computer["public"]:
         public = "Public"
       else: public = "Not public"
-      print("id:", computer.computerId, "-", public, "- name:", computer.name, "- created at:", computer.createdAt, "- updated at:", computer.updatedAt)
+      print("id:", computer["computerId"], "-", public, "- name:", computer["name"], "- created at:", computer["createdAt"], "- updated at:", computer["updatedAt"])
   else: print("No match found for:", filter)
 
 def CLIaddComputer():
@@ -79,7 +82,7 @@ def CLIAddComputers():
       print("\nNot a valid value for publicity, only accepted values are: True or False")
       errors += 1
       continue
-    result = addComputer(computer, public)
+    result = CallAdminAPI("get", "admin/add_computer", settings.adminToken, params={"name": computer, "public": public})
     if result == None: 
       print("Couldn't add:", computer, "to computers, this name is already in use.")
       errors += 1
@@ -96,10 +99,10 @@ def CLIremoveComputer():
     if (selection == "1"):
       print("\nWhat is the id or name of the computer you want to delete? (name is case-sensitive)")
       filter = input()
-      computer = getComputers(filter)
+      computer = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
       if computer != None:
         computer = computer[0]
-        removeComputer(computer)
+        CallAdminAPI("get", "admin/remove_computer", settings.adminToken, params={"computer_id": computer["computerId"]})
         print("Computer successfully removed.")
       else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
@@ -115,7 +118,7 @@ def CLIeditComputer():
     if (selection == "1"):
       print("\nWhat is the id or name of the computer you want to edit? (name is case-sensitive)")
       filter = input()
-      computer = getComputers(filter)
+      computer = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
       if computer != None:
         computer = computer[0]
         CLIEditComputers(computer)
@@ -125,19 +128,20 @@ def CLIeditComputer():
 def CLIEditComputers(computer):
   breakLoop = False
   while breakLoop == False:
-    print("\nWhich part of", computer.name, "do you want to edit?")
+    print("\nWhich part of", computer["name"], "do you want to edit?")
     print("1) Edit name")
     print("2) Edit publicity")
     print("3) Edit all of the above")
     print("4) Go back")
     selection = input()
     if (selection == "1"):
-        print("\nWhat do you want to edit " + computer.name + "'s name to?")
+        print("\nWhat do you want to edit " + computer["name"] + "'s name to?")
         new_name = input()
-        editComputer(computer, new_name=new_name)
+        params={"computer_id": computer["computerId"], "new_name": new_name}
+        CallAdminAPI("get", "admin/edit_computer", settings.adminToken, params=params)
         print("Computer successfully edited.")
     elif (selection == "2"):
-        print("\nWhat do you want to edit " + computer.name + "'s publicity to? (True/False)")
+        print("\nWhat do you want to edit " + computer["name"] + "'s publicity to? (True/False)")
         new_public = input()
         if new_public.capitalize() == "True":
           new_public = True
@@ -146,12 +150,13 @@ def CLIEditComputers(computer):
         else:
           print("\nNot a valid value for publicity, only accepted values are: True or False") 
           continue
-        editComputer(computer, new_public=new_public)
+        params={"computer_id": computer["computerId"], "new_public": new_public}
+        CallAdminAPI("get", "admin/edit_computer", settings.adminToken, params=params)
         print("Computer successfully edited.")
     elif (selection == "3"):
-        print("\nWhat do you want to edit " + computer.name + "'s name to?")
+        print("\nWhat do you want to edit " + computer["name"] + "'s name to?")
         new_name = input()
-        print("\nWhat do you want to edit " + computer.name + "'s publicity to? (True/False)")
+        print("\nWhat do you want to edit " + computer["name"] + "'s publicity to? (True/False)")
         new_public = input()
         if new_public.capitalize() == "True":
           new_public = True
@@ -160,6 +165,7 @@ def CLIEditComputers(computer):
         else:
           print("\nNot a valid value for publicity, only accepted values are: True or False") 
           continue
-        editComputer(computer, new_name, new_public)
+        params={"computer_id": computer["computerId"], "new_name": new_name, "new_public": new_public}
+        CallAdminAPI("get", "admin/edit_computer", settings.adminToken, params=params)
         print("Computer successfully edited.")
     elif (selection == "4"): breakLoop = True
