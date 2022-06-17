@@ -17,6 +17,14 @@ The settings file should be first created in order to start working with the pro
     "production": false,
     "addTestDataInDevelopment": true
   },
+  "admincli": {
+    "address": "127.0.0.1",
+    "username": "aiserveradmin@samk.fi",
+    "allowedIpAddresses": [
+      "127.0.0.1",
+      "92.162.12.15"
+    ]
+  },
   "login": {
     "loginType": "password",
     "useWhitelist": false
@@ -61,6 +69,24 @@ The settings file should be first created in order to start working with the pro
 **Setting**: ``app.addTestDataInDevelopment``
 
 **Description**: When running the server in development mode and ``app.addTestDataInDevelopment`` is set to ``true``, the app will add some testing credentials, containers, hardware and other data. Have a look at the file ``routes/api.py`` for more reference on this.
+
+### Address
+
+**Setting**: ``admincli.address``
+
+**Description**: IP address or domain name of your server. API access will go through this address.
+
+### Username
+
+**Setting**: ``admincli.username``
+
+**Description**: The default username for logging into admin command-line interface.
+
+### Allowed IP Addresses
+
+**Setting**: ``admincli.allowedIpAddresses``
+
+**Description**: List of IP addresses allowed to use the admin command-line interface.
 
 ### Login Type
 
