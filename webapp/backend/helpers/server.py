@@ -1,9 +1,8 @@
 from typing import Union
 from fastapi import HTTPException, status
-from helpers.auth import IsLoggedIn
 from sqlalchemy import inspect
 from sqlalchemy.ext.hybrid import hybrid_property
-from helpers.auth import GetRole
+from helpers.auth import *
 from database import User, session
 
 def Response(status, message, extraData = None):
@@ -47,8 +46,14 @@ def ForceAuthentication(token: str, roleRequired: str = None) -> Union[bool,HTTP
 def ORMObjectToDict(self):
     dict_ = {}
     for key in self.__mapper__.c.keys():
+        # Going through all the keys one by one
         if not key.startswith('_'):
-            dict_[key] = getattr(self, key)
+            # Cast all bytes to strings
+            if isinstance(getattr(self, key), bytes):
+              dict_[key] = str(getattr(self, key))
+            # Otherwise do the casting automatically
+            else:
+              dict_[key] = getattr(self, key)
 
     for key, prop in inspect(self.__class__).all_orm_descriptors.items():
         if isinstance(prop, hybrid_property):
