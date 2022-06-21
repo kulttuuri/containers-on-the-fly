@@ -74,7 +74,7 @@ The settings file should be first created in order to start working with the pro
 
 **Setting**: ``admincli.address``
 
-**Description**: IP address or domain name of your server. API access will go through this address.
+**Description**: IP address or domain name of your server. API access will go through this address. For example 127.0.0.1:8000.
 
 ### Username
 

@@ -77,10 +77,10 @@ def CallAdminAPI(method, endpoint, token = "", params = {}, data = {}, headers=T
     print("No address specified in settings.json")
     sys.exit()
   if method == "get":
-    response = requests.get("http://" + settings.admincli["address"] + ":8000/api/" + endpoint,
+    response = requests.get("http://" + settings.admincli["address"] + "/api/" + endpoint,
                             params=params, headers=headers)
   elif method == "post":
-    response = requests.post("http://" + settings.admincli["address"] + ":8000/api/" + endpoint,
+    response = requests.post("http://" + settings.admincli["address"] + "/api/" + endpoint,
                             data=data, headers=headers)
   #print(response.text)
   if response.ok != True:
