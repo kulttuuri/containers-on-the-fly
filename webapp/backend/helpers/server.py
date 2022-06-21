@@ -4,6 +4,10 @@ from sqlalchemy import inspect
 from sqlalchemy.ext.hybrid import hybrid_property
 from helpers.auth import *
 from database import User, session
+import requests
+import json
+from os import sys
+from settings import settings
 
 def Response(status, message, extraData = None):
   response = {
@@ -59,3 +63,35 @@ def ORMObjectToDict(self):
         if isinstance(prop, hybrid_property):
             dict_[key] = getattr(self, key)
     return dict_
+
+def CheckIp(ip):
+  if "allowedIpAddresses" in settings.admincli: # Check whether the list exists
+    if len(settings.admincli["allowedIpAddresses"])>0 and ip not in settings.admincli["allowedIpAddresses"]:
+      raise HTTPException(
+        status_code = status.HTTP_403_FORBIDDEN,
+        detail = "IP not found in allowed ip list in settings.json. Refusing access.",
+        headers = {"WWW-Authenticate": "Bearer"})
+    else: return True
+  else: return True
+
+def CallAdminAPI(method, endpoint, token = "", params = {}, data = {}, headers=True):
+  if headers == True: headers = {"Authorization": "Bearer " + token}
+  else: headers = {}
+  if "address" not in settings.admincli: # Check whether the address exists in settings
+    print("\nAdmin API Call Failed Exiting App...")
+    print("No address specified in settings.json")
+    sys.exit()
+  if method == "get":
+    response = requests.get("http://" + settings.admincli["address"] + "/api/" + endpoint,
+                            params=params, headers=headers)
+  elif method == "post":
+    response = requests.post("http://" + settings.admincli["address"] + "/api/" + endpoint,
+                            data=data, headers=headers)
+  #print(response.text)
+  if response.ok != True:
+    print("\nAdmin API Call Failed Exiting App...")
+    print(json.loads(response.text)["detail"])
+    sys.exit()
+
+  data = json.loads(response.text)
+  return data

@@ -4,7 +4,6 @@ from helpers.tables.UserStorage import *
 
 def CLIusers():
   breakLoop = False
-  count = CLIcountUsers()
   while breakLoop == False:
     print(f"\nManaging users  {len(getUsers())} users in database")
     print("What do you want to do?")

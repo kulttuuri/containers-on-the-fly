@@ -1,5 +1,7 @@
 from helpers.tables.HardwareSpec import *
 from helpers.tables.Computer import *
+from helpers.server import *
+from settings import settings
 
 def CLIhardwarespecs():
   breakLoop = False
@@ -24,19 +26,33 @@ def CLIhardwarespecsList():
   while breakLoop == False:
     print("\nHardwarespec Listing")
     print("1) List all hardwarespecs")
-    print("2) Go back")
+    print("2) List hardwarespec by search")
+    print("3) Go back")
     selection = input()
 
     if selection == "1": CLIPrintAllHardwarespecs()
-    elif selection == "2": breakLoop = True
+    elif selection == "2": CLIPrintHardwarespecBySearch()
+    elif selection == "3": breakLoop = True
 
 def CLIPrintAllHardwarespecs():
-  hardwarespecs = getHardwarespecs()
+  hardwarespecs = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken)
   for hardwarespec in hardwarespecs:
-    print("id:", hardwarespec.hardwareSpecId, "- computer id:", hardwarespec.computerId, "- type:", hardwarespec.type)
-    print("max amount:", hardwarespec.maximumAmount, "- min amount:", hardwarespec.minimumAmount)
-    print("max amount for user:", hardwarespec.maximumAmountForUser, "- default amount for user:", hardwarespec.defaultAmountForUser)
-    print("format:", hardwarespec.format,"- created at:", hardwarespec.createdAt, "- updated at:", hardwarespec.updatedAt)
+    print("id:", hardwarespec["hardwareSpecId"], "- computer id:", hardwarespec["computerId"], "- type:", hardwarespec["type"])
+    print("max amount:", hardwarespec["maximumAmount"], "- min amount:", hardwarespec["minimumAmount"])
+    print("max amount for user:", hardwarespec["maximumAmountForUser"], "- default amount for user:", hardwarespec["defaultAmountForUser"])
+    print("format:", hardwarespec["format"],"- created at:", hardwarespec["createdAt"], "- updated at:", hardwarespec["updatedAt"])
+
+def CLIPrintHardwarespecBySearch():
+  print("\nWhat is the id of the hardwarespec you are looking for?")
+  filter = input()
+  hardwarespecs = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken, params={"filter": filter})
+  if hardwarespecs != None:
+    for hardwarespec in hardwarespecs:
+      print("id:", hardwarespec["hardwareSpecId"], "- computer id:", hardwarespec["computerId"], "- type:", hardwarespec["type"])
+      print("max amount:", hardwarespec["maximumAmount"], "- min amount:", hardwarespec["minimumAmount"])
+      print("max amount for user:", hardwarespec["maximumAmountForUser"], "- default amount for user:", hardwarespec["defaultAmountForUser"])
+      print("format:", hardwarespec["format"],"- created at:", hardwarespec["createdAt"], "- updated at:", hardwarespec["updatedAt"])
+  else: print("No match found for:", filter)
 
 def CLIaddHardwarespec():
   breakLoop = False
@@ -52,40 +68,42 @@ def CLIaddHardwarespec():
 def CLIAddHardwarespecs():
   print("\nWhat computer id or name should be associated with this hardware? (name is case-sensitive)")
   filter = input()
-  doesComputerExist = getComputers(filter)
+  doesComputerExist = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
   if doesComputerExist == None: 
     print("No computer found with that search, exiting creation...")
     return
-  else: computerId = doesComputerExist[0].computerId
+  else: computerId = doesComputerExist[0]["computerId"]
   print("\nWhat type of hardware is this?")
   type = input()
   print("\nWhat is the maximum amount for this hardware?")
   maxAmount = input()
-  try: maxAmount = int(maxAmount)
+  try: maxAmount = float(maxAmount)
   except:
     print("Error. Not a number, exiting...")
     return
   print("\nWhat is the minimum amount for this hardware?")
   minAmount = input()
-  try: minAmount = int(minAmount)
+  try: minAmount = float(minAmount)
   except:
     print("Error. Not a number, exiting...")
     return
   print("\nWhat is the maximum amount for a user?")
   maxUserAmount = input()
-  try: maxUserAmount = int(maxUserAmount)
+  try: maxUserAmount = float(maxUserAmount)
   except:
     print("Error. Not a number, exiting...")
     return
   print("\nWhat is the default amount for a user?")
   defaultUserAmount = input()
-  try: defaultUserAmount = int(defaultUserAmount)
+  try: defaultUserAmount = float(defaultUserAmount)
   except:
     print("Error. Not a number, exiting...")
     return
   print("\nWhat is the format of this hardware?")
   format = input()
-  addHardwarespec(computerId, type, maxAmount, minAmount, maxUserAmount, defaultUserAmount, format)
+  params = {"computerId": computerId, "type": type, "maxAmount": maxAmount, "minAmount": minAmount, "maxUserAmount": maxUserAmount,
+            "defaultUserAmount": defaultUserAmount, "format": format}
+  CallAdminAPI("get", "admin/add_hardwarespec", settings.adminToken, params=params)
   print("New hardwarespec was added to the database.")
 
 def CLIremoveHardwarespec():
@@ -99,10 +117,10 @@ def CLIremoveHardwarespec():
     if (selection == "1"):
       print("\nWhat is the id of the hardwarespec you want to delete?")
       id = input()
-      hardwarespec = getHardwarespecs(id)
+      hardwarespec = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken, params={"filter": id})
       if hardwarespec != None:
         hardwarespec = hardwarespec[0]
-        removeHardwarespec(hardwarespec)
+        CallAdminAPI("get", "admin/remove_hardwarespec", settings.adminToken, params={"hardwarespec_id": hardwarespec["hardwareSpecId"]})
         print("Hardwarespec successfully removed.")
       else: print("No match found for id:", id)
     elif (selection == "2"): breakLoop = True
@@ -118,7 +136,7 @@ def CLIeditHardwarespec():
     if (selection == "1"):
       print("\nWhat is the id of the hardwarespec you want to edit?")
       id = input()
-      hardwarespec = getHardwarespecs(id)
+      hardwarespec = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken, params={"filter": id})
       if hardwarespec != None:
         hardwarespec = hardwarespec[0]
         CLIEditHardwarespecs(hardwarespec)
@@ -128,62 +146,64 @@ def CLIeditHardwarespec():
 def CLIEditHardwarespecs(hardwarespec):
   breakLoop = False
   while breakLoop == False:
-    print("\nYou are currently editing harwarespec with id ", hardwarespec.hardwareSpecId)
+    print("\nYou are currently editing harwarespec with id", hardwarespec["hardwareSpecId"])
     print("1) Edit all fields, leave question field empty to not change field")
     print("2) Go back")
     selection = input()
     if (selection == "1"):
-      print("\nWhat computer (id or name) should be associated with this hardware? Current value:", )
-      new_computer = input()
-      if new_computer != "":
-        doesComputerExist = getComputers(new_computer)
+      print("\nWhat computer (id or name) should be associated with this hardware? Current value:", hardwarespec["computerId"])
+      new_computer_id = input()
+      if new_computer_id != "":
+        doesComputerExist = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": new_computer_id})
         if doesComputerExist == None: 
           print("No computer found with search, defaulting to old value")
-          new_computer = None
-        else: new_computer = doesComputerExist[0].computerId
-      else: new_computer = None
-      print("\nWhat type of hardware is this?")
+          new_computer_id = None
+        else: new_computer_id = doesComputerExist[0]["computerId"]
+      else: new_computer_id = None
+      print("\nWhat type of hardware is this? Current value:", hardwarespec["type"])
       new_type = input()
       if new_type == "":
         new_type = None
-      print("\nWhat is the maximum amount for this hardware?")
+      print("\nWhat is the maximum amount for this hardware? Current value:", hardwarespec["maximumAmount"])
       new_max = input()
       if new_max != "":
-        try: new_max = int(new_max)
+        try: new_max = float(new_max)
         except:
           print("Error. Not a number, defaulting to old value")
           new_max = None
       else: new_max = None
-      print("\nWhat is the minimum amount for this hardware?")
+      print("\nWhat is the minimum amount for this hardware? Current value:", hardwarespec["minimumAmount"])
       new_min = input()
       if new_min != "":
-        try: new_min = int(new_min)
+        try: new_min = float(new_min)
         except:
           print("Error. Not a number, defaulting to old value")
           new_min = None
       else: new_min = None
-      print("\nWhat is the maximum amount for a user?")
+      print("\nWhat is the maximum amount for a user? Current value:", hardwarespec["maximumAmountForUser"])
       new_user_max = input()
       if new_user_max != "":
-        try: new_user_max = int(new_user_max)
+        try: new_user_max = float(new_user_max)
         except:
           print("Error. Not a number, defaulting to old value")
           new_user_max = None
       else: new_user_max = None
-      print("\nWhat is the default amount for a user?")
-      new_default = input()
-      if new_default != "":
-        try: new_default = int(new_default)
+      print("\nWhat is the default amount for a user? Current value:", hardwarespec["defaultAmountForUser"])
+      new_user_default = input()
+      if new_user_default != "":
+        try: new_user_default = float(new_user_default)
         except:
           print("Error. Not a number, defaulting to old value")
-          new_default = None
-      else: new_default = None
-      print("\nWhat is the format of this hardware?")
+          new_user_default = None
+      else: new_user_default = None
+      print("\nWhat is the format of this hardware? Current value:", hardwarespec["format"])
       new_format = input()
       if new_format == "":
         new_format = None
-      try: 
-        editHardwarespec(hardwarespec, new_computer, new_type, new_max, new_min, new_user_max, new_default, new_format)
+      try:
+        params={"hardwarespec_id": hardwarespec["hardwareSpecId"], "new_computer_id": new_computer_id, "new_type": new_type, "new_max": new_max,
+                "new_min": new_min, "new_user_max": new_user_max, "new_user_default": new_user_default, "new_format": new_format}
+        CallAdminAPI("get", "admin/edit_hardwarespec", settings.adminToken, params=params)
         print("Hardwarespec successfully edited.")
       except:
         print("Something failed while editing this hardware")

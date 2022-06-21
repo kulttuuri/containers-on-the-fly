@@ -39,27 +39,29 @@ def addComputer(name, public):
   session.commit()
   return session.query(Computer).filter(Computer.name == name).first()
 
-def removeComputer(computer):
+def removeComputer(computer_id):
   '''
   Removes the given computer in the system.
     Parameters:
-      computer: The computer object of the computer to be removed.
+      computer_id: The id of the computer to be removed.
     Returns:
       Nothing
   '''
+  computer = session.query(Computer).filter(Computer.computerId == computer_id).first()
   session.delete(computer)
   session.commit()
 
-def editComputer(computer, new_name = None, new_public = None):
+def editComputer(computer_id, new_name = None, new_public = None):
   '''
   Edits the given computer in the system.
     Parameters:
-      computer: The computer object of the computer to be edited.
+      computer_id: The id of the computer to be edited.
       new_name: The new name for the given computer.
       new_public: The new boolean for publicity of the computer.
     Returns:
       The edited computer object fetched from database. Or None if name or publicity isn't provided.
   '''
+  computer = session.query(Computer).filter(Computer.computerId == computer_id).first()
   if new_name != None: computer.name = new_name
   if new_public != None: computer.public = new_public
   session.commit()
