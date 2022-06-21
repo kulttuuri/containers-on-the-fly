@@ -5,7 +5,7 @@ from settings import settings
 def CLIcomputers():
   breakLoop = False
   while breakLoop == False:
-    print(f"\nManaging computers  ({len(getComputers())} computers in database)")
+    print(f'\nManaging computers  ({len(CallAdminAPI("get", "adminRoutes/adminComputers/get_computers", settings.adminToken)) } computers in database)')
     print("What do you want to do?")
     print("1) List computers")
     print("2) Add new computer")
@@ -35,7 +35,7 @@ def CLIcomputersList():
 
 def CLIPrintAllComputers():
   computers = getComputers()
-  computers = CallAdminAPI("get", "admin/get_computers", settings.adminToken)
+  computers = CallAdminAPI("get", "adminRoutes/adminComputers/get_computers", settings.adminToken)
   public = "Not public"
   for computer in computers:
     if computer["public"]:
@@ -46,7 +46,7 @@ def CLIPrintAllComputers():
 def CLIPrintComputerBySearch():
   print("\nWhat is the id or name of the computer you are looking for? (name is case-sensitive)")
   filter = input()
-  computers = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
+  computers = CallAdminAPI("get", "adminRoutes/adminComputers/get_computers", settings.adminToken, params={"filter": filter})
   if computers != None:
     for computer in computers:
       if computer["public"]:
@@ -82,7 +82,7 @@ def CLIAddComputers():
       print("\nNot a valid value for publicity, only accepted values are: True or False")
       errors += 1
       continue
-    result = CallAdminAPI("get", "admin/add_computer", settings.adminToken, params={"name": computer, "public": public})
+    result = CallAdminAPI("get", "adminRoutes/adminComputers/add_computer", settings.adminToken, params={"name": computer, "public": public})
     if result == None: 
       print("Couldn't add:", computer, "to computers, this name is already in use.")
       errors += 1
@@ -99,10 +99,10 @@ def CLIremoveComputer():
     if (selection == "1"):
       print("\nWhat is the id or name of the computer you want to delete? (name is case-sensitive)")
       filter = input()
-      computer = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
+      computer = CallAdminAPI("get", "adminRoutes/adminComputers/get_computers", settings.adminToken, params={"filter": filter})
       if computer != None:
         computer = computer[0]
-        CallAdminAPI("get", "admin/remove_computer", settings.adminToken, params={"computer_id": computer["computerId"]})
+        CallAdminAPI("get", "adminRoutes/adminComputers/remove_computer", settings.adminToken, params={"computer_id": computer["computerId"]})
         print("Computer successfully removed.")
       else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
@@ -118,7 +118,7 @@ def CLIeditComputer():
     if (selection == "1"):
       print("\nWhat is the id or name of the computer you want to edit? (name is case-sensitive)")
       filter = input()
-      computer = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
+      computer = CallAdminAPI("get", "adminRoutes/adminComputers/get_computers", settings.adminToken, params={"filter": filter})
       if computer != None:
         computer = computer[0]
         CLIEditComputers(computer)
@@ -138,7 +138,7 @@ def CLIEditComputers(computer):
         print("\nWhat do you want to edit " + computer["name"] + "'s name to?")
         new_name = input()
         params={"computer_id": computer["computerId"], "new_name": new_name}
-        CallAdminAPI("get", "admin/edit_computer", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminComputers/edit_computer", settings.adminToken, params=params)
         print("Computer successfully edited.")
     elif (selection == "2"):
         print("\nWhat do you want to edit " + computer["name"] + "'s publicity to? (True/False)")
@@ -151,7 +151,7 @@ def CLIEditComputers(computer):
           print("\nNot a valid value for publicity, only accepted values are: True or False") 
           continue
         params={"computer_id": computer["computerId"], "new_public": new_public}
-        CallAdminAPI("get", "admin/edit_computer", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminComputers/edit_computer", settings.adminToken, params=params)
         print("Computer successfully edited.")
     elif (selection == "3"):
         print("\nWhat do you want to edit " + computer["name"] + "'s name to?")
@@ -166,6 +166,6 @@ def CLIEditComputers(computer):
           print("\nNot a valid value for publicity, only accepted values are: True or False") 
           continue
         params={"computer_id": computer["computerId"], "new_name": new_name, "new_public": new_public}
-        CallAdminAPI("get", "admin/edit_computer", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminComputers/edit_computer", settings.adminToken, params=params)
         print("Computer successfully edited.")
     elif (selection == "4"): breakLoop = True

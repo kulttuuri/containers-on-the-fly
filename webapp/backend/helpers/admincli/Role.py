@@ -5,7 +5,7 @@ from settings import settings
 def CLIroles():
   breakLoop = False
   while breakLoop == False:
-    print(f"\nManaging roles  ({len(getRoles())} roles in database)")
+    print(f'\nManaging roles  ({len(CallAdminAPI("get", "adminRoutes/adminRoles/get_roles", settings.adminToken))} roles in database)')
     print("What do you want to do?")
     print("1) List roles")
     print("2) Add new role")
@@ -34,14 +34,14 @@ def CLIrolesList():
     elif (selection == "3"): breakLoop = True
 
 def CLIPrintAllRoles():
-  roles = CallAdminAPI("get", "admin/get_roles", settings.adminToken)
+  roles = CallAdminAPI("get", "adminRoutes/adminRoles/get_roles", settings.adminToken)
   for role in roles:
     print("id:", role["roleId"], "- name:", role["name"], "- created at:", role["createdAt"], "- updated at:", role["updatedAt"])
 
 def CLIPrintRolesBySearch():
   print("\nWhat is the id or name of the role you are looking for? (name is case-sensitive)")
   filter = input()
-  roles = CallAdminAPI("get", "admin/get_roles", settings.adminToken, params={"filter": filter})
+  roles = CallAdminAPI("get", "adminRoutes/adminRoles/get_roles", settings.adminToken, params={"filter": filter})
   if roles != None:
     for role in roles:
       print("id:", role["roleId"], "- name:", role["name"], "- created at:", role["createdAt"], "- updated at:", role["updatedAt"])
@@ -63,7 +63,7 @@ def CLIAddRoles():
   print("\nList all the roles you want to add separated by commas: (Role1, Role2, Role3, etc...)")
   rolesToAdd = input().split(", ")
   for role in rolesToAdd:
-    result = CallAdminAPI("get", "admin/add_role", settings.adminToken, params={"name": role})
+    result = CallAdminAPI("get", "adminRoutes/adminRoles/add_role", settings.adminToken, params={"name": role})
     if result == None: 
       print("Couldn't add:", role, "to roles, this name is already in use.")
       duplicates = duplicates+1
@@ -80,10 +80,10 @@ def CLIremoveRole():
     if (selection == "1"):
       print("\nWhat is the id or name of the role you want to delete? (name is case-sensitive)")
       filter = input()
-      role = CallAdminAPI("get", "admin/get_roles", settings.adminToken, params={"filter": filter})
+      role = CallAdminAPI("get", "adminRoutes/adminRoles/get_roles", settings.adminToken, params={"filter": filter})
       if role != None:
         role = role[0]
-        CallAdminAPI("get", "admin/remove_role", settings.adminToken, params={"role_id": role["roleId"]})
+        CallAdminAPI("get", "adminRoutes/adminRoles/remove_role", settings.adminToken, params={"role_id": role["roleId"]})
         print("Role successfully removed.")
       else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
@@ -99,12 +99,12 @@ def CLIeditRole():
     if (selection == "1"):
       print("\nWhat is the id or name of the role you want to edit? (name is case-sensitive)")
       filter = input()
-      role = CallAdminAPI("get", "admin/get_roles", settings.adminToken, params={"filter": filter})
+      role = CallAdminAPI("get", "adminRoutes/adminRoles/get_roles", settings.adminToken, params={"filter": filter})
       if role != None:
         role = role[0]
         print("\nWhat do you want to edit " + role["name"] + "'s name to?")
         new_name = input()
-        CallAdminAPI("get", "admin/edit_role", settings.adminToken, params={"role_id": role["roleId"], "new_name": new_name})
+        CallAdminAPI("get", "adminRoutes/adminRoles/edit_role", settings.adminToken, params={"role_id": role["roleId"], "new_name": new_name})
         print("Role successfully edited.")
       else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
