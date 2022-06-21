@@ -2,7 +2,7 @@ from helpers.tables.UserStorage import *
 from helpers.tables.User import *
 from helpers.admincli.User import *
 
-def CLIuserStorages():
+def CLIuserstorages():
   breakLoop = False
   while breakLoop == False:
     print(f"\nManaging user storages ({len(getUserStorages())} storages in database)")
