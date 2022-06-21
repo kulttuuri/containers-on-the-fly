@@ -6,7 +6,7 @@ from settings import settings
 def CLIhardwarespecs():
   breakLoop = False
   while breakLoop == False:
-    print(f"\nManaging hardwarespecs  ({len(getHardwarespecs())} hardwarespecs in database)")
+    print(f'\nManaging hardwarespecs  ({len(CallAdminAPI("get", "adminRoutes/adminHardwarespecs/get_hardwarespecs", settings.adminToken))} hardwarespecs in database)')
     print("What do you want to do?")
     print("1) List hardwarespecs")
     print("2) Add new hardwarespec")
@@ -35,7 +35,7 @@ def CLIhardwarespecsList():
     elif selection == "3": breakLoop = True
 
 def CLIPrintAllHardwarespecs():
-  hardwarespecs = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken)
+  hardwarespecs = CallAdminAPI("get", "adminRoutes/adminHardwarespecs/get_hardwarespecs", settings.adminToken)
   for hardwarespec in hardwarespecs:
     print("id:", hardwarespec["hardwareSpecId"], "- computer id:", hardwarespec["computerId"], "- type:", hardwarespec["type"])
     print("max amount:", hardwarespec["maximumAmount"], "- min amount:", hardwarespec["minimumAmount"])
@@ -45,7 +45,7 @@ def CLIPrintAllHardwarespecs():
 def CLIPrintHardwarespecBySearch():
   print("\nWhat is the id of the hardwarespec you are looking for?")
   filter = input()
-  hardwarespecs = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken, params={"filter": filter})
+  hardwarespecs = CallAdminAPI("get", "adminRoutes/adminHardwarespecs/get_hardwarespecs", settings.adminToken, params={"filter": filter})
   if hardwarespecs != None:
     for hardwarespec in hardwarespecs:
       print("id:", hardwarespec["hardwareSpecId"], "- computer id:", hardwarespec["computerId"], "- type:", hardwarespec["type"])
@@ -68,7 +68,7 @@ def CLIaddHardwarespec():
 def CLIAddHardwarespecs():
   print("\nWhat computer id or name should be associated with this hardware? (name is case-sensitive)")
   filter = input()
-  doesComputerExist = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": filter})
+  doesComputerExist = CallAdminAPI("get", "adminRoutes/adminHardwarespecs/get_computers", settings.adminToken, params={"filter": filter})
   if doesComputerExist == None: 
     print("No computer found with that search, exiting creation...")
     return
@@ -103,7 +103,7 @@ def CLIAddHardwarespecs():
   format = input()
   params = {"computerId": computerId, "type": type, "maxAmount": maxAmount, "minAmount": minAmount, "maxUserAmount": maxUserAmount,
             "defaultUserAmount": defaultUserAmount, "format": format}
-  CallAdminAPI("get", "admin/add_hardwarespec", settings.adminToken, params=params)
+  CallAdminAPI("get", "adminRoutes/adminHardwarespecs/add_hardwarespec", settings.adminToken, params=params)
   print("New hardwarespec was added to the database.")
 
 def CLIremoveHardwarespec():
@@ -117,10 +117,10 @@ def CLIremoveHardwarespec():
     if (selection == "1"):
       print("\nWhat is the id of the hardwarespec you want to delete?")
       id = input()
-      hardwarespec = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken, params={"filter": id})
+      hardwarespec = CallAdminAPI("get", "adminRoutes/adminHardwarespecs/get_hardwarespecs", settings.adminToken, params={"filter": id})
       if hardwarespec != None:
         hardwarespec = hardwarespec[0]
-        CallAdminAPI("get", "admin/remove_hardwarespec", settings.adminToken, params={"hardwarespec_id": hardwarespec["hardwareSpecId"]})
+        CallAdminAPI("get", "adminRoutes/adminHardwarespecs/remove_hardwarespec", settings.adminToken, params={"hardwarespec_id": hardwarespec["hardwareSpecId"]})
         print("Hardwarespec successfully removed.")
       else: print("No match found for id:", id)
     elif (selection == "2"): breakLoop = True
@@ -136,7 +136,7 @@ def CLIeditHardwarespec():
     if (selection == "1"):
       print("\nWhat is the id of the hardwarespec you want to edit?")
       id = input()
-      hardwarespec = CallAdminAPI("get", "admin/get_hardwarespecs", settings.adminToken, params={"filter": id})
+      hardwarespec = CallAdminAPI("get", "adminRoutes/adminHardwarespecs/get_hardwarespecs", settings.adminToken, params={"filter": id})
       if hardwarespec != None:
         hardwarespec = hardwarespec[0]
         CLIEditHardwarespecs(hardwarespec)
@@ -154,7 +154,7 @@ def CLIEditHardwarespecs(hardwarespec):
       print("\nWhat computer (id or name) should be associated with this hardware? Current value:", hardwarespec["computerId"])
       new_computer_id = input()
       if new_computer_id != "":
-        doesComputerExist = CallAdminAPI("get", "admin/get_computers", settings.adminToken, params={"filter": new_computer_id})
+        doesComputerExist = CallAdminAPI("get", "adminRoutes/adminHardwarespecs/get_computers", settings.adminToken, params={"filter": new_computer_id})
         if doesComputerExist == None: 
           print("No computer found with search, defaulting to old value")
           new_computer_id = None
@@ -203,7 +203,7 @@ def CLIEditHardwarespecs(hardwarespec):
       try:
         params={"hardwarespec_id": hardwarespec["hardwareSpecId"], "new_computer_id": new_computer_id, "new_type": new_type, "new_max": new_max,
                 "new_min": new_min, "new_user_max": new_user_max, "new_user_default": new_user_default, "new_format": new_format}
-        CallAdminAPI("get", "admin/edit_hardwarespec", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminHardwarespecs/edit_hardwarespec", settings.adminToken, params=params)
         print("Hardwarespec successfully edited.")
       except:
         print("Something failed while editing this hardware")

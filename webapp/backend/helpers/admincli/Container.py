@@ -5,7 +5,7 @@ from settings import settings
 def CLIcontainers():
   breakLoop = False
   while breakLoop == False:
-    print(f"\nManaging containers  ({len(CallAdminAPI('get', 'admin/get_containers', settings.adminToken))} containers in database)")
+    print(f'\nManaging containers  ({len(CallAdminAPI("get", "adminRoutes/adminContainers/get_containers", settings.adminToken))} containers in database)')
     print("What do you want to do?")
     print("1) List containers")
     print("2) Add new container")
@@ -34,7 +34,7 @@ def CLIcontainersList():
     elif selection == "3": breakLoop = True
 
 def CLIPrintAllContainers():
-  containers = CallAdminAPI("get", "admin/get_containers", settings.adminToken)
+  containers = CallAdminAPI("get", "adminRoutes/adminContainers/get_containers", settings.adminToken)
   public = "Not public"
   for container in containers:
     if container["public"]:
@@ -46,7 +46,7 @@ def CLIPrintAllContainers():
 def CLIPrintContainerBySearch():
   print("\nWhat is the id or name of the container you are looking for? (name is case-sensitive)")
   filter = input()
-  containers = CallAdminAPI("get", "admin/get_containers", settings.adminToken, params={"filter": filter})
+  containers = CallAdminAPI("get", "adminRoutes/adminContainers/get_containers", settings.adminToken, params={"filter": filter})
   if containers != None:
     for container in containers:
       if container["public"]:
@@ -91,7 +91,7 @@ def CLIAddContainers():
     imageName = imageName.replace(" ","")
     # Apparently imageName is unique? needs protection
     params = {"name": container, "public": public, "description": description, "imageName": imageName}
-    result = CallAdminAPI("get", "admin/add_container", settings.adminToken, params=params)
+    result = CallAdminAPI("get", "adminRoutes/adminContainers/add_container", settings.adminToken, params=params)
     if result == None: 
       print("Couldn't add:", container, "to containers, this name is already in use.")
       errors += 1
@@ -108,10 +108,10 @@ def CLIremoveContainer():
     if (selection == "1"):
       print("\nWhat is the id or name of the container you want to delete? (name is case-sensitive)")
       filter = input()
-      container = CallAdminAPI("get", "admin/get_containers", settings.adminToken, params={"filter": filter})
+      container = CallAdminAPI("get", "adminRoutes/adminContainers/get_containers", settings.adminToken, params={"filter": filter})
       if container != None:
         container = container[0]
-        CallAdminAPI("get", "admin/remove_container", settings.adminToken, params={"container_id": container["containerId"]})
+        CallAdminAPI("get", "adminRoutes/adminContainers/remove_container", settings.adminToken, params={"container_id": container["containerId"]})
         print("Container successfully removed.")
       else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
@@ -127,7 +127,7 @@ def CLIeditContainer():
     if (selection == "1"):
       print("\nWhat is the id or name of the container you want to edit? (name is case-sensitive)")
       filter = input()
-      container = CallAdminAPI("get", "admin/get_containers", settings.adminToken, params={"filter": filter})
+      container = CallAdminAPI("get", "adminRoutes/adminContainers/get_containers", settings.adminToken, params={"filter": filter})
       if container != None:
         container = container[0]
         CLIEditContainers(container)
@@ -149,7 +149,7 @@ def CLIEditContainers(container):
         print("\nWhat do you want to edit " + container["name"] + "'s name to?")
         new_name = input()
         params={"container_id": container["containerId"], "new_name": new_name}
-        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminContainers/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     elif (selection == "2"):
         print("\nWhat do you want to edit " + container["name"] + "'s publicity to? (True/False)")
@@ -162,13 +162,13 @@ def CLIEditContainers(container):
           print("\nNot a valid value for publicity, only accepted values are: True or False") 
           continue
         params={"container_id": container["containerId"], "new_public": new_public}
-        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminContainers/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     if (selection == "3"):
         print("\nWhat do you want to edit " + container["name"] + "'s description to?")
         new_description = input()
         params={"container_id": container["containerId"], "new_description": new_description}
-        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminContainers/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     if (selection == "4"):
         print("\nWhat do you want to edit " + container["name"] + "'s image name to?")
@@ -177,7 +177,7 @@ def CLIEditContainers(container):
         new_image_name = new_image_name.lower().replace(".","")
         new_image_name = new_image_name.replace(" ","")
         params={"container_id": container["containerId"], "new_image_name": new_image_name}
-        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminContainers/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     elif (selection == "5"):
         print("\nWhat do you want to edit " + container["name"] + "'s name to?")
@@ -200,6 +200,6 @@ def CLIEditContainers(container):
         new_image_name = new_image_name.replace(" ","")
         params={"container_id": container["containerId"], "new_name": new_name, "new_public": new_public, "new_description": new_description,
                 "new_image_name": new_image_name}
-        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
+        CallAdminAPI("get", "adminRoutes/adminContainers/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     elif (selection == "6"): breakLoop = True
