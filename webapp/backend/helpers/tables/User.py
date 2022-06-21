@@ -1,4 +1,3 @@
-#from helpers.auth import *
 from database import User, session
 from helpers.auth import *
 
@@ -17,9 +16,7 @@ Finds users with the given optional filter. If no filter is given, finds all use
   if email is None:
     all_users = session.query(User)
     for user in all_users:
-    #print(user.email)
       all_users_list.append(user)
-    #session.commit()
     return all_users_list
   else:
     email_users = session.query(User).filter(User.email.like("%"+email+"%"))
@@ -79,14 +76,10 @@ Finds user by email and changes email or password.
   found_user = getUser(email)
   if found_user is not None:
     try:
-      #fields["email"]
-      # TODO: Check that no other user has this email set
       found_user_new = session.query(User).filter(User.email == fields["email"]).first()
       if found_user_new is None:
         found_user.email = fields["email"]
     except KeyError: 
-      #fields["password"]
-      #TODO: set user password
       found_user.password = fields["password"]
     session.commit()
   else:
