@@ -12,7 +12,13 @@ def getRoles(filter = None):
   if filter != None:
     roles = session.query(Role).filter(Role.name == filter).first()
     if roles != None: return [roles]
-    else: return None
+    else:
+      try:
+        roles = session.query(Role).filter(Role.roleId == int(filter)).first()
+        if roles != None: return [roles]
+        else: return None
+      except:
+        return None
   else: roles = session.query(Role).all()
   return roles
 
@@ -26,32 +32,34 @@ def addRole(name):
   '''
   duplicate = session.query(Role).filter(Role.name == name).first()
   if duplicate != None:
-      return None
+    return None
   newRole = Role(name = name)
   session.add(newRole)
   session.commit()
   return session.query(Role).filter(Role.name == name).first()
 
-def removeRole(role):
+def removeRole(role_id):
   '''
   Removes the given role in the system.
     Parameters:
-      role: The role object of the role to be removed.
+      role: The id of the role to be removed.
     Returns:
       Nothing
   '''
+  role = session.query(Role).filter(Role.roleId == role_id).first()
   session.delete(role)
   session.commit()
 
-def editRole(role, new_name):
+def editRole(role_id, new_name):
   '''
   Edits the given role in the system.
     Parameters:
-      role: The role object of the role to be edited.
+      role: The id of the role to be edited.
       new_name: The new name for the given role. #is this too hardcoded..?
     Returns:
       The edited role object fetched from database.
   '''
+  role = session.query(Role).filter(Role.roleId == role_id).first()
   role.name = new_name
   session.commit()
   return role

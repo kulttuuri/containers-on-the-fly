@@ -10,8 +10,10 @@ import sys
 # Initialized class can be used with:
 #   from backend.settings import settings
 #   settings.app["name"]
+
 class Settings:
     _config_location = 'settings.json'
+    adminToken = ""
 
     def __init__(self):
       if os.path.exists(self._config_location):

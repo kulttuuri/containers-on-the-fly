@@ -1,9 +1,11 @@
-from helpers.tables.Container import *
+#from helpers.tables.Container import *
+from helpers.server import *
+from settings import settings
 
 def CLIcontainers():
   breakLoop = False
   while breakLoop == False:
-    print("\nManaging containers  (? containers in database)")
+    print(f"\nManaging containers  ({len(CallAdminAPI('get', 'admin/get_containers', settings.adminToken))} containers in database)")
     print("What do you want to do?")
     print("1) List containers")
     print("2) Add new container")
@@ -32,26 +34,26 @@ def CLIcontainersList():
     elif selection == "3": breakLoop = True
 
 def CLIPrintAllContainers():
-  containers = getContainers()
+  containers = CallAdminAPI("get", "admin/get_containers", settings.adminToken)
   public = "Not public"
   for container in containers:
-    if container.public:
+    if container["public"]:
       public = "Public"
     else: public = "Not public"
-    print("id:", container.containerId, "-", public, "- name:", container.name, "- description:", container.description, "- image:", container.imageName)
-    print("created at:", container.createdAt, "- updated at:", container.updatedAt)
+    print("id:", container["containerId"], "-", public, "- name:", container["name"], "- description:", container["description"], "- image:", container["imageName"])
+    print("created at:", container["createdAt"], "- updated at:", container["updatedAt"])
 
 def CLIPrintContainerBySearch():
-  print("\nWhat is the name of the container you are looking for? (case-sensitive)")
+  print("\nWhat is the id or name of the container you are looking for? (name is case-sensitive)")
   filter = input()
-  containers = getContainers(filter) #a bit hardcoded perhaps
+  containers = CallAdminAPI("get", "admin/get_containers", settings.adminToken, params={"filter": filter})
   if containers != None:
     for container in containers:
-      if container.public:
+      if container["public"]:
         public = "Public"
       else: public = "Not public"
-      print("id:", container.containerId, "-", public, "- name:", container.name, "- description:", container.description, "- image:", container.imageName)
-      print("created at:", container.createdAt, "- updated at:", container.updatedAt)
+      print("id:", container["containerId"], "-", public, "- name:", container["name"], "- description:", container["description"], "- image:", container["imageName"])
+      print("created at:", container["createdAt"], "- updated at:", container["updatedAt"])
   else: print("No match found for:", filter)
 
 def CLIaddContainer():
@@ -87,7 +89,9 @@ def CLIAddContainers():
     # might need a rework, I just did these modifications to the imageName based on the example in the database
     imageName = imageName.lower().replace(".","")
     imageName = imageName.replace(" ","")
-    result = addContainer(container, public, description, imageName)
+    # Apparently imageName is unique? needs protection
+    params = {"name": container, "public": public, "description": description, "imageName": imageName}
+    result = CallAdminAPI("get", "admin/add_container", settings.adminToken, params=params)
     if result == None: 
       print("Couldn't add:", container, "to containers, this name is already in use.")
       errors += 1
@@ -102,14 +106,14 @@ def CLIremoveContainer():
     selection = input()
     
     if (selection == "1"):
-      print("\nWhat is the name of the container you want to delete? (case-sensitive)")
-      name = input()
-      container = getContainers(name)
+      print("\nWhat is the id or name of the container you want to delete? (name is case-sensitive)")
+      filter = input()
+      container = CallAdminAPI("get", "admin/get_containers", settings.adminToken, params={"filter": filter})
       if container != None:
         container = container[0]
-        removeContainer(container)
+        CallAdminAPI("get", "admin/remove_container", settings.adminToken, params={"container_id": container["containerId"]})
         print("Container successfully removed.")
-      else: print("No match found for:", name)
+      else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
 
 def CLIeditContainer():
@@ -121,34 +125,34 @@ def CLIeditContainer():
     selection = input()
 
     if (selection == "1"):
-      print("\nWhat is the name of the container you want to edit? (case-sensitive)")
-      name = input()
-      container = getContainers(name)
+      print("\nWhat is the id or name of the container you want to edit? (name is case-sensitive)")
+      filter = input()
+      container = CallAdminAPI("get", "admin/get_containers", settings.adminToken, params={"filter": filter})
       if container != None:
         container = container[0]
         CLIEditContainers(container)
-      else: print("No match found for:", name)
+      else: print("No match found for:", filter)
     elif (selection == "2"): breakLoop = True
 
 def CLIEditContainers(container):
   breakLoop = False
   while breakLoop == False:
-    print("\nWhich part of", container.name, "do you want to edit?")
+    print("\nWhich part of", container["name"], "do you want to edit?")
     print("1) Edit name")
     print("2) Edit publicity")
-#Database fields: containerId (PK), public, name (unique), description, imageName, createdAt, updatedAt
     print("3) Edit description")
     print("4) Edit image name")
     print("5) Edit all of the above")
     print("6) Go back")
     selection = input()
     if (selection == "1"):
-        print("\nWhat do you want to edit " + container.name + "'s name to?")
+        print("\nWhat do you want to edit " + container["name"] + "'s name to?")
         new_name = input()
-        editContainer(container, new_name=new_name)
+        params={"container_id": container["containerId"], "new_name": new_name}
+        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     elif (selection == "2"):
-        print("\nWhat do you want to edit " + container.name + "'s publicity to? (True/False)")
+        print("\nWhat do you want to edit " + container["name"] + "'s publicity to? (True/False)")
         new_public = input()
         if new_public.capitalize() == "True":
           new_public = True
@@ -157,25 +161,28 @@ def CLIEditContainers(container):
         else:
           print("\nNot a valid value for publicity, only accepted values are: True or False") 
           continue
-        editContainer(container, new_public=new_public)
+        params={"container_id": container["containerId"], "new_public": new_public}
+        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     if (selection == "3"):
-        print("\nWhat do you want to edit " + container.name + "'s description to?")
+        print("\nWhat do you want to edit " + container["name"] + "'s description to?")
         new_description = input()
-        editContainer(container, new_description=new_description)
+        params={"container_id": container["containerId"], "new_description": new_description}
+        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     if (selection == "4"):
-        print("\nWhat do you want to edit " + container.name + "'s image name to?")
+        print("\nWhat do you want to edit " + container["name"] + "'s image name to?")
         new_image_name = input()
         # might need a rework, I just did these modifications to the imageName based on the example in the database
         new_image_name = new_image_name.lower().replace(".","")
         new_image_name = new_image_name.replace(" ","")
-        editContainer(container, new_image_name=new_image_name)
+        params={"container_id": container["containerId"], "new_image_name": new_image_name}
+        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     elif (selection == "5"):
-        print("\nWhat do you want to edit " + container.name + "'s name to?")
+        print("\nWhat do you want to edit " + container["name"] + "'s name to?")
         new_name = input()
-        print("\nWhat do you want to edit " + container.name + "'s publicity to? (True/False)")
+        print("\nWhat do you want to edit " + container["name"] + "'s publicity to? (True/False)")
         new_public = input()
         if new_public.capitalize() == "True":
           new_public = True
@@ -184,17 +191,15 @@ def CLIEditContainers(container):
         else:
           print("\nNot a valid value for publicity, only accepted values are: True or False") 
           continue
-        print("\nWhat do you want to edit " + container.name + "'s description to?")
+        print("\nWhat do you want to edit " + container["name"] + "'s description to?")
         new_description = input()
-        print("\nWhat do you want to edit " + container.name + "'s image name to?")
+        print("\nWhat do you want to edit " + container["name"] + "'s image name to?")
         new_image_name = input()
         # might need a rework, I just did these modifications to the imageName based on the example in the database
         new_image_name = new_image_name.lower().replace(".","")
         new_image_name = new_image_name.replace(" ","")
-        editContainer(container, new_name, new_public, new_description, new_image_name)
+        params={"container_id": container["containerId"], "new_name": new_name, "new_public": new_public, "new_description": new_description,
+                "new_image_name": new_image_name}
+        CallAdminAPI("get", "admin/edit_container", settings.adminToken, params=params)
         print("Container successfully edited.")
     elif (selection == "6"): breakLoop = True
-
-
-
-#Database fields: containerId (PK), public, name (unique), description, imageName, createdAt, updatedAt
