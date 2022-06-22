@@ -7,11 +7,11 @@ from datetime import datetime
 from datetime import timedelta
 
 def CLIreservations():
-  breakLoop = False
+  breakloop = False
   reserved_count  = CLIcount("reserved")
   started_count = CLIcount("started")
   stopped_count = CLIcount("stopped")
-  while breakLoop == False:
+  while breakloop == False:
     print(f"\nManaging reservations ( {reserved_count} reserved, {started_count} started, {stopped_count} stopped reservation(s) in database)")
     print("What do you want to do?")
     print("1) List all reservations")
@@ -25,7 +25,7 @@ def CLIreservations():
     if (selection == "2"): CLIaddReservation()
     if (selection == "3"): CLIremoveReservation()
     if (selection == "4"): CLIeditReservation()
-    elif (selection == "5"): breakLoop = True
+    elif (selection == "5"): breakloop = True
 
 
 def CLIreservationsList():
