@@ -1,5 +1,6 @@
 # Reservation table management functionality
 from database import Reservation, session
+from datetime import datetime
 
 def getReservations(filter = None):
     '''
@@ -19,15 +20,19 @@ def getReservations(filter = None):
         return all_reservations_list
     
     if filter:
-        found_reservation = session.query(Reservation).filter(Reservation.startDate == filter).all()
-        if found_reservation:
-            return found_reservation
-        found_reservation = session.query(Reservation).filter(Reservation.endDate == filter).all()
-        if found_reservation:
-            return found_reservation
-        found_reservation = session.query(Reservation).filter(Reservation.status == filter).all()
-        if found_reservation:
-            return found_reservation
+        try:
+            filter = datetime.strptime(filter, '%Y-%m-%d %H:%M:%S')
+            found_reservation = session.query(Reservation).filter(Reservation.startDate == filter).all()
+            if found_reservation:
+                return found_reservation
+            found_reservation = session.query(Reservation).filter(Reservation.endDate == filter).all()
+            if found_reservation:
+                return found_reservation
+        except ValueError:
+            found_reservation = session.query(Reservation).filter(Reservation.status == filter).all()
+            if found_reservation:
+                return found_reservation
+
 
 
 def getReservation(filter = None):
@@ -64,35 +69,37 @@ def addReservation(startDate, endDate, userId, computerId, containerId):
             userId = userId,
             computerId = computerId,
             reservedContainerId = containerId,
-            status = "reserved",
+            status = "reserved"
         )
     )
     session.commit()
 
     
 
-def removeReservation(reservation):
+def removeReservation(reservation_id):
     '''
     Removes the given reservation from the system.
         Parameters:
-            reservation: The reservation object of the reservation to be removed.
+            reservation: The reservation id of the reservation to be removed.
         Returns: 
             Nothing
     '''
+    reservation = session.query(Reservation).filter(Reservation.reservationId == reservation_id).first()
     session.delete(reservation)
     session.commit()
 
-def editReservation(reservation, new_startDate = None, new_endDate = None, new_status = None):
+def editReservation(reservation_id, new_startDate = None, new_endDate = None, new_status = None):
     '''
     Edits the given reservation in the system.
         Parameters:
-            reservation: The reservation object of the reservation to be edited.
+            reservation: The reservation id of the reservation to be edited.
             new_startDate: The new start date for the reservation.
             new_endDate: The new end date for the reservation.
             new_status: The new status for the reservation.
         Returns:
             The edited reservation object fetched from database. Or none if startDate, endDate or status isn't provided
     '''
+    reservation = session.query(Reservation).filter(Reservation.reservationId == reservation_id).first()
     if new_startDate != None:
         reservation.startDate = new_startDate
     if new_endDate != None:
