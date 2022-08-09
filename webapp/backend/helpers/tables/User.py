@@ -14,10 +14,10 @@ Finds users with the given optional filter. If no filter is given, finds all use
   all_users_list = [] 
   email_users_list = []
   if email is None:
-    all_users = session.query(User)
-    for user in all_users:
-      all_users_list.append(user)
-    return all_users_list
+    all_users = session.query(User).all()
+    #for user in all_users:
+      #all_users_list.append(user)
+    return all_users
   else:
     email_users = session.query(User).filter(User.email.like("%"+email+"%"))
     for email_user in email_users:
@@ -85,7 +85,7 @@ Finds user by email and changes email or password.
   else:
     return None
 
-def removeUser(found_user):
+def removeUser(findby):
   '''
 Removes user.
   Parameter:
@@ -93,5 +93,9 @@ Removes user.
   Returns:
     Nothing.
 '''
-  session.delete(found_user)
-  session.commit()
+  found_user = getUser(findby)
+  if found_user:
+    session.delete(found_user)
+    session.commit()
+    return "Success"
+  return None
