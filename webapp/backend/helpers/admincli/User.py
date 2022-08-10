@@ -1,13 +1,10 @@
-from helpers.tables.User import *
-from helpers.tables.Reservation import * 
-from helpers.tables.UserStorage import *
 from helpers.server import *
 from settings import settings
 
 def CLIusers():
   breakLoop = False
   while breakLoop == False:
-    #print(f"\nManaging users  {len(get_all_Users())} users in database")
+    print(f'\nManaging users {len(CallAdminAPI("get", "adminRoutes/adminUsers/get_users", settings.adminToken))} users in database')
     print("What do you want to do?")
     print("1) List users")
     print("2) Add new user")
@@ -52,7 +49,6 @@ def CLIPrintAllUsers():
   print()
   print("List of all users:")
   users = CallAdminAPI("get", "adminRoutes/adminUsers/get_users", settings.adminToken)
-  print("USERS", users)
   for user in users:
     print("id:", user["userId"], "- email:", user["email"], "- created at:", user["userCreatedAt"], "- updated at:", user["userUpdatedAt"], "- storage:", len(user["userStorage"]), "- role:", len(user["roles"]), "- reservations:", len(user["reservations"]))
 
@@ -123,6 +119,5 @@ def CLIeditUserPassword():
     CLIeditUserPassword()
   else:
     password = input("Enter password: ")
-    editUser(email, {"password": password})
-    CallAdminAPI("get", "adminRoutes/adminUsers/edit_user", settings.adminToken, params={email, {"password": password}})
+    response = CallAdminAPI("get", "adminRoutes/adminUsers/edit_user", settings.adminToken, params={"email": email, "new_password": password})
     print("Password was changed.")

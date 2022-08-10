@@ -37,7 +37,7 @@ async def removeUser(request: Request, findby: str, token: str = Depends(oauth2_
   return UserFunctionality.removeUser(findby)
 
 @router.get("/edit_user")
-async def editUser(request: Request, email: str, fields: dict, token: str = Depends(oauth2_scheme)):
+async def editUser(request: Request, email: str, new_email: str = None, new_password: str = None, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return UserFunctionality.editUser(email, fields)
+  return UserFunctionality.editUser(email, new_email, new_password)

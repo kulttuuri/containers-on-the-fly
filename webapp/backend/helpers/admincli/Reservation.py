@@ -1,8 +1,3 @@
-from database import ReservedContainer
-from helpers.tables.Reservation import *
-from helpers.tables.Computer import *
-from helpers.tables.Container import *
-from helpers.tables.User import *
 from helpers.server import *
 from settings import settings
 from datetime import datetime
@@ -41,7 +36,7 @@ def CLIreservationsList():
 
     if selection == "1": CLIPrintAllReservations()
     elif selection == "2": CLIPrintReservationsBySearch()
-    elif selection == "3": CLIreservations()
+    elif selection == "3": breakloop = True
 
 
 def CLIPrintAllReservations():
@@ -125,13 +120,12 @@ def CLIaddReservation():
     selection = input()
 
     if (selection == "1"): CLIaddReservations()
-    elif (selection == "2"): CLIreservations()
+    elif (selection == "2"): breakloop = True
 
 def CLIaddReservations():
-  # The get_user API problem occures here also
   print("\nID or email of the user making the reservation:")
   user = input()
-  doesUserExist = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": user})
+  doesUserExist = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": user})[0]
   if doesUserExist != None:
     userId = doesUserExist["userId"]
   else:
@@ -214,8 +208,7 @@ def CLIremoveReservation():
         print("Reservation was removed succesfully.")
       else:
         print("No reservation found for:", reservationId)
-    elif (selection == "2"):
-      CLIreservations()
+    elif (selection == "2"): breakloop = True
     
 
 def CLIeditReservation():
@@ -236,8 +229,7 @@ def CLIeditReservation():
         CLIeditReservations(reservations)
       else:
         print("No reservation found for id:", reservationId)
-    elif (selection == "2"):
-      CLIreservations()
+    elif (selection == "2"): breakloop = True
 
 def CLIeditReservations(reservation):
   breakloop = False
@@ -337,12 +329,12 @@ def CLIeditReservations(reservation):
         print("\nNot a valid value for status. Choose either reserved, started or stopped.")
         continue
       
-    elif (selection == "5"): CLIreservations()
+    elif (selection == "5"): breakloop = True
 
 
 def CLIcount(filter):
   count = 0
-  reservations = getReservations(filter)
+  reservations = CallAdminAPI("get", "adminRoutes/adminReservations/get_reservations", settings.adminToken, params={"filter": filter})
   try:
     for reservation in reservations:
       count+=1
