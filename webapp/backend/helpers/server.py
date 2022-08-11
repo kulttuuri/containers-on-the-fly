@@ -89,6 +89,9 @@ def CallAdminAPI(method, endpoint, token = "", params = {}, data = {}, headers=T
                             data=data, headers=headers)
   #print(response.text)
   if response.ok != True:
+    if response.status_code == 500:
+      print("Internal Server Error")
+      sys.exit()
     print("\nAdmin API Call Failed Exiting App...")
     print(json.loads(response.text)["detail"])
     sys.exit()
