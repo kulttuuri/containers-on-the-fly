@@ -42,8 +42,10 @@ Finds user storage by userId or email.
     Parameter is not None: found storage.
     Parameter is None: all storages.
 '''
+
   all_storages = session.query(UserStorage)
   all_storages_list = []
+  
   
   for storage in all_storages:
     all_storages_list.append(storage)
@@ -78,7 +80,7 @@ def addUserStorage(userId, maxSpace, maxSpaceFormat):
   )
   session.commit()
    
-def removeUserStorage(found_storage):
+def removeUserStorage(findby):
   '''
 Removes user.
   Parameter:
@@ -86,14 +88,19 @@ Removes user.
   Returns:
     Nothing.
 '''
-  session.delete(found_storage)
-  session.commit()
+  found_storage = getUserStorages(findby)
+  if found_storage:
+    session.delete(found_storage)
+    session.commit()
+    return "Success"
+  else:
+    return
 
 def editUserStorage(findby, fields):
   '''
 Finds storage by userId or email and changes maxSpace and format.
   Optional parameters:
-    Example usage: new_email - will change email, password - changes password.
+    Example usage: maxSpace - will change space amount, maxSpaceFormat - changes format.
   Returns:
     All found users in a list.
 '''

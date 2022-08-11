@@ -12,30 +12,33 @@ router = APIRouter(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
 
-#HardwareSpec API
-@router.get("/get_hardwarespecs")
-async def getHardwarespecs(request: Request, filter: str = None, token: str = Depends(oauth2_scheme)):
+#UserStorage API
+@router.get("/get_userstorages")
+async def getUserStorages(request: Request, findby: str = None, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return HardwareSpecFunctionality.getHardwarespecs(filter)
+  return UserStorageFunctionality.getUserStorages(findby)
 
-@router.get("/add_hardwarespec")
-async def addHardwarespec(request: Request, computerId: int, type: str, maxAmount: float, minAmount: float,
-                          maxUserAmount: float, defaultUserAmount: float, format: str, token: str = Depends(oauth2_scheme)):
+@router.get("/get_userstorage_list")
+async def getUserStorageList(request: Request, findby: str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return HardwareSpecFunctionality.addHardwarespec(computerId, type, maxAmount, minAmount, maxUserAmount, defaultUserAmount, format)
+  return UserStorageFunctionality.getUserStorageList(findby)
 
-@router.get("/remove_hardwarespec")
-async def removeHardwarespec(request: Request, hardwarespec_id: int, token: str = Depends(oauth2_scheme)):
+@router.get("/add_userstorage")
+async def addUserStorage(request: Request, userId: int, maxSpace: float, maxSpaceFormat: float, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return HardwareSpecFunctionality.removeHardwarespec(hardwarespec_id)
+  return UserStorageFunctionality.addUserStorage(userId, maxSpace, maxSpaceFormat)
 
-@router.get("/edit_hardwarespec")
-async def editHardwarespec(request: Request, hardwarespec_id: int, new_computer_id: int = None, new_type: str = None, new_max: float = None,
-                           new_min: float = None, new_user_max: float = None, new_user_default: float = None, new_format: str = None,
-                           token: str = Depends(oauth2_scheme)):
+@router.get("/remove_userstorage")
+async def removeUserStorage(request: Request, findby: str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return HardwareSpecFunctionality.editHardwarespec(hardwarespec_id, new_computer_id, new_type, new_max, new_min, new_user_max, new_user_default, new_format)
+  return UserStorageFunctionality.removeUserStorage(findby)
+
+@router.get("/edit_userstorage")
+async def editUserStorage(request: Request, findby: str, fields: dict, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  CheckIp(request.client.host)
+  return UserStorageFunctionality.editUserStorage(findby, fields)
