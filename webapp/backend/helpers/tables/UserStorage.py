@@ -46,7 +46,6 @@ Finds user storage by userId or email.
   all_storages = session.query(UserStorage)
   all_storages_list = []
   
-  
   for storage in all_storages:
     all_storages_list.append(storage)
   if findby is None:
@@ -96,7 +95,7 @@ Removes user.
   else:
     return
 
-def editUserStorage(findby, fields):
+def editUserStorage(findby, new_maxSpace = None, new_maxSpaceFormat = None):
   '''
 Finds storage by userId or email and changes maxSpace and format.
   Optional parameters:
@@ -109,10 +108,8 @@ Finds storage by userId or email and changes maxSpace and format.
   
   found_storage = getUserStorages(findby)
   if found_storage is not None:
-    try:
-      found_storage.maxSpace = fields["maxSpace"]
-    except KeyError: 
-      found_storage.maxSpaceFormat = fields["maxSpaceFormat"]
+    if new_maxSpace != None: found_storage.maxSpace = new_maxSpace
+    if new_maxSpaceFormat != None: found_storage.maxSpaceFormat = new_maxSpaceFormat
     session.commit()
   else:
     return None

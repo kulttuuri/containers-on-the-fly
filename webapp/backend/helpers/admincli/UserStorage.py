@@ -1,7 +1,3 @@
-from inspect import Traceback
-from helpers.tables.UserStorage import *
-from helpers.tables.User import *
-from helpers.admincli.User import *
 from helpers.server import *
 from settings import settings
 
@@ -53,19 +49,20 @@ def CLIPrintAllUserStorages():
       print("email:", user["email"], "UserId:", user["userId"], "ID:", None)
       
 def CLIPrintUserStoragesBy():
-  findby = input("To find storage enter userId or email (press Enter to go back): ")
-  found_storages = CallAdminAPI("get", "adminRoutes/adminUserStorages/get_userstorage_list", settings.adminToken, params={"findby": findby})
-  if findby == "":
-    CLIuserstorages()
-  elif found_storages is None or found_storages == [None]:
-    print(f"None of the storages with {findby} was found.")
-    print("Try again.")
-    CLIPrintUserStoragesBy()
-  else:
-    for found_storage in found_storages:
-      print("Found storage:")
-      print("user storage id:", found_storage["userStorageId"], "- userId:", found_storage["userId"], "- maxSpace:", found_storage["maxSpace"], "- maxSpaceFormat:", found_storage["maxSpaceFormat"], "- created at:", found_storage["createdAt"], "- updated at:", found_storage["updatedAt"])
-    return findby
+  while True:
+    findby = input("To find storage enter userId or email (press Enter to go back): ")
+    found_storages = CallAdminAPI("get", "adminRoutes/adminUserStorages/get_userstorage_list", settings.adminToken, params={"findby": findby})
+    if findby == "":
+      break
+    elif found_storages is None or found_storages == [None]:
+      print(f"None of the storages with {findby} was found.")
+      print("Try again.")
+      continue
+    else:
+      for found_storage in found_storages:
+        print("Found storage:")
+        print("user storage id:", found_storage["userStorageId"], "- userId:", found_storage["userId"], "- maxSpace:", found_storage["maxSpace"], "- maxSpaceFormat:", found_storage["maxSpaceFormat"], "- created at:", found_storage["createdAt"], "- updated at:", found_storage["updatedAt"])
+      break
 
 def CLIAddUserStorage():
   userId = input("To add storage enter userId ((press Enter to go back): ")
@@ -94,7 +91,6 @@ def CLIAddUserStorage():
           if maxSpaceFormat == "mb" or maxSpaceFormat == "gb":
             CallAdminAPI("get", "adminRoutes/adminUserStorages/add_userstorage", settings.adminToken, params={"userId": userId, "maxSpace": maxSpace, "maxSpaceFormat": maxSpaceFormat})
             print("UserStorage was created.")
-            CLIAddUserStorage()
             break
           else:
             continue
@@ -102,56 +98,51 @@ def CLIAddUserStorage():
     else:
       print(f"User {userId} does not exist!")
       print("You can check all the users here:")
-      CLIPrintAllUsers()
+      users = CallAdminAPI("get", "adminRoutes/adminUsers/get_users", settings.adminToken)
+      for user in users:
+        print("id:", user["userId"], "- email:", user["email"], "- created at:", user["userCreatedAt"], "- updated at:", user["userUpdatedAt"], "- storage:", len(user["userStorage"]), "- role:", len(user["roles"]), "- reservations:", len(user["reservations"]))
+
       CLIAddUserStorage()
   
 
 def CLIremoveUserStorage():
-  findby = input("Enter userId or email (press Enter to go back): ")
-  if findby == "":
-    return
-  worked = CallAdminAPI("get", "adminRoutes/adminUserStorages/remove_userstorage", settings.adminToken, params={"findby": findby})
-  if worked:
-    print(f"Storage with id = {findby} was removed.")
-    CLIremoveUserStorage()
-  else:
-    print("Storage does not exist!")
-    print("Try again.")
-    CLIPrintAllUserStorages()
-    CLIremoveUserStorage()
+  while True:
+    findby = input("Enter userId or email (press Enter to go back): ")
+    if findby == "":
+      return
+    worked = CallAdminAPI("get", "adminRoutes/adminUserStorages/remove_userstorage", settings.adminToken, params={"findby": findby})
+    if worked:
+      print(f"Storage with id = {findby} was removed.")
+      break
+    else:
+      print("Storage does not exist!")
+      print("Try again.")
+      CLIPrintAllUserStorages()
+      continue
 
 def CLIeditUserStorage():
-  CLIPrintAllUserStorages()
-  print()
-  #findby = input("Enter userId or email to edit (press Enter to go back): ") 
-  #found_storage = getUserStorages(findby)
-  print()
-  findby = CLIPrintUserStoragesBy()
-  print()
-  #if findby == "":
-    #CLIuserStorages()
-  #elif found_storage is None:
-    #print("Storage was not found.")
-    #print("Try again.")
-    #CLIeditUserStorage()
-  if findby:
-    maxSpace = input("Enter maxSpace integer: ")
-    maxSpaceFormat = input("Enter maxSpaceFormat gb or mb: ")
-    try: 
-      maxSpace = int(maxSpace)
-      CallAdminAPI("get", "adminRoutes/adminUserStorages/edit_userstorage", settings.adminToken, params={findby, {"maxSpace": maxSpace}})
+  while True:
+    CLIPrintAllUserStorages()
+    print("\nWhich user's storage would you like to edit? (user id or email)(press Enter to go back)")
+    storage = input()
+    if storage == "":
+      break
+    found_storage = CallAdminAPI("get", "adminRoutes/adminUserStorages/get_userstorage_list", settings.adminToken, params={"findby": storage})[0]
+    if found_storage != None:
+      print("Found storage:")
+      print("user storage id:", found_storage["userStorageId"], "- userId:", found_storage["userId"], "- maxSpace:", found_storage["maxSpace"], "- maxSpaceFormat:", found_storage["maxSpaceFormat"], "- created at:", found_storage["createdAt"], "- updated at:", found_storage["updatedAt"])
+      
+      maxSpace = input("Enter maxSpace integer: ")
+      try: maxSpace = int(maxSpace)
+      except ValueError:
+        print("maxSpace should be integer. Exiting...")
+        break
+      maxSpaceFormat = input("Enter maxSpaceFormat gb or mb: ")
       if maxSpaceFormat == "gb" or maxSpaceFormat == "mb":
-        editUserStorage(findby, {"maxSpaceFormat": maxSpaceFormat})
-        CallAdminAPI("get", "adminRoutes/adminUserStorages/edit_userstorage", settings.adminToken, params={findby, {"maxSpaceFormat": maxSpaceFormat}})
+        CallAdminAPI("get", "adminRoutes/adminUserStorages/edit_userstorage", settings.adminToken, params={"findby": storage, "new_maxSpace": maxSpace, "new_maxSpaceFormat": maxSpaceFormat})
         print("UserStorage was changed.")
-        CLIeditUserStorage()
+        break
       else:
-        print("maxSpaceFormat should be mb or gb.")
-        print("Try again.")
-        CLIeditUserStorage()
-    except ValueError:
-      print("maxSpace should be integer.")
-      print("Try again.")
-      CLIeditUserStorage()
-  return None
-  
+        print("maxSpaceFormat should be mb or gb. Exiting...")
+        break
+

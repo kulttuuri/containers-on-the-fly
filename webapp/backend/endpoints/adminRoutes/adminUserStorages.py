@@ -26,7 +26,7 @@ async def getUserStorageList(request: Request, findby: str, token: str = Depends
   return UserStorageFunctionality.getUserStorageList(findby)
 
 @router.get("/add_userstorage")
-async def addUserStorage(request: Request, userId: int, maxSpace: float, maxSpaceFormat: float, token: str = Depends(oauth2_scheme)):
+async def addUserStorage(request: Request, userId: int, maxSpace: int, maxSpaceFormat: str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
   return UserStorageFunctionality.addUserStorage(userId, maxSpace, maxSpaceFormat)
@@ -38,7 +38,7 @@ async def removeUserStorage(request: Request, findby: str, token: str = Depends(
   return UserStorageFunctionality.removeUserStorage(findby)
 
 @router.get("/edit_userstorage")
-async def editUserStorage(request: Request, findby: str, fields: dict, token: str = Depends(oauth2_scheme)):
+async def editUserStorage(request: Request, findby: str, new_maxSpace: int = None, new_maxSpaceFormat: str = None, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return UserStorageFunctionality.editUserStorage(findby, fields)
+  return UserStorageFunctionality.editUserStorage(findby, new_maxSpace, new_maxSpaceFormat)
