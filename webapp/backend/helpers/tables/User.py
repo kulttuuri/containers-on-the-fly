@@ -38,8 +38,9 @@ Finds user with the given optional filter (email or userId). If no filter is giv
       found_user = castUsersToDict([found_user])
       return found_user
     found_user = session.query(User).filter(User.userId == findby).first()
-    found_user = castUsersToDict([found_user])
-    return found_user
+    if found_user:
+      found_user = castUsersToDict([found_user])
+      return found_user
   else:
     return None
 

@@ -44,7 +44,6 @@ def CLIAddUser():
     CallAdminAPI("get", "adminRoutes/adminUsers/add_user", settings.adminToken, params={"email": email, "password": password})
   else:
     print("User already exists!")
-    CallAdminAPI("get", "adminRoutes/adminUsers/add_user", settings.adminToken, params={"email": email, "password": password})
 
 def CLIPrintAllUsers():
   print()
