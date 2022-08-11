@@ -1,10 +1,11 @@
 from helpers.server import *
 from settings import settings
+from getpass import getpass
 
 def CLIusers():
   breakLoop = False
   while breakLoop == False:
-    print(f'\nManaging users {len(CallAdminAPI("get", "adminRoutes/adminUsers/get_users", settings.adminToken))} users in database')
+    print(f'\nManaging users ({len(CallAdminAPI("get", "adminRoutes/adminUsers/get_users", settings.adminToken))} users in database)')
     print("What do you want to do?")
     print("1) List users")
     print("2) Add new user")
@@ -34,8 +35,8 @@ def CLIusersList():
     if (selection == "3"): breakLoop = True
 
 def CLIAddUser():
-  email = input("To add user enter email: ")
-  password = input("Enter password: ")
+  email = input("Enter email for the new user: ")
+  password = getpass()
   duplicate = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": email})
   if password == "":
     print("Password cannot be empty!")
@@ -62,8 +63,8 @@ def CLIPrintUsersWithEmail():
     print("Try again.")
     CLIPrintUsersWithEmail()
   else:
+    print("\nFound users:")
     for found_email in found_email_list:
-      print("Found users:")
       print("userId:", found_email["userId"], "- email:", found_email["email"], "- created at", found_email["userCreatedAt"], "- updated at:", found_email["userUpdatedAt"], "- storage:", len(found_email["userStorage"]), "- role:", len(found_email["roles"]), "- reservations:", len(found_email["reservations"]))
     
 def CLIremoveUser():
