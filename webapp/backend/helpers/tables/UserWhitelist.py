@@ -27,8 +27,8 @@ def addToWhitelist(emails):
     If it doesn't then the email/emails get added.
     '''
     whitelisted = session.query(UserWhitelist).filter(UserWhitelist.email == emails).first()
-    if whitelisted == True:
-        print("User already exists in the whitelist!")
+    if whitelisted != None:
+        return None
     else:
         session.add(
             UserWhitelist(
@@ -36,14 +36,20 @@ def addToWhitelist(emails):
             )
         )
         session.commit()
+        return {"msg": "success"}
 
 
-def removeFromWhitelist(emails):
+def removeFromWhitelist(email):
     '''
     Checks if the email user is inputting is the same as the one in the whitelist,
     If emails are the same then remove it.
     And if the email wasn't found in the whitelist, then the user gets notified of that and nothing is removed.
     '''
-    session.query(UserWhitelist).filter(UserWhitelist.email == emails).delete()
-    session.commit()    
+    whitelisted = session.query(UserWhitelist).filter(UserWhitelist.email == email).first()
+    if whitelisted == None:
+        return None
+    else:
+        session.delete(whitelisted)
+        session.commit()
+        return {"msg": "success"}
         

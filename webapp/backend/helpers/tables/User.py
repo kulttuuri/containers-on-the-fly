@@ -19,10 +19,12 @@ Finds users with the given optional filter. If no filter is given, finds all use
     return all_users
   else:
     email_users = session.query(User).filter(User.email.like("%"+email+"%"))
-    for email_user in email_users:
-      email_users_list.append(email_user)
-    email_users_list = castUsersToDict(email_users_list)
-    return email_users_list
+    if email_users != None:
+      for email_user in email_users:
+        email_users_list.append(email_user)
+      email_users_list = castUsersToDict(email_users_list)
+      return email_users_list
+    else: return None
 
 def getUser(findby):
   '''
@@ -97,12 +99,9 @@ Removes user.
   Returns:
     Nothing.
 '''
-  found_user = getUser(findby)
-  if found_user:
-    session.delete(found_user)
-    session.commit()
-    return "Success"
-  return None
+  found_user = getUserServerside(findby)
+  session.delete(found_user)
+  session.commit()
 
 def getUserServerside(search):
   '''
@@ -112,5 +111,17 @@ Finds user with given search, only to be used serverside.
   Returns:
     Single database object.
 '''
-  found_user = session.query(User).filter(User.email == search).first()
-  return found_user
+  #found_user = session.query(User).filter(User.email == search).first()
+  #return found_user
+
+  if search != None:
+    roles = session.query(User).filter(User.email == search).first()
+    if roles != None: return roles
+    else:
+      try:
+        roles = session.query(User).filter(User.userId == int(search)).first()
+        if roles != None: return roles
+        else: return None
+      except:
+        return None
+  else: return None

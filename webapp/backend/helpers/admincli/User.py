@@ -67,21 +67,19 @@ def CLIPrintUsersWithEmail():
       print("userId:", found_email["userId"], "- email:", found_email["email"], "- created at", found_email["userCreatedAt"], "- updated at:", found_email["userUpdatedAt"], "- storage:", len(found_email["userStorage"]), "- role:", len(found_email["roles"]), "- reservations:", len(found_email["reservations"]))
     
 def CLIremoveUser():
-  findby = input("Enter userId or email (press Enter to go back): ")
-  if findby == "":
-    return
-  try:
-    CallAdminAPI("get", "adminRoutes/adminUserStorages/remove_userstorage", settings.adminToken, params={"findby": findby})
-  except:
-    worked = CallAdminAPI("get", "adminRoutes/adminUsers/remove_user", settings.adminToken, params={"findby": findby})
-    if worked:
-      print(f"User {findby} was removed.")
-      CLIremoveUser()
-  else:
-    print("User does not exist!")
-    print("Try again.")
-    CLIPrintAllUsers()
-    CLIremoveUser()
+  while True:
+    search = input("Enter userId or email (press Enter to go back): ")
+    if search == "":
+      break
+    user = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": search})
+    if user != None:
+      CallAdminAPI("get", "adminRoutes/adminUsers/remove_user", settings.adminToken, params={"findby": search})
+      print(f"User {search} was removed.")
+      break
+    else:
+      print("User does not exist!")
+      print("Try again.")
+      continue
 
 def CLIeditUser():
   print("Do you want change email or password?")
@@ -95,29 +93,31 @@ def CLIeditUser():
   if (selection == "3"): return 
   
 def CLIeditUserEmail():
-  email = input("Enter email to edit (press Enter go back): ")
-  found_email = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": email})
-  if email == "":
-    CLIeditUser()
-  elif found_email is None:
-    print("Email was not found.")
-    print("Try again.")
-    CLIeditUserEmail()
-  else:
-    new_email = input("Enter new email: ")
-    CallAdminAPI("get", "adminRoutes/adminUsers/edit_user", settings.adminToken, params={email, {"email": new_email}})
-    print("Email was changed.")
+  while True:
+    email = input("Enter email to edit (press Enter go back): ")
+    found_email = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": email})
+    if email == "":
+      break
+    elif found_email is None:
+      print("Email was not found.")
+      print("Try again.")
+      continue
+    else:
+      new_email = input("Enter new email: ")
+      CallAdminAPI("get", "adminRoutes/adminUsers/edit_user", settings.adminToken, params={"email": email, "new_email": new_email})
+      print("Email was changed.")
 
 def CLIeditUserPassword():
-  email = input("Enter email to edit (press Enter to go back): ") 
-  found_email = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": email})
-  if email == "":
-    CLIeditUser()
-  elif found_email is None:
-    print("Email was not found.")
-    print("Try again.")
-    CLIeditUserPassword()
-  else:
-    password = input("Enter password: ")
-    response = CallAdminAPI("get", "adminRoutes/adminUsers/edit_user", settings.adminToken, params={"email": email, "new_password": password})
-    print("Password was changed.")
+  while True:
+    email = input("Enter email to edit (press Enter to go back): ") 
+    found_email = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": email})
+    if email == "":
+      break
+    elif found_email is None:
+      print("Email was not found.")
+      print("Try again.")
+      continue
+    else:
+      password = input("Enter password: ")
+      CallAdminAPI("get", "adminRoutes/adminUsers/edit_user", settings.adminToken, params={"email": email, "new_password": password})
+      print("Password was changed.")

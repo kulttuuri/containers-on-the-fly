@@ -1,5 +1,3 @@
-from helpers.tables.UserWhitelist import *
-from helpers.tables.User import *
 from helpers.server import *
 from settings import settings
 
@@ -28,34 +26,24 @@ def CLIviewAll():
 
 
 def CLIaddToWhitelist():
-  # The adding still doesn't really work I guess because of the API problem in the get_user
-  emails_to_input = input("Enter the users email that you want to whitelist. If you want to add several, divide them with ',' and no space: ").split(",") 
-  for emails in emails_to_input:
-    does_email_exist = CallAdminAPI("get", "adminRoutes/adminUsers/get_user", settings.adminToken, params={"findby": emails})
-    print("")
-    print(emails)
-    if does_email_exist != None:
-      try: 
-        CallAdminAPI("get", "adminRoutes/adminUserWhitelists/add_to_whitelist", settings.adminToken, params= {"emails_to_input": emails_to_input, "emails": emails})
-        print("Email succesfully added.")
-      except:
-        print()
-    elif does_email_exist == None:
-      print("No user with that email.")
+  print("\nList all the emails you want to whitelist separated by commas: (Email1, Email2, Email3, etc...)")
+  emails = input().split(", ")
+  duplicates = 0
+  for email in emails:
+    result = CallAdminAPI("get", "adminRoutes/adminUserWhitelists/add_to_whitelist", settings.adminToken, params= {"email": email})
+    if result == None: 
+      print("Couldn't whitelist " + email + ". Already whitelisted.")
+      duplicates = duplicates+1
+  print(len(emails)-duplicates, "emails were whitelisted.")
 
 
 def CLIremoveFromWhitelist():
-  emails_to_remove = input("Enter the email address that you want to be removed from whitelist. If you want to remove several, divide them with ',' and no space: ").split(",")
-  for emails in emails_to_remove:
-    does_email_exist = CallAdminAPI("get", "adminRoutes/adminUserWhitelists/view_all", settings.adminToken, params={"opt_filter": emails})
-    print("")
-    print(emails)
-    if does_email_exist:
-      try:
-        CallAdminAPI("get", "adminRoutes/adminUserWhitelists/remove_from_whitelist", settings.adminToken, params={"emails_to_remove": emails_to_remove, "emails": emails})
-        print("Email succesfully deleted.")
-      except:
-        print()
-    else:
-      print("No user with that email in whitelist.")
-
+  print("\nList all the emails you want to unwhitelist separated by commas: (Email1, Email2, Email3, etc...)")
+  emails_to_remove = input().split(", ")
+  fails = 0
+  for email in emails_to_remove:
+    result = CallAdminAPI("get", "adminRoutes/adminUserWhitelists/remove_from_whitelist", settings.adminToken, params={"email": email})
+    if result == None: 
+      print("Failed to unwhitelist " + email + ". Not whitelisted.")
+      fails = fails+1
+  print(len(emails_to_remove)-fails, "emails were unwhitelisted.")

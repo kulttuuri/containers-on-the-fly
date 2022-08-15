@@ -20,13 +20,13 @@ async def viewAll(request: Request, opt_filter: str = None, token: str = Depends
   return UserWhitelistFunctionality.viewAll(opt_filter)
 
 @router.get("/add_to_whitelist")
-async def addToWhitelist(request: Request, emails: str, token: str = Depends(oauth2_scheme)):
+async def addToWhitelist(request: Request, email: str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return UserWhitelistFunctionality.addToWhitelist(emails)
+  return UserWhitelistFunctionality.addToWhitelist(email)
 
 @router.get("/remove_from_whitelist")
-async def removeFromWhitelist(request: Request, emails: str, token: str = Depends(oauth2_scheme)):
+async def removeFromWhitelist(request: Request, email: str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   CheckIp(request.client.host)
-  return UserWhitelistFunctionality.removeFromWhitelist(emails)
+  return UserWhitelistFunctionality.removeFromWhitelist(email)
