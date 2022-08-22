@@ -68,9 +68,9 @@ def CLIaddComputer():
 
 def CLIAddComputers():
   errors = 0
-  print("\nList all the computers you want to add separated by commas: (Computer1, Computer2, Computer3, etc...)")
+  print("\nList all the computers you want to add separated by commas: (Computer1,Computer2,Computer3,etc...)")
 
-  computersToAdd = input().split(", ")
+  computersToAdd = input().split(",")
   for computer in computersToAdd:
     print('\nIs "' + computer + '" public or not? (True / False)')
     public = input()

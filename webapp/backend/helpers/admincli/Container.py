@@ -69,8 +69,8 @@ def CLIaddContainer():
 
 def CLIAddContainers():
   errors = 0
-  print("\nList all the container names you want to add separated by commas: (Container1, Container2, Container3, etc...)")
-  containersToAdd = input().split(", ")
+  print("\nList all the container names you want to add separated by commas: (Container1,Container2,Container3,etc...)")
+  containersToAdd = input().split(",")
   for container in containersToAdd:
     print('\nIs "' + container + '" public or not? (True / False)')
     public = input()

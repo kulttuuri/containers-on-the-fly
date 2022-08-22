@@ -60,8 +60,8 @@ def CLIaddRole():
 
 def CLIAddRoles():
   duplicates = 0
-  print("\nList all the roles you want to add separated by commas: (Role1, Role2, Role3, etc...)")
-  rolesToAdd = input().split(", ")
+  print("\nList all the roles you want to add separated by commas: (Role1,Role2,Role3,etc...)")
+  rolesToAdd = input().split(",")
   for role in rolesToAdd:
     result = CallAdminAPI("get", "adminRoutes/adminRoles/add_role", settings.adminToken, params={"name": role})
     if result == None: 

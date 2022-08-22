@@ -26,8 +26,8 @@ def CLIviewAll():
 
 
 def CLIaddToWhitelist():
-  print("\nList all the emails you want to whitelist separated by commas: (Email1, Email2, Email3, etc...)")
-  emails = input().split(", ")
+  print("\nList all the emails you want to whitelist separated by commas: (Email1,Email2,Email3,etc...)")
+  emails = input().split(",")
   duplicates = 0
   for email in emails:
     result = CallAdminAPI("get", "adminRoutes/adminUserWhitelists/add_to_whitelist", settings.adminToken, params= {"email": email})
@@ -38,8 +38,8 @@ def CLIaddToWhitelist():
 
 
 def CLIremoveFromWhitelist():
-  print("\nList all the emails you want to unwhitelist separated by commas: (Email1, Email2, Email3, etc...)")
-  emails_to_remove = input().split(", ")
+  print("\nList all the emails you want to unwhitelist separated by commas: (Email1,Email2,Email3,etc...)")
+  emails_to_remove = input().split(",")
   fails = 0
   for email in emails_to_remove:
     result = CallAdminAPI("get", "adminRoutes/adminUserWhitelists/remove_from_whitelist", settings.adminToken, params={"email": email})
