@@ -1,118 +1,111 @@
 <template>
   <v-container class="text-center">
-    <v-row>
-      <v-col>
-        <h1>Reserve Server</h1>
-      </v-col>
-    </v-row>
 
-  <v-row>
-    <v-col class="section">
-      <a color="primary" style="margin-bottom: 20px" @click="toggleReservationCalendar">
-        {{ !showReservationCalendar ? "Show" : "Hide" }} Reservation Calendar
-      </a>
-      <CalendarReservations v-if="showReservationCalendar" />
-    </v-col>
-  </v-row>
+  <v-stepper v-model="step">
+    <v-stepper-header>
+      <v-stepper-step :complete="step > 1" step="1"><b>Time</b></v-stepper-step>
+      <v-divider></v-divider>
+      <v-stepper-step :complete="step > 2" step="2"><b>Duration</b></v-stepper-step>
+      <v-divider></v-divider>
+      <v-stepper-step step="3"><b>Hardware</b></v-stepper-step>
+    </v-stepper-header>
 
-    <!-- Reserve now or for later? -->
-    <v-row class="section">
-      <v-col cols="12">
-        <h2>When do you need the server?</h2>
-      </v-col>
-      <v-col cols="12">
-        <v-btn :color="reserveType == 'now' ? 'success' : 'primary'" style="margin: 0px 10px" @click="reserveNow">Reserve Now</v-btn>
-        <v-btn :color="reserveType == 'pickdate' ? 'success' : 'primary'" @click="reserveLater">Reserve for later</v-btn>
-      </v-col>
-    </v-row>
-
-    <!-- Pick a Date -->
-    <v-row v-if="reserveType == 'pickdate'" class="section">
-      <v-row justify="center">
-        <v-col cols="12">
-          <h2>Pick a date and time</h2>
-        </v-col>
-
-        <v-col cols="4">
-          <v-date-picker value="" v-model="pickedDate" :min="new Date().toISOString().substr(0, 10)"></v-date-picker>
-        </v-col>
-        <v-col cols="3">
-          <v-select v-model="pickedHour" :items="hours" item-text="text" item-value="value" label="Starting Hour"></v-select>
-          <v-btn color="primary" @click="reserveSelectedTime">Select this day and time</v-btn>
-        </v-col>
-      </v-row>
-      <!--<v-btn color="primary" @click="reserveLater">Reserve for later</v-btn>-->
-    </v-row>
-
-    <!-- For how long -->
-    <v-row v-if="reserveDate != null" class="section">
-      <v-col cols="3" style="margin: 0 auto">
-        <h2>Reservation duration</h2>
-        <v-select v-model="reserveDuration" :items="reservableHours" item-text="text" item-value="value" label="Duration"></v-select>
-      </v-col>
-    </v-row>
-
-    <!-- Get available computers and resources -->
-    <v-row v-if="reserveDate != null && reserveDuration" class="section">
-      <v-col cols="12">
-        <v-btn color="primary" @click="fetchAvailableHardware">Get available computers and hardware</v-btn>
-      </v-col>
-    </v-row>
-
-    <!-- Loading computers and their hardware specs... -->
-    <v-row v-if="reserveDate && reserveDuration && fetchingComputers" class="section">
-      <v-col>
-        <Loading />
-      </v-col>
-    </v-row>
-
-    <!-- Select container -->
-    <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers">
-      <v-col cols="12">
-        <h2>Select Container</h2>
+    <v-stepper-items>
+      <!-- STEP 1: CALENDAR -->
+      <v-stepper-content step="1">
         <v-row>
-          <v-col cols="3" style="margin: 0 auto">
-            <v-select v-model="container" :items="containers" item-text="text" item-value="value" label="Container"></v-select>
+          <v-col>
+            <h1>Reserve Server</h1>
+            <p class="dim">Click on a time on the calendar or <b><a @click="reserveNow">click here</a></b> to make a reservation right now.</p>
           </v-col>
         </v-row>
-      </v-col>
-    </v-row>
-
-    <!-- Select computer, hardware specs & submit -->
-    <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers && container" class="section">      
-      <v-col cols="12">
-        <h2>Select Computer</h2>
         <v-row>
-          <v-col cols="3" style="margin: 0 auto">
-            <v-select v-model="computer" v-on:change="computerChanged" :items="computers" item-text="text" item-value="value" label="Computer"></v-select>
+          <v-col class="section">
+            <CalendarReservations v-if="allReservations" :propReservations="allReservations" @slotSelected="slotSelected" />
           </v-col>
         </v-row>
-      </v-col>
+      </v-stepper-content>
 
-      <v-row v-if="computer && hardwareData">
-        <v-col cols="12">
-          <h2>Select Hardware</h2>
-          <v-row v-for="spec in hardwareData" :key="spec.name" class="spec-row">
+      <!-- STEP 2: DURATION -->
+      <v-stepper-content step="2">
+        <v-row v-if="reserveDate != null" class="section">
+          <v-col cols="12" style="margin: 0 auto">
+            <h2>Reservation Time</h2>
+            <p>{{parsedTime}}</p>
+          </v-col>
+          <v-col cols="3" style="margin: 0 auto">
+            <h2>Reservation duration</h2>
+            <v-select v-model="reserveDuration" :items="reservableHours" item-text="text" item-value="value" label="Duration"></v-select>
+          </v-col>
+        </v-row>
+
+        <v-btn text @click="prevStep()" style="margin-right: 7px">Back</v-btn>
+
+        <v-btn color="primary" @click="fetchAvailableHardware" :disabled="!reserveDuration && !fetchingComputers">Continue</v-btn>
+        <Loading v-if="fetchingComputers" />
+      </v-stepper-content>
+
+      <!-- STEP 3: HARDWARE -->
+      <v-stepper-content step="3">
+        <v-btn @click="prevStep()">&larr; Back</v-btn>
+        <br>
+        <br>
+
+        <!-- Select container -->
+        <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers">
+          <v-col cols="12">
+            <h2>Select Container</h2>
+            <v-row>
+              <v-col cols="3" style="margin: 0 auto">
+                <v-select v-model="container" :items="containers" item-text="text" item-value="value" label="Container"></v-select>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+
+        <!-- Select computer, hardware specs & submit -->
+        <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers && container" class="section">      
+          <v-col cols="12">
+            <h2>Select Computer</h2>
+            <v-row>
+              <v-col cols="3" style="margin: 0 auto">
+                <v-select v-model="computer" v-on:change="computerChanged" :items="computers" item-text="text" item-value="value" label="Computer"></v-select>
+              </v-col>
+            </v-row>
+          </v-col>
+
+          <v-row v-if="computer && hardwareData">
             <v-col cols="12">
-              <h3>{{ spec.type }}</h3>
-            </v-col>
-            <v-col cols="6" style="margin: 0 auto">
-              <v-slider :min="spec.minimumAmount" :thumb-size="60" ticks="always" v-model="selectedHardwareSpecs[spec.hardwareSpecId]" :max="spec.maximumAmountForUser" thumb-label="always">
-                <template v-slot:thumb-label="{ value }">
-                  {{ value + " " + spec.format }}
-                </template>
-              </v-slider>
+              <h2>Select Hardware</h2>
+              <v-row v-for="spec in hardwareData" :key="spec.name" class="spec-row">
+                <v-col cols="12">
+                  <h3>{{ spec.type }}</h3>
+                </v-col>
+                <v-col cols="6" style="margin: 0 auto">
+                  <v-slider :min="spec.minimumAmount" :thumb-size="60" ticks="always" v-model="selectedHardwareSpecs[spec.hardwareSpecId]" :max="spec.maximumAmountForUser" thumb-label="always">
+                    <template v-slot:thumb-label="{ value }">
+                      {{ value + " " + spec.format }}
+                    </template>
+                  </v-slider>
+                </v-col>
+              </v-row>
             </v-col>
           </v-row>
-        </v-col>
-      </v-row>
-    </v-row>
+        </v-row>
 
-    <v-row v-if="computer && hardwareData">
-      <v-col cols="12">
-        <v-btn color="primary" @click="submitReservation">Create Reservation</v-btn>
-      </v-col>
-    </v-row>
+        <v-row v-if="computer && hardwareData">
+          <v-col cols="12">
+            <v-btn color="primary" @click="submitReservation" :disabled="isSubmittingReservation">Create Reservation</v-btn>
+          </v-col>
+        </v-row>
+
+        <Loading v-if="isSubmittingReservation" />
+      </v-stepper-content>
+
+    </v-stepper-items>
+  </v-stepper>
+
+
 
   </v-container>
 </template>
@@ -138,13 +131,15 @@
     },
     data: () => ({
       reserveDate: null,
+      step: 1,
       reserveType: "",
-      showReservationCalendar: false,
       pickedDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
       pickedHour: {},
       reservableHours: [],
       hours: [],
       reserveDuration: null,
+      fetchingReservations: false, // True if we are fetching all current and upcoming reservations
+      allReservations: null, // Contains all current reservations
       fetchingComputers: false, // True if we are fetching computers and their hardware data from the server
       allComputers: null, // Contains all computers from server and their hardware data
       allContainers: null, // Contains all containers from server and their hardware data
@@ -160,7 +155,7 @@
       let d = new Date()
 
       let hours = []
-      for (let i = 1; i < 72; i++) {
+      for (let i = 5; i < 72; i++) {
         hours.push( { "text": i + " hours", "value": i } )
       }
       this.reservableHours = hours
@@ -173,8 +168,23 @@
       }
       this.hours = dayHours
       this.pickedHour = d.getHours() < 10 ? "0"+d.getHours() : d.getHours.toString()
+
+      // TODO: Repeat every 15 seconds
+      this.fetchReservations()
     },
     methods: {
+      nextStep() {
+        if (this.step == 3) return
+        this.step = this.step + 1
+      },
+      prevStep() {
+        if (this.step == 1) return
+        this.step = this.step - 1
+      },
+      slotSelected(time) {
+        this.reserveDate = time.toISOString()
+        this.nextStep()
+      },
       computerChanged() {
         let currentComputerId = this.computer
         let data = null
@@ -197,6 +207,7 @@
         this.reserveDate = dayjs().toISOString()
         this.reserveType = "now"
         this.reserveDuration = null
+        this.nextStep()
       },
       reserveLater() {
         this.reserveDate = null
@@ -209,12 +220,49 @@
         let d = dayjs(this.pickedDate + " " + this.pickedHour, "YYYY-MM-DD HH")
         this.reserveDate = d.toISOString()
       },
+      fetchReservations() {
+        this.fetchingReservations = true
+        let _this = this
+        let currentUser = this.$store.getters.user
+
+        axios({
+          method: "get",
+          url: this.AppSettings.APIServer.reservation.get_current_reservations,
+          headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
+        })
+        .then(function (response) {
+          //console.log(response)
+            // Success
+            if (response.data.status == true) {
+              _this.allReservations = response.data.data.reservations
+              //console.log(_this.allReservations)
+              _this.fetchingReservations = false
+            }
+            // Fail
+            else {
+              console.log("Failed getting reservations...")
+              //_this.$store.commit('showMessage', { text: "There was an error getting the reservations.", color: "red" })
+            }
+            _this.fetchingReservations = false
+        })
+        .catch(function (error) {
+            // Error
+            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
+              //_this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
+            }
+            else {
+              console.log(error)
+              //_this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
+            }
+            _this.fetchingReservations = false
+        });
+      },
       fetchAvailableHardware() {
         this.fetchingComputers = true
         let _this = this
         this.computer = null
         let currentUser = this.$store.getters.user
-        
+
         axios({
           method: "get",
           url: this.AppSettings.APIServer.reservation.get_available_hardware,
@@ -238,6 +286,7 @@
                 containers.push({ "value": container.containerId, "text": container.name })
               });
               _this.containers = containers
+              _this.nextStep()
             }
             // Fail
             else {
@@ -298,7 +347,7 @@
               let msg = response && response.data && response.data.message ? response.data.message : "There was an error getting the hardware specs."
               _this.$store.commit('showMessage', { text: msg, color: "red" })
             }
-            _this.fetchingComputers = false
+            _this.isSubmittingReservation = false
         })
         .catch(function (error) {
             // Error
@@ -309,9 +358,14 @@
               console.log(error)
               _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
             }
-            _this.fetchingComputers = false
+            _this.isSubmittingReservation = false
         });
       },
+    },
+    computed: {
+      parsedTime() {
+        return dayjs(this.reserveDate).format("DD.MM.YYYY HH:mm")
+      }
     },
   }
 </script>

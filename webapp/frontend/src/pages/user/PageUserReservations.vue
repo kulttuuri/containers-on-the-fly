@@ -9,6 +9,7 @@
     <v-row class="text-center">
       <v-col cols="12">
         <h2>Your Reservations</h2>
+        <p class="dim">Listing reservations from past 3 months</p>
       </v-col>
     </v-row>
 
@@ -32,7 +33,7 @@
   const axios = require('axios').default;
   import Loading from '/src/components/global/Loading.vue';
   import UserReservationTable from '/src/components/user/UserReservationTable.vue';
-
+  
   export default {
     name: 'PageUserReservations',
 
@@ -53,7 +54,17 @@
     },
     methods: {
       createReservation() {
-        this.$router.push("/user/reserve")
+        let hasActiveReservations = false
+        this.reservations.forEach((res) => {
+          if (res.status == "started" || res.status == "reserved") hasActiveReservations = true
+        })
+
+        let currentUser = this.$store.getters.user
+
+        if (!hasActiveReservations || currentUser.role == "admin")
+          this.$router.push("/user/reserve")
+        else
+          this.$store.commit('showMessage', { text: "You can only have one reserved or started reservation at a time. Cancel the current if you need new.", color: "red" })
       },
       fetchReservations() {
         let _this = this
@@ -93,7 +104,7 @@
         this.isFetchingReservations = false
       },
       cancelReservation(reservationId) {
-        let result = window.confirm("Do you really want to remove this confirmation?")
+        let result = window.confirm("Do you really want to cancel this reservation?")
         if (!result) return
         let params = {
           "reservationId": reservationId,

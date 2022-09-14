@@ -13,5 +13,5 @@ from helpers.admin import *
 # For making users admin / taking out the admin role
 ###
 
-#makeUserAdmin("aleksi.postari@samk.fi")
-removeFromAdminRole("aleksi.postari@samk.fi")
+makeUserAdmin("aleksi.postari@samk.fi")
+#removeFromAdminRole("aleksi.postari@samk.fi")

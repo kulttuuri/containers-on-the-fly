@@ -1,7 +1,10 @@
 from database import session, Computer, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec
 from helpers.server import Response, ORMObjectToDict
+from helpers.auth import IsAdmin
 from dateutil import parser
 from dateutil.relativedelta import *
+import datetime
+from datetime import timezone, timedelta
 
 def getAvailableHardware(date) -> object:
   # TODO: Get only available resources for this time period
@@ -27,7 +30,11 @@ def getOwnReservations(userId) -> object:
   session.commit()
   reservations = []
 
-  query = session.query(Reservation).filter( Reservation.userId == userId )
+  # Limit listing to 90 days
+  def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
+  minStartDate = timeNow() - timedelta(days=90)
+
+  query = session.query(Reservation).filter( Reservation.userId == userId, Reservation.startDate > minStartDate )
   for reservation in query:
     res = ORMObjectToDict(reservation)
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)
@@ -36,22 +43,53 @@ def getOwnReservations(userId) -> object:
   
   return Response(True, "Hardware resources fetched.", { "reservations": reservations })
 
+def getCurrentReservations() -> object:
+  session.commit()
+  reservations = []
+
+  def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
+  minStartDate = timeNow() - timedelta(days=14)
+
+  query = session.query(Reservation).filter(
+    ((Reservation.status == "reserved") | (Reservation.status == "started")),
+    (Reservation.startDate > minStartDate)
+  )
+  for reservation in query:
+    specs = []
+    for spec in reservation.reservedHardwareSpecs:
+      specs.append({
+        "type": spec.hardwareSpec.type,
+        "format": spec.hardwareSpec.format,
+        "amount": spec.amount,
+      })
+    res = {
+      "reservationId": reservation.reservationId,
+      "startDate": reservation.startDate,
+      "endDate": reservation.endDate,
+      "hardwareSpecs": specs,
+    }
+    reservations.append(res)
+  
+  return Response(True, "Current reservations fetched.", { "reservations": reservations })
+
 def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs):
   session.commit()
-
-  # Make sure that user can only have one queued / started server at once
-  userActiveReservations = session.query(Reservation).filter(
-    (Reservation.userId == userId),
-    ( (Reservation.status == "reserved") | (Reservation.status == "started") )
-  ).count()
-  if userActiveReservations > 0:
-    return Response(False, "You can only have one queued or started reservation.")
-
-  # TODO: Make sure that there are enough resources for the reservation
 
   date = parser.parse(date)
   endDate = date+relativedelta(hours=+duration)
   user = session.query(User).filter( User.userId == userId ).first()
+  if (user == None): return Response(False, "User not found.")
+  isAdmin = IsAdmin(user.email)
+
+  # TODO: Make sure that there are enough resources for the reservation
+
+  # Make sure that user can only have one queued / started server at once (admins can have unlimited)
+  userActiveReservations = session.query(Reservation).filter(
+    (Reservation.userId == userId),
+    ( (Reservation.status == "reserved") | (Reservation.status == "started") )
+  ).count()
+  if userActiveReservations > 0 and isAdmin == False:
+    return Response(False, "You can only have one queued or started reservation.")
 
   # Create the base reservation
   reservation = Reservation(

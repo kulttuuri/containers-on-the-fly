@@ -8,6 +8,8 @@ from database import User, session, UserWhitelist
 import helpers.server
 import ldap3 as ldap
 from settings import settings
+from datetime import timedelta
+import datetime
 
 def IsAdmin(email : str) -> bool:
   '''
@@ -15,11 +17,27 @@ def IsAdmin(email : str) -> bool:
   Returns:
     true if is admin, false otherwise.
   '''
-  user = session.query(User).find( User.email == email )
+  user = session.query(User).filter( User.email == email ).first()
+  if (user == None): return False
+
   isAdmin = False
   for role in user.roles:
-    if role.name == "Admin": isAdmin = True
+    if role.name == "admin": isAdmin = True
   return isAdmin
+
+def GetRole(email : str) -> string:
+  '''
+  Gets the role (first found role from the database) for the user with the given email.
+  Returns:
+    'user' if role was not found for the user, otherwise the name of the role.
+  '''
+  user = session.query(User).filter( User.email == email ).first()
+  if (user == None): return "user"
+
+  userRole = "user"
+  if (len(user.roles) > 0):
+    userRole = user.roles[0].name
+  return userRole
 
 def IsLoggedIn(token : str):
   '''
@@ -41,15 +59,18 @@ def CheckToken(token : str) -> object:
   Returns:
     Returns back a Response.
   Example return:
-    { success: True, message: "Token OK.", data: { email: "test", "studentId": "test" } }
+    { success: True, message: "Token OK.", data: { email: "test" } }
   '''
   if token == "" or token is None: return helpers.server.Response(False, "Token cannot be empty.")
-  user = session.query(User).filter( User.loginToken == token ).first()
 
-  # TODO: Add also timeouts for tokens, like 24 hours... Configurable through settings.json
+  def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
+  minStartDate = timeNow() - timedelta(minutes=settings.session["timeoutMinutes"])
+
+  user = session.query(User).filter( User.loginToken == token, User.loginTokenCreatedAt > minStartDate ).first()
 
   if user is not None:
-    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "studentId": user.studentId })
+    userRole = GetRole(user.email)
+    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "role": userRole })
   else:
     return helpers.server.Response(False, "Invalid token.")
 
@@ -118,7 +139,6 @@ def GetLDAPUser(username, password):
     user = session.query(User).filter( User.email == email ).first()
     # User not found? Create it and return the newly created user
     if user == None:
-      print("User created")
       newUser = User(
         email = email
       )
@@ -129,12 +149,11 @@ def GetLDAPUser(username, password):
     else:
       return True, user
   except ldap.INVALID_CREDENTIALS:
-    print('Wrong password or username')
     return False, "Wrong username or password."
   except ldap.SERVER_DOWN:
-    print("Timeout")
-    return False, "Timeout."
+    #print("Timeout")
+    return False, "Failed to connect to LDAP authentication service: Timeout."
   except Exception as e:
-    print(e)
+    #print(e)
     return False, "Unknown error with the LDAP login!"
   return False, "Unknown error."

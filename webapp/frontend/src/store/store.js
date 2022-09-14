@@ -37,11 +37,12 @@ export const store = new Vuex.Store({
       timeout: 5000, // Default timeout for snackbars
       multiline: false, // Is this multiline, automatically set below
     },
+    initializing: true, // Set to false after we have initialized the app / store
     // Information about the currently logged-in user
     user: {
       loginToken: "",
       email: "",
-      studentId: "",
+      role: "",
       loggedinAt: null
     }
   },
@@ -51,12 +52,16 @@ export const store = new Vuex.Store({
   getters: {
     // Gets current user data or null
     user: state => {
-      return state.user || null;
+      return state.user || null
     },
     // Check if user is logged in or not, only in clientside
     isLoggedIn: state => {
-      if (state.user && state.user.loginToken) return true;
-      else return false;
+      if (state.user && state.user.loginToken) return true
+      else return false
+    },
+    // true if we are loading the app, false otherwise
+    isInitializing: state => {
+      return state.initializing
     },
   },
   // #############
@@ -73,9 +78,12 @@ export const store = new Vuex.Store({
           this.commit("setUser", {
             "loginToken": user.loginToken,
             "email": user.email,
-            "studentId": user.studentId,
+            "role": user.role,
             "loggedinAt": user.loggedinAt
           });
+        }
+        else {
+          state.initializing = false
         }
       }
       // eslint-disable-next-line
@@ -89,7 +97,7 @@ export const store = new Vuex.Store({
 
       if (!payload.loginToken) return payload.callback(Response(false, "loginToken was missing"));
       let _this = this;
-
+      
       axios({
         method: "get",
         url: AppSettings.APIServer.user.check_token,
@@ -100,15 +108,17 @@ export const store = new Vuex.Store({
           if (response.data.status == true) {
             state.user.loginToken = payload.loginToken
             state.user.email = response.data.data.email
-            state.user.studentId = response.data.data.studentId
+            state.user.role = response.data.data.role
             state.user.loggedinAt = new Date()
             localStorage.setItem("user", JSON.stringify(state.user))
+            if (state.initializing) state.initializing = false
             return payload.callback(Response(true, "Login token OK!"));
           }
           // Fail
           else {
             console.log("Invalid token – logging user out.")
             _this.commit("logoutUser")
+            if (state.initializing) state.initializing = false
             return payload.callback(Response(false, "Invalid login token."));
           }
       })
@@ -128,7 +138,6 @@ export const store = new Vuex.Store({
 
       /*state.user.token = payload.loginToken
       state.user.email = payload.email
-      state.user.studentId = payload.studentId
       localStorage.setItem("user", state.user)
       payload.callback(Response(true, "User details updated.", { "user": state.user }));*/
     },
@@ -138,7 +147,6 @@ export const store = new Vuex.Store({
       state.user.loginToken = ""
       state.user.email = ""
       state.user.loggedinAt = ""
-      state.user.studentId = ""
       localStorage.removeItem("user")
       payload.callback(Response(true, "User logged out succesfully", {  }));
     },

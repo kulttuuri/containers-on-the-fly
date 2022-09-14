@@ -1,12 +1,19 @@
 <template>
   <footer id="footer" class="background-violet">
-    <p>Samk AI Server</p>
+    <p>{{appName}}</p>
   </footer>
 </template>
 
 <script>
+  import AppSettings from '/src/AppSettings.js'
+
   export default {
     name: 'Footer',
+    computed: {
+      appName() {
+        return AppSettings.General.appName
+      }
+    },
   }
 </script>
 

@@ -2,3 +2,9 @@
 __pycache__
 venv/
 webapp/backend/aiserver.db
+webapp/frontend/src/AppSettings.js
+webapp/backend/settings.json
+package-lock.json
+webapp/frontend/package-lock.json
+webapp/backend/.vscode/
+.env

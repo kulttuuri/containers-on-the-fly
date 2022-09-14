@@ -35,6 +35,11 @@ async def getAvailableHardware(date: str, duration: int, computerId: int, contai
   userId = CheckToken(token)["data"]["userId"]
   return functionality.createReservation(userId, date, duration, containerId, computerId, hardwareSpecs)
 
+@router.get("/get_current_reservations")
+async def getCurrentReservations(token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
+  return functionality.getCurrentReservations()
+
 @router.post("/cancel_reservation")
 async def cancelReservation(reservationId: str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)

@@ -14,7 +14,6 @@ class User(Base):
   email = Column(String, nullable = False)
   password = Column(String, nullable = True)
   passwordSalt = Column(String, nullable = True)
-  studentId = Column(String, nullable = True)
   loginToken = Column(String, nullable = True)
   loginTokenCreatedAt = Column(DateTime, nullable = True)
   userCreatedAt = Column(DateTime(timezone=True), server_default=func.now())
@@ -24,7 +23,6 @@ class User(Base):
   reservations = relationship("Reservation", back_populates = "user")
 
 # If whitelisting is enabled, then only the email addresses specified here can login
-# TODO: Add to specs
 class UserWhitelist(Base):
   __tablename__ = "UserWhitelist"
   userWhitelistId = Column(Integer, primary_key = True, autoincrement = True)
@@ -34,6 +32,7 @@ class UserStorage(Base):
   __tablename__ = "UserStorage"
   userStorageId = Column(Integer, primary_key = True, autoincrement = True)
   userId = Column(ForeignKey('User.userId'), unique = True, nullable = False)
+  #location = Column(String, nullable = False) # TODO: Add to diagram
   maxSpace = Column(Float, nullable = False)
   maxSpaceFormat = Column(String, nullable = False)
   UniqueConstraint('userStorageId', 'userId', name='uniqueUserStorage')
@@ -60,7 +59,7 @@ class UserRole(Base):
 class Container(Base):
   __tablename__ = "Container"
   containerId = Column(Integer, primary_key = True, autoincrement = True)
-  public = Column(Boolean, nullable = False) # TODO: Document in the graph
+  public = Column(Boolean, nullable = False)
   imageName = Column(String, unique = True, nullable = False)
   name = Column(String, nullable = False)
   description = Column(String, nullable = True)
@@ -75,7 +74,7 @@ class ReservedContainer(Base):
   startedAt = Column(DateTime, nullable = True)
   stoppedAt = Column(DateTime, nullable = True)
   containerStatus = Column(String, nullable = True) # Coming from Docker
-  containerDockerId = Column(String, nullable = True) # Coming from Docker, TODO: Document in the graph
+  containerDockerId = Column(String, nullable = True) # Coming from Docker
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   sshPassword = Column(String, nullable = True)
   reservation = relationship("Reservation", back_populates = "reservedContainer")
@@ -102,7 +101,7 @@ class Reservation(Base):
 class Computer(Base):
   __tablename__ = "Computer"
   computerId = Column(Integer, primary_key = True, autoincrement = True)
-  public = Column(Boolean, nullable = False) # TODO: Document in the graph
+  public = Column(Boolean, nullable = False)
   name = Column(String, nullable = False, unique = True)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
@@ -115,11 +114,11 @@ class HardwareSpec(Base):
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
   type = Column(String, nullable = False)
   maximumAmount = Column(Float, nullable = False)
-  minimumAmount = Column(Float, nullable = False) # TODO: Document in the graph
+  minimumAmount = Column(Float, nullable = False)
   maximumAmountForUser = Column(Float, nullable = False)
   defaultAmountForUser = Column(Float, nullable = False)
   format = Column(String, nullable = False)
-  computer = relationship("Computer", back_populates = "hardwareSpecs") # TODO: Document in the graph
+  computer = relationship("Computer", back_populates = "hardwareSpecs")
   reservations = relationship("ReservedHardwareSpec", back_populates = "hardwareSpec")
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())

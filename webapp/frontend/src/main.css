@@ -22,8 +22,27 @@ body {
 .v-toolbar__content a {
   color: white !important;
   margin: 0px 15px !important;
+  transition: 0.3s all ease;
+}
+
+.v-toolbar__content a:hover {
+  color: #2096f3 !important;
 }
 
 body .section {
   margin-bottom: 50px;
+}
+
+.v-event-timed {
+  word-break: break-all !important;
+  white-space: normal !important;
+}
+
+.v-calendar-daily__day-interval {
+  transition: 0.3s all ease;
+}
+
+.v-calendar-daily__day-interval:hover {
+  cursor: pointer;
+  background: #5e5e5e;
 }
