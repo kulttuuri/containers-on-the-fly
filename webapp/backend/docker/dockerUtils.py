@@ -1,16 +1,51 @@
-from database import session, Reservation
+from database import session, Reservation, ReservedContainerPort
+from helpers.auth import create_password
 from helpers.server import ORMObjectToDict
 #from dateutil import parser
 #from dateutil.relativedelta import *
-import datetime
 from datetime import timezone
+import datetime
+from helpers.auth import create_password
+from settings import settings
+from docker.docker_functionality import send_email_container_started, start_container, stop_container
 import random
-import string
+import socket
 
-def generateSSHPassword():
-  characters = string.ascii_letters + string.digits + string.punctuation
-  password = ''.join(random.choice(characters) for i in range(50))
-  return password
+def is_port_in_use(port: int) -> bool:
+  '''
+  Checks if a port is in use.
+  Returns:
+    True if port is in use, False otherwise
+  '''
+  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    return s.connect_ex(('localhost', port)) == 0
+
+def get_available_port():
+  # Loop through all started containers and get the ports in use
+  portsInUse = []
+  allActiveReservations = session.query(Reservation).filter( Reservation.status == "started" )
+  for reservation in allActiveReservations:
+    for usedPort in reservation.reservedContainer.reservedContainerPorts:
+      #print("Used port:", usedPort.outsidePort)
+      portsInUse.append(usedPort.outsidePort)
+
+  min = settings.docker["port_range_start"]
+  max = settings.docker["port_range_end"]
+  availablePorts = []
+  for port in range(min, max):
+    if port not in portsInUse:
+      availablePorts.append(port)
+  
+  # Try to bind to a random available port 5 times
+  i = 0
+  retries = 5
+  while i < retries:
+    randPort = random.choice(availablePorts)
+    if is_port_in_use(randPort) == False:
+       return randPort
+    i += 1
+
+  return random.choice(availablePorts)
 
 def timeNow():
   return datetime.datetime.now(datetime.timezone.utc)
@@ -19,44 +54,88 @@ def startDockerContainer(reservationId: str):
   session.commit()
   reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
   if reservation == None: return False
-  now = timeNow()
-  sshPassword = generateSSHPassword()
+  sshPassword = create_password()
   
-  # TODO: Start the actual Docker container here
-  # TODO: Email connection details for the user
-  print(sshPassword) # Password generated here
-  reservation.reservedContainer.containerDockerId = "..." # Add the container ID marked in Docker here
-  print("RESERVATION:")
-  print(ORMObjectToDict(reservation))
-  print("USER:")
-  print(ORMObjectToDict(reservation.user))
-  print("RESERVED CONTAINER:")
-  print(ORMObjectToDict(reservation.reservedContainer))
-  print("CONTAINER:")
-  print(ORMObjectToDict(reservation.reservedContainer.container))
-  print("HARDWARE SPECS:")
+  imageName = reservation.reservedContainer.container.imageName
+  hwSpecs = {}
   for spec in reservation.reservedHardwareSpecs:
-    print(f"{spec.hardwareSpec.type}: {spec.amount} {spec.hardwareSpec.format}")
-  #print(ORMObjectToDict(reservation.reservedHardwareSpecs))
+    hwSpecs[spec.hardwareSpec.type] = spec.amount
+    #print(f"{spec.hardwareSpec.type}: {spec.amount} {spec.hardwareSpec.format}")
 
-  reservation.status = "started"
-  reservation.reservedContainer.sshPassword = sshPassword
-  reservation.reservedContainer.startedAt = now
-  session.commit()
+  timeNowParsed = timeNow().strftime('%m_%d_%Y_%H_%M_%S')
+
+  containerName = f"reservation-{reservation.reservationId}-{imageName}-{timeNowParsed}"
+  reservation.reservedContainer.containerDockerName = containerName
+
+  bindablePorts = []
+  portsForEmail = []
+
+  # Set bindable ports for the reservation container
+  for port in reservation.reservedContainer.container.containerPorts:
+    #print(port.port)
+    outsidePort = get_available_port()
+    bindablePorts.append( (outsidePort, port.port) )
+    portsForEmail.append({ "serviceName": port.serviceName, "localPort": port.port, "outsidePort": outsidePort })
+
+  details = {
+    "name": containerName,
+    "image": imageName,
+    "username": "user",
+    "cpus": int(hwSpecs['cpus']),
+    "gpus": int(hwSpecs['gpus']),
+    "memory": f"{hwSpecs['ram']}g",
+    "shm_size": settings.docker["shm_size"],
+    "ports": bindablePorts,
+    "localMountFolderPath": settings.docker["mountLocation"],
+    "password": sshPassword
+  }
+  cont_was_started = False
+
+  try:
+    cont_was_started, cont_name, cont_password = start_container(details)
+  except Exception as e:
+    #print("Error starting container:", e)
+    next
+  
+  if cont_was_started == True:
+    print("Container was started succesfully.")
+    # Set bound ports
+    for port in bindablePorts:
+      reservation.reservedContainer.reservedContainerPorts.append(ReservedContainerPort(
+        outsidePort = port[0],
+        localPort = port[1]
+      ))
+
+    # Set basic reservation status
+    reservation.status = "started"  
+    reservation.reservedContainer.sshPassword = cont_password
+    reservation.reservedContainer.startedAt = timeNow()
+    # Send the email
+    if (settings.docker["sendEmail"] == True):
+      send_email_container_started(
+        reservation.user.email,
+        imageName,
+        reservation.computer.ip,
+        portsForEmail,
+        sshPassword,
+        reservation.endDate)
+    
+    session.commit()
+  else:
+    print("Container was not started.")
 
 def stopDockerContainer(reservationId: str):
   session.commit()
   reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
   if reservation == None: return False
-  now = timeNow()
 
-  # TODO: Stop the actual container here
   # Can use reservation.reservedContainer.containerDockerId to target the docker container
-  print(ORMObjectToDict(reservation))
-  print(ORMObjectToDict(reservation.reservedContainer))
-
+  #print("STOPPING CONTAINER:")
+  #print(ORMObjectToDict(reservation))
+  #print(ORMObjectToDict(reservation.reservedContainer))
+  stop_container(reservation.reservedContainer.containerDockerName)
   reservation.status = "stopped"
-  reservation.reservedContainer.stoppedAt = now
+  reservation.reservedContainer.stoppedAt = timeNow()
   session.commit()
 
 def updateRunningContainerStatus(reservationId: str):

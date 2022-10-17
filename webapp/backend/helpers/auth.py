@@ -10,6 +10,8 @@ import ldap3 as ldap
 from settings import settings
 from datetime import timedelta
 import datetime
+import string
+import secrets
 
 def IsAdmin(email : str) -> bool:
   '''
@@ -109,6 +111,16 @@ def IsCorrectPassword(salt: bytes, pw_hash: bytes, password: str) -> bool:
     pw_hash,
     hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
   )
+
+def create_password(length = 40):
+  '''
+  Creates a random password of the given length.
+  Returns:
+    (string) the generated password
+  '''
+  possible_chars = string.ascii_letters + string.digits
+  random_password = "".join(secrets.choice(possible_chars) for i in range(length))
+  return random_password
 
 def GetLDAPUser(username, password):
   set = settings.login["ldap"]

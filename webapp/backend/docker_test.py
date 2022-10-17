@@ -1,4 +1,5 @@
-from docker.docker_functions import *
+from docker.docker_functionality import *
+from settings import settings
 
 if __name__ == "__main__":
 
@@ -7,13 +8,31 @@ if __name__ == "__main__":
     # Taulu jossa ylläpidetään listaa GPU varauksista konttivaraukselle
     # Lista porttivarauksista konttivaraukselle
     # 2020 - 2200
-    cont = start_container("databasecourse", 0, "1g", 2218, "user", settings.docker["mountLocation"], 1, remove=True)
-    print(cont)
+
+    cont_details = {
+      "name": f"tensorflow_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}",
+      "image": "tensorflow",
+      "username": "user",
+      "cpus": 1,
+      "memory": "1g",
+      "shm_size": settings.docker["shm_size"],
+      "ports": [ (2213, 22) ],
+      "localMountFolderPath": settings.docker["mountLocation"],
+      "password": "abc123"
+    }
+
+    cont_was_started, cont_name, cont_password = start_container(cont_details)
+
     # check running containers.
+    print("Container was started: ", cont_was_started)
+    print("Container name: ", cont_name)
+    print("Docker.ps output:")
     print(docker.ps())
+
+    send_email_container_started("riialin@gmail.com", "tensorflow", "localhost", 2213, "abc123")
 
     while True:
         command = input("stop or not")
         if command == "stop":
-            docker.stop("user")
+            docker.stop(cont_name)
             break

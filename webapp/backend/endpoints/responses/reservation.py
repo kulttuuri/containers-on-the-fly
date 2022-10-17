@@ -5,6 +5,7 @@ from dateutil import parser
 from dateutil.relativedelta import *
 import datetime
 from datetime import timezone, timedelta
+from docker.dockerUtils import stop_container
 
 def getAvailableHardware(date) -> object:
   # TODO: Get only available resources for this time period
@@ -128,11 +129,16 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
 
 def cancelReservation(userId, reservationId: str):
   # Check that user owns the given reservation and it can be found
+  session.commit()
   reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
   if reservation is None: return Response(False, "No reservation found.")
 
-  # TODO: Use also the Docker method here that will do this
+  if (reservation.status == "started"):
+    stop_container(reservation.reservedContainer.containerDockerName)
+
   reservation.status = "stopped"
+  reservation.endDate = datetime.datetime.now(datetime.timezone.utc)
+
   session.commit()
 
   return Response(True, "Reservation cancelled.")

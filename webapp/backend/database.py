@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from settings import settings
-engine = create_engine(settings.database["engineUri"] + settings.database["filePath"], echo=settings.database["debugPrinting"], future=True)
+engine = create_engine(settings.database["engineUri"] + settings.database["filePath"], echo=settings.database["debugPrinting"], future=True, connect_args={'timeout': 15})
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
@@ -66,6 +66,18 @@ class Container(Base):
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
   reservedContainers = relationship("ReservedContainer", back_populates = "container")
+  containerPorts = relationship("ContainerPort", back_populates = "container") # TODO: Add to diagram
+
+# TODO: Add to diagram
+class ContainerPort(Base):
+  __tablename__ = "ContainerPort"
+  containerPortId = Column(Integer, primary_key = True, autoincrement = True)
+  containerId = Column(ForeignKey("Container.containerId"), nullable = False)
+  serviceName = Column(String, nullable = False)
+  port = Column(Integer, nullable = False)
+  container = relationship("Container", back_populates = "containerPorts")
+  createdAt = Column(DateTime(timezone=True), server_default=func.now())
+  updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
 class ReservedContainer(Base):
   __tablename__ = "ReservedContainer"
@@ -73,12 +85,26 @@ class ReservedContainer(Base):
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   startedAt = Column(DateTime, nullable = True)
   stoppedAt = Column(DateTime, nullable = True)
+  containerDockerName = Column(String, nullable = True) # Used for stopping the container
   containerStatus = Column(String, nullable = True) # Coming from Docker
   containerDockerId = Column(String, nullable = True) # Coming from Docker
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   sshPassword = Column(String, nullable = True)
   reservation = relationship("Reservation", back_populates = "reservedContainer")
   container = relationship("Container", back_populates = "reservedContainers")
+  reservedContainerPorts = relationship("ReservedContainerPort", back_populates = "reservedContainer")
+  createdAt = Column(DateTime(timezone=True), server_default=func.now())
+  updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
+
+# TODO: Add to diagram
+class ReservedContainerPort(Base):
+  __tablename__ = "ReservedContainerPort"
+  reservedContainerPortId = Column(Integer, primary_key = True, autoincrement = True)
+  reservedContainerId = Column(ForeignKey("ReservedContainer.reservedContainerId"), nullable = False)
+  localPort = Column(Integer, nullable = False)
+  outsidePort = Column(Integer, nullable = False)
+  UniqueConstraint('reservedContainerId', 'localPort', name='outsidePort')
+  reservedContainer = relationship("ReservedContainer", back_populates = "reservedContainerPorts")
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -103,6 +129,7 @@ class Computer(Base):
   computerId = Column(Integer, primary_key = True, autoincrement = True)
   public = Column(Boolean, nullable = False)
   name = Column(String, nullable = False, unique = True)
+  ip = Column(String, nullable = False) # TODO: Add to diagram
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
   hardwareSpecs = relationship("HardwareSpec", back_populates = "computer")

@@ -4,7 +4,7 @@ from endpoints.adminRoutes import adminRoles, adminHardwarespecs, adminComputers
 from endpoints.adminRoutes import adminUsers, adminUserWhitelists, adminUserStorages, adminReservations
 from settings import settings
 from helpers.auth import HashPassword
-from database import session, User, Role, Computer, HardwareSpec, UserStorage, Container
+from database import ContainerPort, session, User, Role, Computer, HardwareSpec, UserStorage, Container
 
 router = APIRouter()
 router.include_router(user.router)
@@ -71,7 +71,7 @@ if settings.app["production"] == False:
   computer = session.query(Computer).filter( Computer.name == "aiserver" ).first()
   if computer is None:
     print("Creating test data: computer named aiserver")
-    computer = Computer( name = "aiserver", public = True )
+    computer = Computer( name = "aiserver", ip = "localhost", public = True )
     session.add(computer)
     session.commit()
 
@@ -80,40 +80,48 @@ if settings.app["production"] == False:
   if len(computer.hardwareSpecs) == 0:
     print("Creating test data: hardware specs for a computer")
     computer.hardwareSpecs.append(HardwareSpec(
-      type = "GPU",
+      type = "gpus",
       maximumAmount = 6,
       maximumAmountForUser = 2,
-      defaultAmountForUser = 1,
+      defaultAmountForUser = 0,
       minimumAmount = 0,
       format = "GPUs",
     ))
     computer.hardwareSpecs.append(HardwareSpec(
-      type = "RAM",
+      type = "ram",
       maximumAmount = 500,
       maximumAmountForUser = 50,
-      defaultAmountForUser = 10,
+      defaultAmountForUser = 1,
       minimumAmount = 2,
       format = "GB",
     ))
     computer.hardwareSpecs.append(HardwareSpec(
-      type = "CPU threads",
+      type = "cpus",
       maximumAmount = 80,
       maximumAmountForUser = 10,
-      defaultAmountForUser = 5,
+      defaultAmountForUser = 1,
       minimumAmount = 1,
-      format = "Threads",
+      format = "CPUs",
     ))
     session.commit()
 
   # Container
-  container = session.query(Container).filter( Container.imageName == "ubuntu2004" ).first()
+  container = session.query(Container).filter( Container.imageName == "tensorflow" ).first()
   if container is None:
-    print("Creating test data: container with name Ubuntu 20.04")
+    print("Creating test data: container with imageName tensorflow")
     container = Container(
       public = True,
-      imageName = "ubuntu2004",
-      name = "Ubuntu 20.04",
-      description = "Empty Ubuntu 20.04 container"
+      imageName = "tensorflow",
+      name = "Ubuntu 20.04 with Tensorflow",
+      description = "Ubuntu 20.04 with Tensorflow"
     )
+    container.containerPorts.append(ContainerPort(
+      serviceName = "SSH",
+      port = 22
+    ))
+    container.containerPorts.append(ContainerPort(
+      serviceName = "Jupyter Lab",
+      port = 8080
+    ))
     session.add(container)
     session.commit()

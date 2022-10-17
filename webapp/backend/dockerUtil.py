@@ -3,6 +3,8 @@ from docker.dockerUtils import getReservationsRequiringStart, getReservationsReq
 from time import sleep
 run = True
 
+from settings import settings
+
 import datetime
 from datetime import timezone
 
@@ -19,13 +21,15 @@ def startNewServers():
   reservations = getReservationsRequiringStart()
   for reservation in reservations:
     print(timeNow(), ": Starting Docker server for reservation with reservationId: ",  reservation.reservationId)
-    startDockerContainer(reservation.reservationId)
+    if settings.docker["enabled"] == True:
+      startDockerContainer(reservation.reservationId)
 
 def stopFinishedServers():
   reservations = getReservationsRequiringStop()
   for reservation in reservations:
     print(timeNow(), ": Stopping Docker server for reservation with reservationId: ",  reservation.reservationId)
-    stopDockerContainer(reservation.reservationId)
+    if settings.docker["enabled"] == True:
+      stopDockerContainer(reservation.reservationId)
 
 if __name__ == "__main__":
   print("AI Server Docker utility started.")

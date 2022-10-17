@@ -28,3 +28,19 @@ class Settings:
         json.dump(self.__dict__, open(self._config_location, 'w'))
 
 settings = Settings()
+
+def die(text):
+  import os
+  print(text)
+  os._exit(0)
+
+def CheckRequiredSettings():
+    '''
+    Checks that the settings file is found and that all the required settings are found.
+    Calls os.exit() if any problems were found.
+    '''
+    if settings == None:
+      die("Settings file was not found. Create a settings.json file.")
+    if settings.app == None:
+      die("App settings are not found in the settings file.")
+    # TODO: Rest of the required settings...
