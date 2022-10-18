@@ -6,7 +6,8 @@ import random
 import string
 from database import User, Session, UserWhitelist
 import helpers.server
-import ldap3 as ldap
+#import ldap3 as ldap
+import ldap
 from settings import settings
 from datetime import timedelta
 import datetime
@@ -136,7 +137,7 @@ def GetLDAPUser(username, password):
   l.set_option(ldap.OPT_NETWORK_TIMEOUT, 6)
   l.set_option(ldap.OPT_TIMEOUT, 6)
   l.set_option(ldap.OPT_REFERRALS, ldap.OPT_OFF)
-  print(os.getcwd())
+  #print(os.getcwd())
   #l.set_option(ldap.OPT_X_TLS_CACERTFILE, os.getcwd()+"/certificate.pem")
 
   with Session() as session:
@@ -145,7 +146,6 @@ def GetLDAPUser(username, password):
       result = l.search_s(set["ldapDomain"], ldap.SCOPE_SUBTREE, set["searchMethod"].replace("{username}", username), [set["accountField"], set["emailField"]])
       account = result[0][1][set["accountField"]][0].decode("utf-8")
       if account != username:
-        print("Wrong username / ldap username association!")
         return False, "Wrong username / ldap username association"
       
       email = result[0][1][set["emailField"]][0].decode("utf-8")
@@ -162,10 +162,10 @@ def GetLDAPUser(username, password):
         )
         session.add(newUser)
         session.commit()
-        return True, session.query(User).filter( User.email == email ).first()
+        return True, session.query(User).filter( User.email == email ).first().userId
       # User found? Return it
       else:
-        return True, user
+        return True, user.userId
     except ldap.INVALID_CREDENTIALS:
       return False, "Wrong username or password."
     except ldap.SERVER_DOWN:

@@ -19,18 +19,18 @@ def login(username, password):
   if username == "" or username is None: raise HTTPException(status_code=400, detail="username cannot be empty.")
   if password == "" or password is None: raise HTTPException(status_code=400, detail="password cannot be empty.")
 
-  user = None
-  loginType = settings.login["loginType"]
-  useWhitelisting = settings.login["useWhitelist"]
-
   with Session() as session:
+    user = None
+    loginType = settings.login["loginType"]
+    useWhitelisting = settings.login["useWhitelist"]
+
     if loginType == "password":
       user = session.query(User).filter( User.email == username).first()
     elif loginType == "LDAP":
       ldapSuccess, response = GetLDAPUser(username, password)
       if ldapSuccess == False:
         return Response(False, response)
-      user = response
+      user = session.query(User).filter( User.userId == response).first()
 
     whitelistEmail = session.query(UserWhitelist).filter( UserWhitelist.email == username ).first()
     if loginType == "password" and useWhitelisting and whitelistEmail == None:
