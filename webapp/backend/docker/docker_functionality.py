@@ -91,6 +91,7 @@ def stop_container(container_name):
     '''
     try:
         docker.stop(container_name)
+        print(f"Stopped container {container_name}")
     except NoSuchContainer as e:
         return False
     return True

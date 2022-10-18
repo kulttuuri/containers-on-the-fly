@@ -70,7 +70,6 @@ class Settings:
         if not hasattr(s, 'docker'): die("docker")
         if "enabled" not in s.docker: die("docker.enabled")
         if "mountLocation" not in s.docker: die("docker.mountLocation")
-        if "dockerMountMainLocation" not in s.docker: die("docker.dockerMountMainLocation")
         if "shm_size" not in s.docker: die("docker.shm_size")
         if "port_range_start" not in s.docker: die("docker.port_range_start")
         if "port_range_end" not in s.docker: die("docker.port_range_end")

@@ -98,7 +98,7 @@ def startDockerContainer(reservationId: str):
       next
     
     if cont_was_started == True:
-      print("Container was started succesfully.")
+      print(f"Container with Docker name {cont_name} was started succesfully.")
       # Set bound ports
       for port in bindablePorts:
         reservation.reservedContainer.reservedContainerPorts.append(ReservedContainerPort(
