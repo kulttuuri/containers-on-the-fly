@@ -15,12 +15,14 @@
       <v-stepper-content step="1">
         <v-row>
           <v-col>
-            <h1>Reserve Server</h1>
-            <p class="dim">Click on a time on the calendar or <b><a @click="reserveNow">click here</a></b> to make a reservation right now.</p>
+            <h1 style="margin-bottom: 10px;">Reserve Server</h1>
+            <p class="dim">Click on a time slot on the calendar or <b><a style="font-size: 115%;" @click="reserveNow">click here</a></b> to make a reservation right now.</p>
+            <p class="dim">All times are in timezone <strong>{{globalTimezone}}</strong></p>
           </v-col>
         </v-row>
         <v-row>
           <v-col class="section">
+            <p><small><a @click="fetchReservations">Refresh reservations</a></small></p>
             <CalendarReservations v-if="allReservations" :propReservations="allReservations" @slotSelected="slotSelected" />
           </v-col>
         </v-row>
@@ -122,12 +124,41 @@
   dayjs.extend(utc)
   dayjs.extend(timezone)
   dayjs.extend(customParseFormat)
+  import AppSettings from '/src/AppSettings.js'
+
+  async function checkHardwareAvailability(date, duration, loginToken) {
+    let returnData = null;
+    let dateParsed = dayjs(date).tz("GMT+0").toISOString()
+    await axios({
+      method: "get",
+      url: AppSettings.APIServer.reservation.get_available_hardware,
+      params: { "date": dateParsed, "duration": duration },
+      headers: {"Authorization" : `Bearer ${loginToken}`}
+    })
+    .then(function (response) {
+      //console.log(response)
+        // Success
+        if (response.data.status == true) {
+          returnData = null
+        }
+        else {
+          returnData = response.data.message
+          //return response.data.message
+        }
+    })
+    .catch(function (error) {
+        console.log(error)
+        returnData = "An error occurred while checking hardware availability. Please try again later."
+        //return "An error occurred while checking hardware availability. Please try again later."
+    });
+    return returnData
+  }
 
   export default {
     name: 'PageUserReserve',
     components: {
       CalendarReservations,
-      Loading,
+      Loading
     },
     data: () => ({
       reserveDate: null,
@@ -150,12 +181,14 @@
       hardwareData: null, // Contains hardware data for the currently selected computer
       selectedHardwareSpecs: {}, // Selected hardware specs for the current computer
       isSubmittingReservation: false, // Set to true when user is submitting the reservation
+      minimumDuration: 5, // TODO: Grab from server settings
+      maximumDuration: 72,  // TODO: Grab from server settings
     }),
     mounted() {
       let d = new Date()
 
       let hours = []
-      for (let i = 5; i < 72; i++) {
+      for (let i = this.minimumDuration; i < this.maximumDuration; i++) {
         hours.push( { "text": i + " hours", "value": i } )
       }
       this.reservableHours = hours
@@ -169,7 +202,6 @@
       this.hours = dayHours
       this.pickedHour = d.getHours() < 10 ? "0"+d.getHours() : d.getHours.toString()
 
-      // TODO: Repeat every 15 seconds
       this.fetchReservations()
     },
     methods: {
@@ -182,8 +214,13 @@
         this.step = this.step - 1
       },
       slotSelected(time) {
-        this.reserveDate = time.toISOString()
-        this.nextStep()
+        checkHardwareAvailability(time, this.minimumDuration, this.$store.getters.user.loginToken).then(res => {
+          if (res !== null) {
+            return this.$store.commit('showMessage', { text: res, color: "red" })
+          }
+          this.reserveDate = time.toISOString()
+          this.nextStep()
+        })
       },
       computerChanged() {
         let currentComputerId = this.computer
@@ -204,10 +241,15 @@
         this.showReservationCalendar = !this.showReservationCalendar
       },
       reserveNow() {
-        this.reserveDate = dayjs().toISOString()
-        this.reserveType = "now"
-        this.reserveDuration = null
-        this.nextStep()
+        checkHardwareAvailability(dayjs().toISOString(), this.minimumDuration, this.$store.getters.user.loginToken).then(res => {
+          if (res !== null) {
+            return this.$store.commit('showMessage', { text: res, color: "red" })
+          }
+          this.reserveDate = dayjs().toISOString()
+          this.reserveType = "now"
+          this.reserveDuration = null
+          this.nextStep()
+        })
       },
       reserveLater() {
         this.reserveDate = null
@@ -266,7 +308,7 @@
         axios({
           method: "get",
           url: this.AppSettings.APIServer.reservation.get_available_hardware,
-          params: { "date": dayjs(this.reserveDate).tz("GMT+0").toISOString() },
+          params: { "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(), duration: this.reserveDuration },
           headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
         })
         .then(function (response) {
@@ -290,8 +332,8 @@
             }
             // Fail
             else {
-              console.log("Failed getting hardware data...")
-              _this.$store.commit('showMessage', { text: "There was an error getting the hardware specs.", color: "red" })
+              //console.log("Failed getting hardware data...")
+              _this.$store.commit('showMessage', { text: response.data.message, color: "red" })
             }
             _this.fetchingComputers = false
         })
@@ -342,9 +384,7 @@
             }
             // Fail
             else {
-              console.log("Failed getting hardware data...")
-              console.log(response)
-              let msg = response && response.data && response.data.message ? response.data.message : "There was an error getting the hardware specs."
+              let msg = response && response.data && response.data.message ? response.data.message + " Please select less resources or go back and select another time." : "There was an error getting the hardware specs."
               _this.$store.commit('showMessage', { text: msg, color: "red" })
             }
             _this.isSubmittingReservation = false
@@ -365,7 +405,10 @@
     computed: {
       parsedTime() {
         return dayjs(this.reserveDate).format("DD.MM.YYYY HH:mm")
-      }
+      },
+      globalTimezone() {
+        return AppSettings.General.timezone
+      },
     },
   }
 </script>

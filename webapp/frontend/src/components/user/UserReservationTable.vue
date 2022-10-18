@@ -21,6 +21,10 @@
     <template v-slot:item.endDate="{item}">
       {{ parseTime(item.endDate) }}
     </template>
+    <!-- Resources -->
+    <template v-slot:item.resources="{item}">
+      {{ getResources(item.reservedHardwareSpecs) }}
+    </template>
     <!-- Container Status -->
     <template v-slot:item.containerStatus="{item}">
       {{ item.reservedContainer.containerStatus }}
@@ -57,6 +61,7 @@
           { text: 'Reserved', value: 'createdAt' },
           { text: 'Starts', value: 'startDate' },
           { text: 'Ends', value: 'endDate' },
+          { text: 'Resources', value: 'resources' },
           { text: 'Container Status', value: 'containerStatus' },
           { text: 'actions', value: 'actions' },
         ],
@@ -77,6 +82,17 @@
       parseTime(timestamp) {
         return DisplayTime(timestamp)
       },
+      getResources(specs) {
+        if (specs) {
+          let resources = ""
+          for (let i = 0; i < specs.length; i++) {
+            resources += specs[i].amount + " " + specs[i].format
+            if (i != specs.length - 1) resources += ", "
+          }
+          return resources
+        }
+        return ""
+      }
     },
     watch: {
       propReservations: {

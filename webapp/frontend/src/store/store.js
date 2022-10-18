@@ -34,7 +34,7 @@ export const store = new Vuex.Store({
       color: "primary", // Color for snackbar
       visible: false, // Is the snackbar visible
       close: false, // Does user see close button
-      timeout: 5000, // Default timeout for snackbars
+      timeout: 7000, // Default timeout for snackbars
       multiline: false, // Is this multiline, automatically set below
     },
     initializing: true, // Set to false after we have initialized the app / store

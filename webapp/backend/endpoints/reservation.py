@@ -14,9 +14,9 @@ router = APIRouter(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
 
 @router.get("/get_available_hardware")
-async def getAvailableHardware(date : str, token: str = Depends(oauth2_scheme)):
+async def getAvailableHardware(date : str, duration: int, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
-  return functionality.getAvailableHardware(date)
+  return functionality.getAvailableHardware(date, duration)
 
 @router.get("/get_own_reservations")
 async def getOwnReservations(token: str = Depends(oauth2_scheme)):
@@ -25,7 +25,7 @@ async def getOwnReservations(token: str = Depends(oauth2_scheme)):
   return functionality.getOwnReservations(userId)
 
 @router.post("/create_reservation")
-async def getAvailableHardware(date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, token: str = Depends(oauth2_scheme)):
+async def CreateReservation(date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
   try:
     hardwareSpecs = json.loads(hardwareSpecs)

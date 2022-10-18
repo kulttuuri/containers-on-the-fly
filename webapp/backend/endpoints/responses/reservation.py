@@ -6,9 +6,35 @@ from dateutil.relativedelta import *
 import datetime
 from datetime import timezone, timedelta
 from docker.dockerUtils import stop_container
+from settings import settings
 
-def getAvailableHardware(date) -> object:
-  # TODO: Get only available resources for this time period
+# TODO: This should probably be computer specific, so gets back all available hardware specs for the given computer
+# Right now it fails if any of the computers are out of resources for the given time period.
+def getAvailableHardware(date, duration) -> object:
+  '''
+  Returns a list of all available hardware specs for the given date and duration.
+  '''
+  date = parser.parse(date)
+  endDate = date+relativedelta(hours=+duration)
+
+  session.commit()
+  reservations = session.query(Reservation).filter(
+    Reservation.startDate < endDate,
+    Reservation.endDate > date,
+    (Reservation.status == "reserved") | (Reservation.status == "started")
+  )
+
+  # All reserved hardware specs for the given time period will be listed here
+  removableHardwareSpecs = {}
+  for res in reservations:
+    for spec in res.reservedHardwareSpecs:
+      type = spec.hardwareSpec.type
+      amount = spec.amount
+      
+      if type not in removableHardwareSpecs:
+        removableHardwareSpecs[type] = amount
+      else:
+        removableHardwareSpecs[type] += amount
 
   computers = []
 
@@ -24,7 +50,27 @@ def getAvailableHardware(date) -> object:
   allContainers = session.query(Container)
   for container in allContainers:
     containers.append(ORMObjectToDict(container))
-  
+
+  for computer in computers:
+    for spec in computer["hardwareSpecs"]:
+      if spec["type"] in removableHardwareSpecs:
+        spec["maximumAmount"] -= removableHardwareSpecs[spec["type"]]
+        if spec["maximumAmountForUser"] > spec["maximumAmount"]:
+          spec["maximumAmountForUser"] = spec["maximumAmount"]
+        #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
+        if spec["maximumAmount"] < spec["minimumAmount"]:
+          #print("minimumAmount: ", spec["minimumAmount"])
+          #print("maximumAmount: ", spec["maximumAmount"])
+          #print("maximumAmountForUser: ", spec["maximumAmountForUser"])
+          specMessage = ""
+          specMax = spec['maximumAmount']
+          if specMax < 0: specMax = 0
+          if spec["type"] == "ram":
+            specMessage = f"Available: {specMax} {spec['format']} {spec['type']}."
+          else:
+            specMessage = f"Available: {specMax} {spec['type']}."
+          return Response(False, f"Not enough resources to make a reservation: {spec['type']}. {specMessage}")
+
   return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
 
 def getOwnReservations(userId) -> object:
@@ -40,7 +86,15 @@ def getOwnReservations(userId) -> object:
     res = ORMObjectToDict(reservation)
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)
     res["reservedContainer"]["container"] = ORMObjectToDict(reservation.reservedContainer.container)
-    reservations.append(reservation)
+    # Add all reserved hardware specs
+    res["reservedHardwareSpecs"] = []
+    for spec in reservation.reservedHardwareSpecs:
+      res["reservedHardwareSpecs"].append({
+        "type": spec.hardwareSpec.type,
+        "format": spec.hardwareSpec.format,
+        "amount": spec.amount
+      })
+    reservations.append(res)
   
   return Response(True, "Hardware resources fetched.", { "reservations": reservations })
 
@@ -67,6 +121,8 @@ def getCurrentReservations() -> object:
       "reservationId": reservation.reservationId,
       "startDate": reservation.startDate,
       "endDate": reservation.endDate,
+      "computerId": reservation.computerId,
+      "computerName": reservation.computer.name,
       "hardwareSpecs": specs,
     }
     reservations.append(res)
@@ -76,13 +132,25 @@ def getCurrentReservations() -> object:
 def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs):
   session.commit()
 
+  # Make sure that there are enough resources for the reservation
+  getAvailableHardwareResponse = getAvailableHardware(date, duration)
+  #print(getAvailableHardwareResponse)
+  if (getAvailableHardwareResponse["status"] == False):
+    return Response(False, getAvailableHardwareResponse["message"])
+
   date = parser.parse(date)
   endDate = date+relativedelta(hours=+duration)
+
+  # Check that user exists
   user = session.query(User).filter( User.userId == userId ).first()
   if (user == None): return Response(False, "User not found.")
   isAdmin = IsAdmin(user.email)
 
-  # TODO: Make sure that there are enough resources for the reservation
+  # Check that computer and container exists
+  computer = session.query(Computer).filter( Computer.computerId == computerId ).first()
+  if (computer == None): return Response(False, "Computer not found.")
+  container = session.query(Container).filter( Container.containerId == containerId ).first()
+  if (container == None): return Response(False, "Container not found.")
 
   # Make sure that user can only have one queued / started server at once (admins can have unlimited)
   userActiveReservations = session.query(Reservation).filter(
@@ -91,6 +159,12 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
   ).count()
   if userActiveReservations > 0 and isAdmin == False:
     return Response(False, "You can only have one queued or started reservation.")
+
+  # Check that the duration is between minimum and maximum lengths
+  if (duration < settings.reservation["minimumDuration"]):
+    return Response(False, f"Minimum duration is {settings.reservation['minimumDuration']} hours.")
+  if (duration > settings.reservation["maximumDuration"]):
+    return Response(False, f"Maximum duration is {settings.reservation['maximumDuration']} hours.")
 
   # Create the base reservation
   reservation = Reservation(

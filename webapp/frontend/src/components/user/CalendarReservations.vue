@@ -129,13 +129,14 @@
           this.$store.commit('showMessage', { text: "Can only make reservations into future.", color: "red" })
           return
         }
-
+        
         this.$emit("slotSelected", selectedTime)
       },
       getReservationSpecs( reservationId ) {
         let returnData = ""
         this.propReservations.forEach((res) => {
           if (res.reservationId == reservationId) {
+            returnData += res.computerName + "<br>"
             res.hardwareSpecs.forEach((spec) => {
               returnData += spec.amount + " " + spec.format + "<br>"
             })

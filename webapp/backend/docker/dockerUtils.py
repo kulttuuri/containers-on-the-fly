@@ -1,4 +1,4 @@
-from database import session, Reservation, ReservedContainerPort
+from database import Session, Reservation, ReservedContainerPort
 from helpers.auth import create_password
 from helpers.server import ORMObjectToDict
 #from dateutil import parser
@@ -23,12 +23,13 @@ def is_port_in_use(port: int) -> bool:
 def get_available_port():
   # Loop through all started containers and get the ports in use
   portsInUse = []
+  session = Session()
   allActiveReservations = session.query(Reservation).filter( Reservation.status == "started" )
   for reservation in allActiveReservations:
     for usedPort in reservation.reservedContainer.reservedContainerPorts:
       #print("Used port:", usedPort.outsidePort)
       portsInUse.append(usedPort.outsidePort)
-
+  session.close()
   min = settings.docker["port_range_start"]
   max = settings.docker["port_range_end"]
   availablePorts = []
@@ -51,11 +52,11 @@ def timeNow():
   return datetime.datetime.now(datetime.timezone.utc)
 
 def startDockerContainer(reservationId: str):
-  session.commit()
+  session = Session()
   reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
   if reservation == None: return False
   sshPassword = create_password()
-  
+
   imageName = reservation.reservedContainer.container.imageName
   hwSpecs = {}
   for spec in reservation.reservedHardwareSpecs:
@@ -95,7 +96,7 @@ def startDockerContainer(reservationId: str):
     cont_was_started, cont_name, cont_password = start_container(details)
   except Exception as e:
     #print("Error starting container:", e)
-    next
+    session.close()
   
   if cont_was_started == True:
     print("Container was started succesfully.")
@@ -121,11 +122,12 @@ def startDockerContainer(reservationId: str):
         reservation.endDate)
     
     session.commit()
+    session.close()
   else:
     print("Container was not started.")
 
 def stopDockerContainer(reservationId: str):
-  session.commit()
+  session = Session()
   reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
   if reservation == None: return False
 
@@ -137,34 +139,42 @@ def stopDockerContainer(reservationId: str):
   reservation.status = "stopped"
   reservation.reservedContainer.stoppedAt = timeNow()
   session.commit()
+  session.close()
 
 def updateRunningContainerStatus(reservationId: str):
   print("IMPLEMENT")
-  session.commit()
+  session = Session()
   reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
   print(ORMObjectToDict(reservation))
   print(ORMObjectToDict(reservation.reservedContainer))
   reservation.reservedContainer.containerStatus = "Container status here..."
   session.commit()
+  session.close()
 
 def getReservationsRequiringStart():
+  session = Session()
   reservations = session.query(Reservation).filter(
     Reservation.status == "reserved",
     Reservation.startDate < timeNow()
   )
+  session.close()
   return reservations
 
 def getRunningReservations():
+  session = Session()
   reservations = session.query(Reservation).filter(
     Reservation.status == "started",
     Reservation.startDate < timeNow(),
     Reservation.endDate > timeNow()
   )
+  session.close()
   return reservations
 
 def getReservationsRequiringStop():
+  session = Session()
   reservations = session.query(Reservation).filter(
     Reservation.status == "started",
     Reservation.endDate < timeNow()
   )
+  session.close()
   return reservations
