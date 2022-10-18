@@ -1,4 +1,4 @@
-from database import User, session, UserWhitelist
+from database import User, Session, UserWhitelist
 from helpers.server import Response, ORMObjectToDict
 from settings import settings
 from helpers.auth import CreateLoginToken, HashPassword, IsCorrectPassword, CheckToken, GetLDAPUser, GetRole
@@ -23,37 +23,38 @@ def login(username, password):
   loginType = settings.login["loginType"]
   useWhitelisting = settings.login["useWhitelist"]
 
-  if loginType == "password":
-    user = session.query(User).filter( User.email == username).first()
-  elif loginType == "LDAP":
-    ldapSuccess, response = GetLDAPUser(username, password)
-    if ldapSuccess == False:
-      return Response(False, response)
-    user = response
+  with Session() as session:
+    if loginType == "password":
+      user = session.query(User).filter( User.email == username).first()
+    elif loginType == "LDAP":
+      ldapSuccess, response = GetLDAPUser(username, password)
+      if ldapSuccess == False:
+        return Response(False, response)
+      user = response
 
-  whitelistEmail = session.query(UserWhitelist).filter( UserWhitelist.email == username ).first()
-  if loginType == "password" and useWhitelisting and whitelistEmail == None:
-    return Response(False, "You are not allowed to login (not whitelisted).")
+    whitelistEmail = session.query(UserWhitelist).filter( UserWhitelist.email == username ).first()
+    if loginType == "password" and useWhitelisting and whitelistEmail == None:
+      return Response(False, "You are not allowed to login (not whitelisted).")
 
-  # User found
-  if user:
-    # Check that the password is correct (only for password logins)
-    if (loginType == "password" and (user.password == "" or user.password is None)):
-      raise HTTPException(status_code=400, detail="User password was not set yet. Please set the password first to login.")
-    if loginType == "password" and IsCorrectPassword(user.passwordSalt, user.password, password) == False:
-      raise HTTPException(status_code=400, detail="Incorrect password.")
+    # User found
+    if user:
+      # Check that the password is correct (only for password logins)
+      if (loginType == "password" and (user.password == "" or user.password is None)):
+        raise HTTPException(status_code=400, detail="User password was not set yet. Please set the password first to login.")
+      if loginType == "password" and IsCorrectPassword(user.passwordSalt, user.password, password) == False:
+        raise HTTPException(status_code=400, detail="Incorrect password.")
 
-    # Create login token and return it
-    user.loginToken = CreateLoginToken()
-    user.loginTokenCreatedAt = datetime.utcnow()
-    session.commit()
-    return {
-      "access_token": user.loginToken,
-      "token_type": "bearer"
-    }
-  # User not found, invalid login credentials
-  else:
-    raise HTTPException(status_code=400, detail="User not found.")
+      # Create login token and return it
+      user.loginToken = CreateLoginToken()
+      user.loginTokenCreatedAt = datetime.utcnow()
+      session.commit()
+      return {
+        "access_token": user.loginToken,
+        "token_type": "bearer"
+      }
+    # User not found, invalid login credentials
+    else:
+      raise HTTPException(status_code=400, detail="User not found.")
 
 def checkToken(token):
   ''' Checks that the given token is valid and has not expired.
@@ -93,7 +94,8 @@ def profile(token):
       Parameters:
         token: User login token
   '''
-  user = session.query(User).filter( User.loginToken == token ).first()
+  with Session() as session:
+    user = session.query(User).filter( User.loginToken == token ).first()
   if user is None: return Response(False, "User not found.")
   else:
     userDetails = {}

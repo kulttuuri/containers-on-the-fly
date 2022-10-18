@@ -168,4 +168,3 @@ Base.metadata.create_all(engine)
 # Create session to interact with the database
 from sqlalchemy.orm import sessionmaker
 Session = sessionmaker(bind = engine)
-session = Session()

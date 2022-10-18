@@ -1,5 +1,5 @@
 # Computer table management functionality
-from database import Computer, session
+from database import Computer, Session
 
 def getComputers(filter = None):
   '''
@@ -9,18 +9,19 @@ def getComputers(filter = None):
     Returns:
       All found computers in a list.
   '''
-  if filter != None:
-    computers = session.query(Computer).filter(Computer.name == filter).first()
-    if computers != None: return [computers]
-    else:
-      try:
-        computers = session.query(Computer).filter(Computer.computerId == int(filter)).first()
-        if computers != None: return [computers]
-        else: return None
-      except:
-        return None
-  else: computers = session.query(Computer).all()
-  return computers
+  with Session() as session:
+    if filter != None:
+      computers = session.query(Computer).filter(Computer.name == filter).first()
+      if computers != None: return [computers]
+      else:
+        try:
+          computers = session.query(Computer).filter(Computer.computerId == int(filter)).first()
+          if computers != None: return [computers]
+          else: return None
+        except:
+          return None
+    else: computers = session.query(Computer).all()
+    return computers
 
 def addComputer(name, public):
   '''
@@ -31,13 +32,14 @@ def addComputer(name, public):
     Returns:
       The created computer object fetched from database. Or None if provided name already exists.
   '''
-  duplicate = session.query(Computer).filter(Computer.name == name).first()
-  if duplicate != None:
+  with Session() as session:
+    duplicate = session.query(Computer).filter(Computer.name == name).first()
+    if duplicate != None:
       return None
-  newComputer = Computer(name = name, public = public)
-  session.add(newComputer)
-  session.commit()
-  return session.query(Computer).filter(Computer.name == name).first()
+    newComputer = Computer(name = name, public = public)
+    session.add(newComputer)
+    session.commit()
+    return session.query(Computer).filter(Computer.name == name).first()
 
 def removeComputer(computer_id):
   '''
@@ -47,9 +49,10 @@ def removeComputer(computer_id):
     Returns:
       Nothing
   '''
-  computer = session.query(Computer).filter(Computer.computerId == computer_id).first()
-  session.delete(computer)
-  session.commit()
+  with Session() as session:
+    computer = session.query(Computer).filter(Computer.computerId == computer_id).first()
+    session.delete(computer)
+    session.commit()
 
 def editComputer(computer_id, new_name = None, new_public = None):
   '''
@@ -61,8 +64,9 @@ def editComputer(computer_id, new_name = None, new_public = None):
     Returns:
       The edited computer object fetched from database. Or None if name or publicity isn't provided.
   '''
-  computer = session.query(Computer).filter(Computer.computerId == computer_id).first()
-  if new_name != None: computer.name = new_name
-  if new_public != None: computer.public = new_public
-  session.commit()
-  return computer
+  with Session() as session:
+    computer = session.query(Computer).filter(Computer.computerId == computer_id).first()
+    if new_name != None: computer.name = new_name
+    if new_public != None: computer.public = new_public
+    session.commit()
+    return computer

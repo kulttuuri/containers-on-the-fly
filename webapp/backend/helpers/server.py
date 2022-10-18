@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import inspect
 from sqlalchemy.ext.hybrid import hybrid_property
 from helpers.auth import *
-from database import User, session
+from database import User, Session
 import requests
 import json
 from os import sys
@@ -30,7 +30,8 @@ def ForceAuthentication(token: str, roleRequired: str = None) -> Union[bool,HTTP
   wrongRole = False
   if (IsLoggedIn(token)):
     if roleRequired is not None:
-      user = session.query(User).filter( User.loginToken == token ).first()
+      with Session() as session:
+        user = session.query(User).filter( User.loginToken == token ).first()
       if GetRole(user.email) == roleRequired:
         return True
       else:

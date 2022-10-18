@@ -1,5 +1,5 @@
 # Hardware specs table management functionality
-from database import HardwareSpec, session
+from database import HardwareSpec, Session
 
 def getHardwarespecs(filter = None):
   '''
@@ -9,15 +9,17 @@ def getHardwarespecs(filter = None):
     Returns:
       All found hardwarespecs in a list.
   '''
-  if filter != None:
-    try:
-      hardwarespecs = session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == int(filter)).first()
-      if hardwarespecs != None: return [hardwarespecs]
-      else: return None
-    except:
-      return None
-  else: hardwarespecs = session.query(HardwareSpec).all()
-  return hardwarespecs
+  with Session() as session:
+    if filter != None:
+      try:
+        hardwarespecs = session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == int(filter)).first()
+        if hardwarespecs != None: return [hardwarespecs]
+        else: return None
+      except:
+        return None
+    else: hardwarespecs = session.query(HardwareSpec).all()
+
+    return hardwarespecs
 
 def addHardwarespec(computerId, type, maxAmount, minAmount, maxUserAmount, defaultUserAmount, format):
   '''
@@ -34,8 +36,9 @@ def addHardwarespec(computerId, type, maxAmount, minAmount, maxUserAmount, defau
       Nothing for now.
   '''
   newHardwarespec = HardwareSpec(computerId = computerId, type = type, maximumAmount = maxAmount, minimumAmount = minAmount, maximumAmountForUser = maxUserAmount, defaultAmountForUser = defaultUserAmount, format = format)
-  session.add(newHardwarespec)
-  session.commit()
+  with Session() as session:
+    session.add(newHardwarespec)
+    session.commit()
   # So with the other ones, name was unique so I used it to return the new object, but the only unique field this has is it's own id
   # but I don't really know how to fetch the specific id since it doesnt exist until session.add so I'm not gonna return anything for now
   return #session.query(HardwareSpec).filter(HardwareSpec.name == name).first()
@@ -48,9 +51,11 @@ def removeHardwarespec(hardwarespec_id):
     Returns:
       Nothing
   '''
-  hardwarespec = session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == hardwarespec_id).first()
-  session.delete(hardwarespec)
-  session.commit()
+  with Session() as session:
+    hardwarespec = session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == hardwarespec_id).first()
+    session.delete(hardwarespec)
+    session.commit()
+
 
 def editHardwarespec(hardwarespec_id, new_computer_id, new_type, new_max, new_min, new_user_max, new_user_default, new_format):
   '''
@@ -64,13 +69,14 @@ def editHardwarespec(hardwarespec_id, new_computer_id, new_type, new_max, new_mi
     Returns:
       The edited hardwarespec object fetched from database. Or None if name or publicity isn't provided.
   '''
-  hardwarespec = session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == hardwarespec_id).first()
-  if new_computer_id != None: hardwarespec.computerId = new_computer_id
-  if new_type != None: hardwarespec.type = new_type
-  if new_max != None: hardwarespec.maximumAmount = new_max
-  if new_min != None: hardwarespec.minimumAmount = new_min
-  if new_user_max != None: hardwarespec.maximumAmountForUser = new_user_max
-  if new_user_default != None: hardwarespec.defaultAmountForUser = new_user_default
-  if new_format != None: hardwarespec.format = new_format
-  session.commit()
-  return hardwarespec
+  with Session() as session:
+    hardwarespec = session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == hardwarespec_id).first()
+    if new_computer_id != None: hardwarespec.computerId = new_computer_id
+    if new_type != None: hardwarespec.type = new_type
+    if new_max != None: hardwarespec.maximumAmount = new_max
+    if new_min != None: hardwarespec.minimumAmount = new_min
+    if new_user_max != None: hardwarespec.maximumAmountForUser = new_user_max
+    if new_user_default != None: hardwarespec.defaultAmountForUser = new_user_default
+    if new_format != None: hardwarespec.format = new_format
+    session.commit()
+    return hardwarespec

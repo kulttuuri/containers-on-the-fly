@@ -1,5 +1,5 @@
 # Container table management functionality
-from database import Container, session
+from database import Container, Session
 
 def getContainers(filter = None):
   '''
@@ -9,18 +9,19 @@ def getContainers(filter = None):
     Returns:
       All found containers in a list.
   '''
-  if filter != None:
-    containers = session.query(Container).filter(Container.name == filter).first()
-    if containers != None: return [containers]
-    else:
-      try:
-        containers = session.query(Container).filter(Container.containerId == int(filter)).first()
-        if containers != None: return [containers]
-        else: return None
-      except:
-        return None
-  else: containers = session.query(Container).all()
-  return containers
+  with Session() as session:
+    if filter != None:
+      containers = session.query(Container).filter(Container.name == filter).first()
+      if containers != None: return [containers]
+      else:
+        try:
+          containers = session.query(Container).filter(Container.containerId == int(filter)).first()
+          if containers != None: return [containers]
+          else: return None
+        except:
+          return None
+    else: containers = session.query(Container).all()
+    return containers
 
 def addContainer(name, public, description, imageName):
   '''
@@ -31,13 +32,14 @@ def addContainer(name, public, description, imageName):
     Returns:
       The created container object fetched from database. Or None if provided name already exists.
   '''
-  duplicate = session.query(Container).filter(Container.name == name).first()
-  if duplicate != None:
-      return None
-  newContainer = Container(name = name, public = public, description = description, imageName = imageName)
-  session.add(newContainer)
-  session.commit()
-  return session.query(Container).filter(Container.name == name).first()
+  with Session() as session:
+    duplicate = session.query(Container).filter(Container.name == name).first()
+    if duplicate != None:
+        return None
+    newContainer = Container(name = name, public = public, description = description, imageName = imageName)
+    session.add(newContainer)
+    session.commit()
+    return session.query(Container).filter(Container.name == name).first()
 
 def removeContainer(container_id):
   '''
@@ -47,9 +49,10 @@ def removeContainer(container_id):
     Returns:
       Nothing
   '''
-  container = session.query(Container).filter(Container.containerId == container_id).first()
-  session.delete(container)
-  session.commit()
+  with Session() as session:
+    container = session.query(Container).filter(Container.containerId == container_id).first()
+    session.delete(container)
+    session.commit()
 
 def editContainer(container_id, new_name = None, new_public = None, new_description = None, new_image_name = None):
   '''
@@ -63,10 +66,11 @@ def editContainer(container_id, new_name = None, new_public = None, new_descript
     Returns:
       The edited container object fetched from database. Or None if name or publicity isn't provided.
   '''
-  container = session.query(Container).filter(Container.containerId == container_id).first()
-  if new_name != None: container.name = new_name
-  if new_public != None: container.public = new_public
-  if new_description != None: container.description = new_description
-  if new_image_name != None: container.imageName = new_image_name
-  session.commit()
-  return container
+  with Session() as session:
+    container = session.query(Container).filter(Container.containerId == container_id).first()
+    if new_name != None: container.name = new_name
+    if new_public != None: container.public = new_public
+    if new_description != None: container.description = new_description
+    if new_image_name != None: container.imageName = new_image_name
+    session.commit()
+    return container

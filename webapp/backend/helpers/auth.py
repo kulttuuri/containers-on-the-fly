@@ -4,7 +4,7 @@ import hashlib
 import hmac
 import random
 import string
-from database import User, session, UserWhitelist
+from database import User, Session, UserWhitelist
 import helpers.server
 import ldap3 as ldap
 from settings import settings
@@ -19,13 +19,15 @@ def IsAdmin(email : str) -> bool:
   Returns:
     true if is admin, false otherwise.
   '''
-  user = session.query(User).filter( User.email == email ).first()
-  if (user == None): return False
+  with Session() as session:
+    user = session.query(User).filter( User.email == email ).first()
 
-  isAdmin = False
-  for role in user.roles:
-    if role.name == "admin": isAdmin = True
-  return isAdmin
+    if (user == None): return False
+
+    isAdmin = False
+    for role in user.roles:
+      if role.name == "admin": isAdmin = True
+    return isAdmin
 
 def GetRole(email : str) -> string:
   '''
@@ -33,13 +35,15 @@ def GetRole(email : str) -> string:
   Returns:
     'user' if role was not found for the user, otherwise the name of the role.
   '''
-  user = session.query(User).filter( User.email == email ).first()
-  if (user == None): return "user"
+  with Session() as session:
+    user = session.query(User).filter( User.email == email ).first()
 
-  userRole = "user"
-  if (len(user.roles) > 0):
-    userRole = user.roles[0].name
-  return userRole
+    if (user == None): return "user"
+
+    userRole = "user"
+    if (len(user.roles) > 0):
+      userRole = user.roles[0].name
+    return userRole
 
 def IsLoggedIn(token : str):
   '''
@@ -68,13 +72,14 @@ def CheckToken(token : str) -> object:
   def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
   minStartDate = timeNow() - timedelta(minutes=settings.session["timeoutMinutes"])
 
-  user = session.query(User).filter( User.loginToken == token, User.loginTokenCreatedAt > minStartDate ).first()
+  with Session() as session:
+    user = session.query(User).filter( User.loginToken == token, User.loginTokenCreatedAt > minStartDate ).first()
 
-  if user is not None:
-    userRole = GetRole(user.email)
-    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "role": userRole })
-  else:
-    return helpers.server.Response(False, "Invalid token.")
+    if user is not None:
+      userRole = GetRole(user.email)
+      return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "role": userRole })
+    else:
+      return helpers.server.Response(False, "Invalid token.")
 
 def CreateLoginToken() -> str:
   '''
@@ -134,38 +139,37 @@ def GetLDAPUser(username, password):
   print(os.getcwd())
   #l.set_option(ldap.OPT_X_TLS_CACERTFILE, os.getcwd()+"/certificate.pem")
 
-  try:
-    l.simple_bind_s(set["usernameFormat"].replace("{username}", username), set["passwordFormat"].replace("{password}", password))
-    result = l.search_s(set["ldapDomain"], ldap.SCOPE_SUBTREE, set["searchMethod"].replace("{username}", username), [set["accountField"], set["emailField"]])
-    account = result[0][1][set["accountField"]][0].decode("utf-8")
-    if account != username:
-      print("Wrong username / ldap username association!")
-      return False, "Wrong username / ldap username association"
-    
-    email = result[0][1][set["emailField"]][0].decode("utf-8")
-    whitelistEmail = session.query(UserWhitelist).filter( UserWhitelist.email == email ).first()
-    if useWhitelisting and whitelistEmail == None:
-      return False, "You are not allowed to login (not whitelisted, LDAP)."
+  with Session() as session:
+    try:
+      l.simple_bind_s(set["usernameFormat"].replace("{username}", username), set["passwordFormat"].replace("{password}", password))
+      result = l.search_s(set["ldapDomain"], ldap.SCOPE_SUBTREE, set["searchMethod"].replace("{username}", username), [set["accountField"], set["emailField"]])
+      account = result[0][1][set["accountField"]][0].decode("utf-8")
+      if account != username:
+        print("Wrong username / ldap username association!")
+        return False, "Wrong username / ldap username association"
+      
+      email = result[0][1][set["emailField"]][0].decode("utf-8")
 
-    session.commit()
-    user = session.query(User).filter( User.email == email ).first()
-    # User not found? Create it and return the newly created user
-    if user == None:
-      newUser = User(
-        email = email
-      )
-      session.add(newUser)
-      session.commit()
-      return True, session.query(User).filter( User.email == email ).first()
-    # User found? Return it
-    else:
-      return True, user
-  except ldap.INVALID_CREDENTIALS:
-    return False, "Wrong username or password."
-  except ldap.SERVER_DOWN:
-    #print("Timeout")
-    return False, "Failed to connect to LDAP authentication service: Timeout."
-  except Exception as e:
-    #print(e)
-    return False, "Unknown error with the LDAP login!"
-  return False, "Unknown error."
+      whitelistEmail = session.query(UserWhitelist).filter( UserWhitelist.email == email ).first()
+      if useWhitelisting and whitelistEmail == None:
+        return False, "You are not allowed to login (not whitelisted, LDAP)."
+
+      user = session.query(User).filter( User.email == email ).first()
+      # User not found? Create it and return the newly created user
+      if user == None:
+        newUser = User(
+          email = email
+        )
+        session.add(newUser)
+        session.commit()
+        return True, session.query(User).filter( User.email == email ).first()
+      # User found? Return it
+      else:
+        return True, user
+    except ldap.INVALID_CREDENTIALS:
+      return False, "Wrong username or password."
+    except ldap.SERVER_DOWN:
+      return False, "Failed to connect to LDAP authentication service: Timeout."
+    except Exception as e:
+      return False, "Unknown error with the LDAP login!"
+    return False, "Unknown error."

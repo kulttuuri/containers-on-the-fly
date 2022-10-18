@@ -13,22 +13,24 @@ def timeNow():
 
 def main():
   while (run):
-    startNewServers()
+    if (settings.docker['enabled'] != True):
+      print("!!! Docker support has not been enabled, so this script does nothing. Enable it with settings.json setting docker.enabled: true !!!")
     stopFinishedServers()
+    startNewServers()
     sleep(15)
 
 def startNewServers():
   reservations = getReservationsRequiringStart()
   for reservation in reservations:
-    print(timeNow(), ": Starting Docker server for reservation with reservationId: ",  reservation.reservationId)
     if settings.docker["enabled"] == True:
+      print(timeNow(), ": Starting Docker server for reservation with reservationId: ",  reservation.reservationId)
       startDockerContainer(reservation.reservationId)
 
 def stopFinishedServers():
   reservations = getReservationsRequiringStop()
   for reservation in reservations:
-    print(timeNow(), ": Stopping Docker server for reservation with reservationId: ",  reservation.reservationId)
     if settings.docker["enabled"] == True:
+      print(timeNow(), ": Stopping Docker server for reservation with reservationId: ",  reservation.reservationId)
       stopDockerContainer(reservation.reservationId)
 
 if __name__ == "__main__":

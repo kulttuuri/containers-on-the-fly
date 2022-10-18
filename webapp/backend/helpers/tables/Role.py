@@ -1,5 +1,5 @@
 # Role table management functionality
-from database import Role, session
+from database import Role, Session
 
 def getRoles(filter = None):
   '''
@@ -9,18 +9,22 @@ def getRoles(filter = None):
     Returns:
       All found roles in a list.
   '''
-  if filter != None:
-    roles = session.query(Role).filter(Role.name == filter).first()
-    if roles != None: return [roles]
+  with Session() as session:
+    if filter != None:
+      roles = session.query(Role).filter(Role.name == filter).first()
+      if roles != None: return [roles]
+      else:
+        try:
+          roles = session.query(Role).filter(Role.roleId == int(filter)).first()
+          if roles != None:
+            return [roles]
+          else:
+            return None
+        except:
+          return None
     else:
-      try:
-        roles = session.query(Role).filter(Role.roleId == int(filter)).first()
-        if roles != None: return [roles]
-        else: return None
-      except:
-        return None
-  else: roles = session.query(Role).all()
-  return roles
+      roles = session.query(Role).all()
+    return roles
 
 def addRole(name):
   '''
@@ -30,13 +34,18 @@ def addRole(name):
     Returns:
       The created role object fetched from database. Or None if provided name already exists.
   '''
-  duplicate = session.query(Role).filter(Role.name == name).first()
-  if duplicate != None:
-    return None
-  newRole = Role(name = name)
-  session.add(newRole)
-  session.commit()
-  return session.query(Role).filter(Role.name == name).first()
+
+  with Session() as session:
+    duplicate = session.query(Role).filter(Role.name == name).first()
+    if duplicate != None:
+      return None
+    newRole = Role(name = name)
+    session.add(newRole)
+    session.commit()
+
+    user = session.query(Role).filter(Role.name == name).first()
+
+    return user
 
 def removeRole(role_id):
   '''
@@ -46,9 +55,10 @@ def removeRole(role_id):
     Returns:
       Nothing
   '''
-  role = session.query(Role).filter(Role.roleId == role_id).first()
-  session.delete(role)
-  session.commit()
+  with Session as session:
+    role = session.query(Role).filter(Role.roleId == role_id).first()
+    session.delete(role)
+    session.commit()
 
 def editRole(role_id, new_name):
   '''
@@ -59,7 +69,8 @@ def editRole(role_id, new_name):
     Returns:
       The edited role object fetched from database.
   '''
-  role = session.query(Role).filter(Role.roleId == role_id).first()
-  role.name = new_name
-  session.commit()
-  return role
+  with Session as session:
+    role = session.query(Role).filter(Role.roleId == role_id).first()
+    role.name = new_name
+    session.commit()
+    return role
