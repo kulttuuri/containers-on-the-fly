@@ -379,6 +379,8 @@
           //console.log(response)
             // Success
             if (response.data.status == true) {
+              localStorage.setItem("justReserved", true)
+              localStorage.setItem("justReservedInformEmail", response.data.data.informByEmail)
               _this.$router.push("/user/reservations")
               _this.$store.commit('showMessage', { text: "Reservation created succesfully!", color: "green" })
             }

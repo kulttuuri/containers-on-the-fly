@@ -203,7 +203,9 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
     user.reservations.append(reservation)
     session.commit()
 
-    return Response(True, "Reservation created succesfully!")
+    informByEmail = settings.docker["sendEmail"]
+
+    return Response(True, "Reservation created succesfully!", { "informByEmail": informByEmail })
 
 def cancelReservation(userId, reservationId: str):
   # Check that user owns the given reservation and it can be found

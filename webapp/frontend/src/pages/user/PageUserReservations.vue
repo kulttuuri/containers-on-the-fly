@@ -6,6 +6,18 @@
       </v-col>
     </v-row>
 
+    <v-row class="text-center" v-if="justReserved">
+      <v-col cols="1"></v-col>
+      <v-col cols="10">
+        <v-alert type="info" :icon="false" dismissible>
+          <h3 style="margin-bottom: 15px;">Reservation created succesfully</h3>
+          <p>Your server has been reserved. You can view the details on how to access the server from this page after the container has been started.</p>
+          <p v-if="informByEmail">You will also be emailed the connection details after the container starts.</p>
+        </v-alert>
+      </v-col>
+      <v-col cols="1"></v-col>
+    </v-row>
+
     <v-row class="text-center">
       <v-col cols="12">
         <h2>Your Reservations</h2>
@@ -45,8 +57,19 @@
       intervalFetchReservations: null,
       isFetchingReservations: false,
       reservations: [],
+      justReserved: false,
+      informByEmail: false,
     }),
     mounted () {
+      if (localStorage.getItem("justReserved") === "true") {
+        this.justReserved = true;
+        localStorage.removeItem("justReserved");
+      }
+      if (localStorage.getItem("justReservedInformEmail") === "true") {
+        this.informByEmail = true;
+        localStorage.removeItem("justReservedInformEmail");
+      }
+
       this.isFetchingReservations = true
       this.fetchReservations()
       // Keep updating reservations every 15 seconds
