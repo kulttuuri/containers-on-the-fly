@@ -47,6 +47,11 @@ def get_available_port():
 
   return random.choice(availablePorts)
 
+import re
+def removeSpecialCharacters(string):
+  pattern = re.compile(r'[^a-zA-Z0-9\s]')
+  return re.sub(pattern, '', string)
+
 def timeNow():
   return datetime.datetime.now(datetime.timezone.utc)
 
@@ -77,6 +82,9 @@ def startDockerContainer(reservationId: str):
       bindablePorts.append( (outsidePort, port.port) )
       portsForEmail.append({ "serviceName": port.serviceName, "localPort": port.port, "outsidePort": outsidePort })
 
+    userEmailParsed = removeSpecialCharacters(reservation.user.email)
+    mountLocation = f'{settings.docker["mountLocation"]}/{userEmailParsed}'
+
     details = {
       "name": containerName,
       "image": imageName,
@@ -86,7 +94,7 @@ def startDockerContainer(reservationId: str):
       "memory": f"{hwSpecs['ram']}g",
       "shm_size": settings.docker["shm_size"],
       "ports": bindablePorts,
-      "localMountFolderPath": settings.docker["mountLocation"],
+      "localMountFolderPath": mountLocation,
       "password": sshPassword
     }
     cont_was_started = False

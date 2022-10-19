@@ -53,8 +53,6 @@ def start_container(pars):
         if "shm_size" not in pars: pars["shm_size"] = "1g"
         if "password" not in pars: pars["password"] = create_password()
 
-        # Todo check that user folder exists, if not check where is space to create it
-
         container_name = pars['name']
 
         cont = docker.run(

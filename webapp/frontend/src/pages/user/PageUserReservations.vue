@@ -64,7 +64,7 @@
         if (!hasActiveReservations || currentUser.role == "admin")
           this.$router.push("/user/reserve")
         else
-          this.$store.commit('showMessage', { text: "You can only have one reserved or started reservation at a time. Cancel the current if you need new.", color: "red" })
+          this.$store.commit('showMessage', { text: "You can only have one reserved or started reservation at a time. Cancel the current reservation if you need a new.", color: "red" })
       },
       fetchReservations() {
         let _this = this

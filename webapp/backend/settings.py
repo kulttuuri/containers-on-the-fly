@@ -4,6 +4,7 @@
 import json
 import os
 import sys
+import re
 
 # Example taken from here: https://gist.github.com/nadya-p/b25519cf3a74d1bed86ed9b1d8c71692
 # Handler for loading the settings.json file
@@ -22,7 +23,10 @@ class Settings:
 
     def __init__(self):
       if os.path.exists(self._config_location):
-        self.__dict__ = json.load(open(self._config_location))
+        with open(self._config_location, 'r') as handle:
+          fixed_json = ''.join(line for line in handle if not re.match(r'^\s*//.*', line))
+
+        self.__dict__ = json.loads(fixed_json)
       else:
         sys.exit("COULD NOT LOAD THE SETTINGS.JSON FILE")
       # Check that the settings are valid
