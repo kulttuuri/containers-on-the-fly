@@ -78,6 +78,7 @@ class ContainerPort(Base):
   container = relationship("Container", back_populates = "containerPorts")
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
+  reservedContainerPorts = relationship("ReservedContainerPort", back_populates = "containerPort")
 
 class ReservedContainer(Base):
   __tablename__ = "ReservedContainer"
@@ -101,12 +102,13 @@ class ReservedContainerPort(Base):
   __tablename__ = "ReservedContainerPort"
   reservedContainerPortId = Column(Integer, primary_key = True, autoincrement = True)
   reservedContainerId = Column(ForeignKey("ReservedContainer.reservedContainerId"), nullable = False)
-  localPort = Column(Integer, nullable = False)
+  localPort = Column(ForeignKey("ContainerPort.port"), nullable = False)
   outsidePort = Column(Integer, nullable = False)
   UniqueConstraint('reservedContainerId', 'localPort', name='outsidePort')
   reservedContainer = relationship("ReservedContainer", back_populates = "reservedContainerPorts")
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
+  containerPort = relationship("ContainerPort", back_populates = "reservedContainerPorts")
 
 class Reservation(Base):
   __tablename__ = "Reservation"

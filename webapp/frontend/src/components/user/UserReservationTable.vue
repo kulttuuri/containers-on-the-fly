@@ -31,7 +31,8 @@
     </template>
     <!-- Actions -->
     <template v-slot:item.actions="{item}">
-      <a v-if="item.status == 'reserved' || item.status == 'started'" @click="emitCancelReservation(item.reservationId)">Cancel Reservation</a>
+      <a class="link-action" v-if="item.status == 'reserved' || item.status == 'started'" @click="emitCancelReservation(item.reservationId)">Cancel Reservation</a>
+      <a v-if="item.status == 'started'" @click="emitShowReservationDetails(item.reservationId)">Show Details</a>
     </template>
   </v-data-table>
 </template>
@@ -74,6 +75,9 @@
       emitCancelReservation(reservationId) {
         this.$emit('emitCancelReservation', reservationId)
       },
+      emitShowReservationDetails(reservationId) {
+        this.$emit('emitShowReservationDetails', reservationId)
+      },
       getStatusColor(status) {
         if (status == "reserved") return "primary"
         else if (status == "started") return "green"
@@ -106,4 +110,7 @@
 </script>
 
 <style scoped lang="scss">
+  .link-action {
+    margin: 0px 15px;
+  }
 </style>

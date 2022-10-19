@@ -28,7 +28,7 @@
     <v-row v-if="!isFetchingReservations">
       <v-col cols="12">
         <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
-          <UserReservationTable @emitCancelReservation="cancelReservation" v-bind:propReservations="reservations" />
+          <UserReservationTable @emitCancelReservation="cancelReservation" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
         </div>
         <p v-else class="dim text-center">No servers reserved yet.</p>
       </v-col>
@@ -38,6 +38,7 @@
         <Loading class="loading" />
       </v-col>
     </v-row>
+    <UserReservationsModalConnectionDetails :reservationId="modalConnectionDetailsReservationId" v-on:emitModalClose="closeModalConnectionDetails" v-if="modalConnectionDetailsVisible && modalConnectionDetailsReservationId != null"></UserReservationsModalConnectionDetails>
   </v-container>
 </template>
 
@@ -45,6 +46,7 @@
   const axios = require('axios').default;
   import Loading from '/src/components/global/Loading.vue';
   import UserReservationTable from '/src/components/user/UserReservationTable.vue';
+  import UserReservationsModalConnectionDetails from '/src/components/user/UserReservationsModalConnectionDetails.vue';
   
   export default {
     name: 'PageUserReservations',
@@ -52,6 +54,7 @@
     components: {
       Loading,
       UserReservationTable,
+      UserReservationsModalConnectionDetails
     },
     data: () => ({
       intervalFetchReservations: null,
@@ -59,6 +62,8 @@
       reservations: [],
       justReserved: false,
       informByEmail: false,
+      modalConnectionDetailsVisible: false,
+      modalConnectionDetailsReservationId: null
     }),
     mounted () {
       if (localStorage.getItem("justReserved") === "true") {
@@ -76,6 +81,9 @@
       this.intervalFetchReservations = setInterval(() => { this.fetchReservations()}, 15000)
     },
     methods: {
+      closeModalConnectionDetails() {
+        this.modalConnectionDetailsVisible = false
+      },
       createReservation() {
         let hasActiveReservations = false
         this.reservations.forEach((res) => {
@@ -173,6 +181,10 @@
             _this.cancellingReservation = false
         });
       },
+      showReservationDetails(reservationId) {
+        this.modalConnectionDetailsVisible = true
+        this.modalConnectionDetailsReservationId = reservationId
+      }
     },
     beforeDestroy() {
       clearInterval(this.intervalFetchReservations)

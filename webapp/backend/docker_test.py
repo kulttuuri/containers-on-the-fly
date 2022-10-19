@@ -29,7 +29,7 @@ if __name__ == "__main__":
     print("Docker.ps output:")
     print(docker.ps())
 
-    send_email_container_started("riialin@gmail.com", "tensorflow", "localhost", 2213, "abc123")
+    body = get_email_container_started("tensorflow", "localhost", 2213, "abc123", True)
 
     while True:
         command = input("stop or not")

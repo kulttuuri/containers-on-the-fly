@@ -1,4 +1,5 @@
 from database import Session, Computer, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec
+from docker.docker_functionality import get_email_container_started
 from helpers.server import Response, ORMObjectToDict
 from helpers.auth import IsAdmin
 from dateutil import parser
@@ -98,6 +99,41 @@ def getOwnReservations(userId) -> object:
     reservations.append(res)
   
   return Response(True, "Hardware resources fetched.", { "reservations": reservations })
+
+def getOwnReservationDetails(reservationId, userId) -> object:
+  with Session() as session:
+    # Check that user exists
+    user = session.query(User).filter( User.userId == userId ).first()
+    if (user == None):
+      return Response(False, "User not found.")
+    isAdmin = IsAdmin(user.email)
+
+    # Check that the reservation exists and is owned by the current user
+    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
+    if (reservation == None):
+      return Response(False, "Reservation not found.")
+
+    portsForEmail = []
+
+    # Set bindable ports for the reservation container
+    for port in reservation.reservedContainer.reservedContainerPorts:
+      serviceName = port.containerPort.serviceName
+      outsidePort = port.outsidePort
+      localPort = port.localPort
+      portsForEmail.append({ "serviceName": serviceName, "localPort": localPort, "outsidePort": outsidePort })
+
+    connectionText = get_email_container_started(
+      reservation.reservedContainer.container.imageName,
+      reservation.computer.ip,
+      portsForEmail,
+      reservation.reservedContainer.sshPassword,
+      False,
+      reservation.endDate
+      )
+
+    connectionText = connectionText.replace("\n", "<br>")
+
+  return Response(True, "Details fetched.", { "connectionText": connectionText } )
 
 def getCurrentReservations() -> object:
   reservations = []

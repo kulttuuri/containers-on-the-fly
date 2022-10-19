@@ -1,6 +1,6 @@
 #! /usr/bin/python3
+from xml.etree.ElementInclude import include
 from python_on_whales import docker
-from helpers.email import send_email
 from helpers.auth import create_password
 from datetime import datetime
 from settings import settings
@@ -94,9 +94,9 @@ def stop_container(container_name):
         return False
     return True
 
-def send_email_container_started(email, image, ip, ports, password, endDate = None):
+def get_email_container_started(image, ip, ports, password, includeEmailDetails, endDate = None):
     '''
-    Sends an email to the given email address with the information of the started container.
+    Gets the email body to send when a container is started.
     Required Parameters:
         email (string): The email address to send the email to.
         image (string): The name of the image used to start the container.
@@ -110,7 +110,7 @@ def send_email_container_started(email, image, ip, ports, password, endDate = No
     linesep = os.linesep
 
     helpText = ""
-    if "helpEmailAddress" in settings.email:
+    if "helpEmailAddress" in settings.email and includeEmailDetails:
         helpText = f"If you need help, contact: {settings.email['helpEmailAddress']}"
 
     helpTextSSH = ""
@@ -134,7 +134,7 @@ def send_email_container_started(email, image, ip, ports, password, endDate = No
         generalText = settings.docker["generalText"]
 
     webAddress = ""
-    if "clientUrl" in settings.app:
+    if "clientUrl" in settings.app and includeEmailDetails:
         webAddress = f"You can access your reservations through: "
         webAddress += settings.app['clientUrl']
     
@@ -147,9 +147,17 @@ def send_email_container_started(email, image, ip, ports, password, endDate = No
         endDate = endDate.astimezone(tz.gettz('Europe_Helsinki'))
         endDateText = f"Your reservation will end at (Europe_Helsinki): {endDate.strftime('%Y-%m-%d %H:%M:%S')}"
 
+    startMessage = ""
+    if includeEmailDetails:
+        startMessage = f"Container with image {image} is ready to use.{linesep}"
+
+    noReply = ""
+    if includeEmailDetails:
+        noReply = "This is a noreply email account. Please do not reply to this email."
+
     # Body text
     body = f"""
-    Container with image {image} is ready to use.{linesep}
+    {startMessage}
     {generalText}{linesep}
     IP of the machine is {ip}.{linesep}
     {helpTextSSH}
@@ -158,11 +166,11 @@ def send_email_container_started(email, image, ip, ports, password, endDate = No
     saved after container stops, so save trained networks, 
     checkpoint files, logs, your datasets etc to that folder.
 
-    THIS IS A NOREPLY EMAIL ADDRESS, DO NOT REPLY TO THIS EMAIL.
+    {noReply}
 
     {webAddress}
     
     {helpText}
     """
 
-    send_email(email, "AI Server is ready to use!", body)
+    return body

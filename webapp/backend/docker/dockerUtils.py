@@ -3,11 +3,12 @@ from helpers.auth import create_password
 from helpers.server import ORMObjectToDict
 #from dateutil import parser
 #from dateutil.relativedelta import *
+from helpers.email import send_email
 from datetime import timezone
 import datetime
 from helpers.auth import create_password
 from settings import settings
-from docker.docker_functionality import send_email_container_started, start_container, stop_container
+from docker.docker_functionality import get_email_container_started, start_container, stop_container
 import random
 import socket
 
@@ -120,13 +121,14 @@ def startDockerContainer(reservationId: str):
       reservation.reservedContainer.startedAt = timeNow()
       # Send the email
       if (settings.docker["sendEmail"] == True):
-        send_email_container_started(
-          reservation.user.email,
+        body =  get_email_container_started(
           imageName,
           reservation.computer.ip,
           portsForEmail,
           sshPassword,
+          True,
           reservation.endDate)
+        send_email(reservation.user.email, "AI Server is ready to use!", body)
       
       session.commit()
     else:

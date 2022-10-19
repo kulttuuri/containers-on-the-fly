@@ -24,6 +24,12 @@ async def getOwnReservations(token: str = Depends(oauth2_scheme)):
   userId = CheckToken(token)["data"]["userId"]
   return functionality.getOwnReservations(userId)
 
+@router.get("/get_own_reservation_details")
+async def getOwnReservations(reservationId: int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
+  userId = CheckToken(token)["data"]["userId"]
+  return functionality.getOwnReservationDetails(reservationId, userId)
+
 @router.post("/create_reservation")
 async def CreateReservation(date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
