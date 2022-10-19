@@ -102,12 +102,6 @@ def getOwnReservations(userId) -> object:
 
 def getOwnReservationDetails(reservationId, userId) -> object:
   with Session() as session:
-    # Check that user exists
-    user = session.query(User).filter( User.userId == userId ).first()
-    if (user == None):
-      return Response(False, "User not found.")
-    isAdmin = IsAdmin(user.email)
-
     # Check that the reservation exists and is owned by the current user
     reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
     if (reservation == None):
