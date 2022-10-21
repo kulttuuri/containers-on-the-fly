@@ -39,7 +39,7 @@ async def CreateReservation(date: str, duration: int, computerId: int, container
     return Response(False, "Error.")
   
   userId = CheckToken(token)["data"]["userId"]
-  return functionality.createReservation(userId, date, duration, containerId, computerId, hardwareSpecs)
+  return functionality.createReservation(userId, date, duration, computerId, containerId, hardwareSpecs)
 
 @router.get("/get_current_reservations")
 async def getCurrentReservations(token: str = Depends(oauth2_scheme)):
