@@ -1,40 +1,43 @@
 <template>
-  <v-data-table
-    :headers="table.headers"
-    :items="reservations"
-    :sort-by="'createdAt'"
-    :sort-desc="true"
-    class="elevation-1">
-    <!-- Status -->
-    <template v-slot:item.status="{item}">
-      <v-chip :color="getStatusColor(item.status)">{{item.status}}</v-chip>
-    </template>
-    <!-- Reserve date -->
-    <template v-slot:item.createdAt="{item}">
-      {{ parseTime(item.createdAt) }}
-    </template>
-    <!-- Start date -->
-    <template v-slot:item.startDate="{item}">
-      {{ parseTime(item.startDate) }}
-    </template>
-    <!-- End date -->
-    <template v-slot:item.endDate="{item}">
-      {{ parseTime(item.endDate) }}
-    </template>
-    <!-- Resources -->
-    <template v-slot:item.resources="{item}">
-      {{ getResources(item.reservedHardwareSpecs) }}
-    </template>
-    <!-- Container Status -->
-    <template v-slot:item.containerStatus="{item}">
-      {{ item.reservedContainer.containerStatus }}
-    </template>
-    <!-- Actions -->
-    <template v-slot:item.actions="{item}">
-      <a class="link-action" v-if="item.status == 'reserved' || item.status == 'started'" @click="emitCancelReservation(item.reservationId)">Cancel Reservation</a>
-      <a v-if="item.status == 'started'" @click="emitShowReservationDetails(item.reservationId)">Show Details</a>
-    </template>
-  </v-data-table>
+  <div>
+    <a v-if="hasLongItems" class="link-toggle-read-all" @click="toggleReadAll">{{ !readAll ? "Read all" : "Read less" }}</a>
+    <v-data-table
+      :headers="table.headers"
+      :items="reservations"
+      :sort-by="'createdAt'"
+      :sort-desc="true"
+      class="elevation-1">
+      <!-- Status -->
+      <template v-slot:item.status="{item}">
+        <v-chip :color="getStatusColor(item.status)">{{item.status}}</v-chip>
+      </template>
+      <!-- Reserve date -->
+      <template v-slot:item.createdAt="{item}">
+        {{ parseTime(item.createdAt) }}
+      </template>
+      <!-- Start date -->
+      <template v-slot:item.startDate="{item}">
+        {{ parseTime(item.startDate) }}
+      </template>
+      <!-- End date -->
+      <template v-slot:item.endDate="{item}">
+        {{ parseTime(item.endDate) }}
+      </template>
+      <!-- Resources -->
+      <template v-slot:item.resources="{item}">
+        {{ getResources(item.reservedHardwareSpecs) }}
+      </template>
+      <!-- Container Status -->
+      <template v-slot:item.containerStatus="{item}">
+        {{ item.status == "error" && item.reservedContainer.containerDockerErrorMessage ? getText(item.reservedContainer.containerDockerErrorMessage) : item.reservedContainer.containerStatus }}
+      </template>
+      <!-- Actions -->
+      <template v-slot:item.actions="{item}">
+        <a class="link-action" v-if="item.status == 'reserved' || item.status == 'started'" @click="emitCancelReservation(item.reservationId)">Cancel Reservation</a>
+        <a v-if="item.status == 'started'" @click="emitShowReservationDetails(item.reservationId)">Show Details</a>
+      </template>
+    </v-data-table>
+  </div>
 </template>
 
 <script>
@@ -51,6 +54,8 @@
     data: () => ({
       reservations: [],
       cancellingReservation: false,
+      readAll: false,
+      hasLongItems: false,
       table: {
         headers: [
           {
@@ -72,6 +77,16 @@
       this.reservations = this.propReservations
     },
     methods: {
+      toggleReadAll() {
+        this.readAll = !this.readAll;
+      },
+      getText(text) {
+        if (this.readAll) return text;
+        else {
+          if (!this.hasLongItems) this.hasLongItems = true;
+          return text.slice(0,10) + "...";
+        }
+      },
       emitCancelReservation(reservationId) {
         this.$emit('emitCancelReservation', reservationId)
       },
@@ -112,5 +127,13 @@
 <style scoped lang="scss">
   .link-action {
     margin: 0px 15px;
+  }
+
+  .link-toggle-read-all {
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: inline-block;
+    padding-left: 15px;
+    width: auto;
   }
 </style>

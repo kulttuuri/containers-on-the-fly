@@ -11,6 +11,7 @@ from settings import settings
 from docker.docker_functionality import get_email_container_started, start_container, stop_container
 import random
 import socket
+import os
 
 def is_port_in_use(port: int) -> bool:
   '''
@@ -103,7 +104,6 @@ def startDockerContainer(reservationId: str):
     try:
       cont_was_started, cont_name, cont_password = start_container(details)
     except Exception as e:
-      #print("Error starting container:", e)
       next
     
     if cont_was_started == True:
@@ -132,7 +132,19 @@ def startDockerContainer(reservationId: str):
       
       session.commit()
     else:
-      print("Container was not started.")
+      # Set error message to database
+      reservation.status = "error"
+      reservation.reservedContainer.containerDockerErrorMessage = str(cont_name)
+      session.commit()
+
+      # Send email about the error
+      if (settings.docker["sendEmail"] == True):
+        body = f"Your AI server reservation did not start as there was an error. {os.linesep}{os.linesep}"
+        body += f"The error was: {os.linesep}{os.linesep}{cont_name}{os.linesep}{os.linesep}"
+        body += "Please do not reply to this email, this email is sent from a noreply email address."
+        send_email(reservation.user.email, "AI Server did not start", body)
+
+      print("Container was not started. Logged the error to ReservedContainer.")
 
 def stopDockerContainer(reservationId: str):
   with Session() as session:

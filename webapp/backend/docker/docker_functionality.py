@@ -77,7 +77,7 @@ def start_container(pars):
         print(f"Something went wrong starting container {container_name}. Trying to stop the container. Error:")
         print(e)
         stop_container(container_name)
-        return None
+        return False, e, None
 
     return True, container_name, pars["password"]
 

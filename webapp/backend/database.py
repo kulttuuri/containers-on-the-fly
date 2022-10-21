@@ -91,6 +91,7 @@ class ReservedContainer(Base):
   containerDockerId = Column(String, nullable = True) # Coming from Docker
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   sshPassword = Column(String, nullable = True)
+  containerDockerErrorMessage = Column(String, nullable = True)
   reservation = relationship("Reservation", back_populates = "reservedContainer")
   container = relationship("Container", back_populates = "reservedContainers")
   reservedContainerPorts = relationship("ReservedContainerPort", back_populates = "reservedContainer")
@@ -120,7 +121,7 @@ class Reservation(Base):
   endDate = Column(DateTime, nullable = False)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
-  status = Column(String, nullable = False) # reserved, started, stopped
+  status = Column(String, nullable = False) # reserved, started, stopped, error
   user = relationship("User", back_populates = "reservations")
   reservedContainer = relationship("ReservedContainer", back_populates = "reservation")
   reservedHardwareSpecs = relationship("ReservedHardwareSpec", back_populates = "reservation")
