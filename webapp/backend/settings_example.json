@@ -58,6 +58,10 @@
     // Each user will have a folder in this location for saving persistent data, with the user's email (special characters removed) as the folder name
     // For example: "/home/aiserver/persistent_mounts"
     "mountLocation": "/home/aiserver/persistent_mounts",
+    // User in the host system who will own the mounted folder. This needs to exist. Can be left as: root
+    "mountUser": "root",
+    // Group in the host system who will own the mounted folder. Can be left as: docker
+    "mountGroup": "docker",
     // Sets the shm_size for the docker container. For example: 1g. Read more: https://docs.docker.com/compose/compose-file/build/#shm_size
     "shm_size": "1g",
     // Starting range of ports where the docker container ports will be mapped to. For example: 2000

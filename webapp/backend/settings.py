@@ -73,6 +73,8 @@ class Settings:
         # docker
         if not hasattr(s, 'docker'): die("docker")
         if "enabled" not in s.docker: die("docker.enabled")
+        if "mountUser" not in s.docker: die("docker.mountUser")
+        if "mountGroup" not in s.docker: die("docker.mountGroup")
         if "mountLocation" not in s.docker: die("docker.mountLocation")
         if "shm_size" not in s.docker: die("docker.shm_size")
         if "port_range_start" not in s.docker: die("docker.port_range_start")

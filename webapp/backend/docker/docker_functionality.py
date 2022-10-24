@@ -5,6 +5,8 @@ from helpers.auth import create_password
 from datetime import datetime
 from settings import settings
 from python_on_whales.exceptions import NoSuchContainer
+import os
+import shutil
 
 def start_container(pars):
     """
@@ -54,6 +56,14 @@ def start_container(pars):
         if "password" not in pars: pars["password"] = create_password()
 
         container_name = pars['name']
+
+        # Create directory for mounting if it does not exist
+        if not os.path.isdir(pars["localMountFolderPath"]):
+            os.makedirs(pars["localMountFolderPath"], exist_ok=True)
+        # Set correct owner and group for the mount folder
+        shutil.chown(pars["localMountFolderPath"], user=settings.docker['mountUser'], group=settings.docker['mountGroup'])
+        # Set correct file permissions for the mount folder
+        os.chmod(pars["localMountFolderPath"], 0o777)
 
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
