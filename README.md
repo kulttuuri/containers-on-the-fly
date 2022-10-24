@@ -4,7 +4,13 @@ With this Web app, users can reserve Docker containers with hardware resources n
 
 Originally created in Satakunta University of Applied Sciences to give AI students a solution to handle their AI calculating in a dedicated server.
 
-TODO: couple pictures of the system here
+![image](https://user-images.githubusercontent.com/3810422/197523647-d603e763-fbf8-42cc-b211-1ca1343e2550.png)
+
+![image](https://user-images.githubusercontent.com/3810422/197523756-0b1d79fb-64ed-4a86-a0a6-aed6a0757dab.png)
+
+![image](https://user-images.githubusercontent.com/3810422/197523917-237ddd05-d35c-4d76-917d-963e60144598.png)
+
+![image](https://user-images.githubusercontent.com/3810422/197524065-1a6b3452-e449-458c-a703-edd699a43f3b.png)
 
 ## Technologies Used
 
