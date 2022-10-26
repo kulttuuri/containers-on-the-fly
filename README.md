@@ -1,6 +1,6 @@
 # Docker Web Reservation Tool
 
-With this Web app, users can reserve Docker containers with hardware resources needed for their projects. Includes login integration to LDAP systems and plain password logins.
+With this Web app, users permitted to access the app can easily reserve Docker containers with hardware resources needed for their projects. Includes integrated user management software and integration to LDAP systems.
 
 Originally created in Satakunta University of Applied Sciences to give AI students a solution to handle their AI calculating in a dedicated server.
 
