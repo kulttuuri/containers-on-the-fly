@@ -1,5 +1,4 @@
 #! /usr/bin/python3
-from xml.etree.ElementInclude import include
 from python_on_whales import docker
 from helpers.auth import create_password
 from datetime import datetime
