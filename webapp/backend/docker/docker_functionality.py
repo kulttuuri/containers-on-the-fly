@@ -69,6 +69,8 @@ def start_container(pars):
             f"{pars['image']}:{pars['image_version']}",
             volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent")],
             gpus=pars['gpus'],
+            #gpus="device=4,5",
+            #gpus=6,
             name = container_name,
             memory = pars['memory'],
             kernel_memory = pars['memory'],
