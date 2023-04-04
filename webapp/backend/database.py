@@ -66,9 +66,8 @@ class Container(Base):
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
   reservedContainers = relationship("ReservedContainer", back_populates = "container")
-  containerPorts = relationship("ContainerPort", back_populates = "container") # TODO: Add to diagram
+  containerPorts = relationship("ContainerPort", back_populates = "container")
 
-# TODO: Add to diagram
 class ContainerPort(Base):
   __tablename__ = "ContainerPort"
   containerPortId = Column(Integer, primary_key = True, autoincrement = True)
@@ -98,7 +97,6 @@ class ReservedContainer(Base):
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
-# TODO: Add to diagram
 class ReservedContainerPort(Base):
   __tablename__ = "ReservedContainerPort"
   reservedContainerPortId = Column(Integer, primary_key = True, autoincrement = True)
@@ -132,7 +130,7 @@ class Computer(Base):
   computerId = Column(Integer, primary_key = True, autoincrement = True)
   public = Column(Boolean, nullable = False)
   name = Column(String, nullable = False, unique = True)
-  ip = Column(String, nullable = False) # TODO: Add to diagram
+  ip = Column(String, nullable = False)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
   hardwareSpecs = relationship("HardwareSpec", back_populates = "computer")
