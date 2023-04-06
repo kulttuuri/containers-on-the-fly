@@ -66,7 +66,7 @@ def start_container(pars):
 
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
-            volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent")],
+            volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent"),("/home/aiserver/datasets",f"/home/{pars['username']}/datasets","ro")],
             gpus=pars['gpus'],
             #gpus="device=4,5",
             #gpus=6,
@@ -176,6 +176,10 @@ def get_email_container_started(image, ip, ports, password, includeEmailDetails,
     NOTE! only files and folders from ~/persistent folder are
     saved after container stops, so save trained networks, 
     checkpoint files, logs, your datasets etc to that folder.
+
+    Every started container has datasets folder, this folder is READ only, 
+    you cannot modify files inside that folder. If you need to modify dataset, 
+    then copy it to some other directory.
 
     {noReply}
 
