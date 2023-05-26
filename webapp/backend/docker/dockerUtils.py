@@ -148,18 +148,22 @@ def startDockerContainer(reservationId: str):
       print("Container was not started. Logged the error to ReservedContainer.")
 
 def stopDockerContainer(reservationId: str):
-  with Session() as session:
-    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
-    if reservation == None: return False
+  try:
+    with Session() as session:
+      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
+      if reservation == None: return False
 
-    # Can use reservation.reservedContainer.containerDockerId to target the docker container
-    #print("STOPPING CONTAINER:")
-    #print(ORMObjectToDict(reservation))
-    #print(ORMObjectToDict(reservation.reservedContainer))
-    stop_container(reservation.reservedContainer.containerDockerName)
-    reservation.status = "stopped"
-    reservation.reservedContainer.stoppedAt = timeNow()
-    session.commit()
+      # Can use reservation.reservedContainer.containerDockerId to target the docker container
+      #print("STOPPING CONTAINER:")
+      #print(ORMObjectToDict(reservation))
+      #print(ORMObjectToDict(reservation.reservedContainer))
+      stop_container(reservation.reservedContainer.containerDockerName)
+      reservation.status = "stopped"
+      reservation.reservedContainer.stoppedAt = timeNow()
+      session.commit()
+  except Exception as e:
+    print("Error stopping server:")
+    print(e)
 
 def updateRunningContainerStatus(reservationId: str):
   print("IMPLEMENT")
