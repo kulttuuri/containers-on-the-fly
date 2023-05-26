@@ -67,18 +67,31 @@ def start_container(pars):
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
             volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent"),("/home/aiserver/datasets",f"/home/{pars['username']}/datasets","ro")],
-            gpus=pars['gpus'],
+            #If you spesify number, then that many gpus you get, if you spesify the "device=0" that would give you gpu id 0, "device=4,5" would give you gpus with ids 4,5
+            #gpus=pars['gpus'],
+            # Useampi GPU tulee näin:
+            gpus="device=5",
+            # Sit käynnistä uusiks backend ja backendDockerUtil
+            # pm2 restart backend backendDockerUtil
             #gpus="device=4,5",
-            #gpus=6,
+
+            # select * from Reservation where status = "started" order by startDate asc;
+            # update Reservation set endDate = "2023-08-20 16:46:39.474000" where reservationId = xx;
+
             name = container_name,
             memory = pars['memory'],
             kernel_memory = pars['memory'],
             shm_size = pars['shm_size'],
-            remove = pars['remove'],
             cpus = pars['cpus'],
             publish = pars['ports'],
             detach = True,
-            interactive = pars['interactive']
+            interactive = pars['interactive'],
+            
+            # Do not automatically remove the container as it will stop.
+            # Removing a container will be handled manually in the stop_container() function.
+            # If it would be removed, restarting or crashing a container would fully destroy it immediately.
+            remove = False
+
             #user=user
         )
         #print("The running container: ", cont)
@@ -98,12 +111,34 @@ def stop_container(container_name):
     Returns:
         (boolean) True if the container was stopped successfully, otherwise false (as it did not exist)
     '''
+    noErrors = True
     try:
         docker.stop(container_name)
         print(f"Stopped container {container_name}")
     except NoSuchContainer as e:
-        return False
-    return True
+        print(f"Error stopping container: {container_name}")
+        noErrors = False
+    
+    try:
+        docker.remove(container_name)
+        print(f"Removed container {container_name}")
+    except NoSuchContainer as e:
+        print(f"Error removing container: {container_name}")
+        noErrors = False
+    
+    return noErrors
+
+def restart_container(container_name):
+    '''
+    Restarts the container with the given name.
+    '''
+    print("Starting to restart a container...")
+    try:
+        print(f"Restarting container: {container_name}")
+        docker.restart(container_name)
+    except Exception as e:
+        print(f"Could not restart container: {container_name}")
+        pass
 
 def get_email_container_started(image, ip, ports, password, includeEmailDetails, endDate = None):
     '''

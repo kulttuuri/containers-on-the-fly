@@ -1,3 +1,4 @@
+from python_on_whales import docker
 from database import Session, Reservation, ReservedContainerPort
 from helpers.auth import create_password
 from helpers.server import ORMObjectToDict
@@ -193,3 +194,39 @@ def getReservationsRequiringStop():
       Reservation.endDate < timeNow()
     )
     return reservations
+
+def getContainerInformation(reservationId: str):
+  '''
+    Returns:
+      On error or if cannot find the container:
+        None, {}
+      Otherwise (example, first is container name / ID and second is the python_on_whales.components.container.models.ContainerState object):
+        "yolov7_12_12_12_2023",
+        python_on_whales.components.container.models.ContainerState object {
+          containerName = 'yolov7_12_12_12_2023',
+          status='running',
+          running=True,
+          paused=False,
+          restarting=False,
+          oom_killed=False,
+          dead=False,
+          pid=1042809,
+          exit_code=0,
+          error='',
+          started_at=datetime.datetime(2023, 5, 22, 17, 47, 42, 381981),
+          tzinfo=datetime.timezone.utc),
+          finished_at=datetime.datetime(1, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+          health=None
+        }
+  '''
+  try:
+    with Session() as session:
+      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
+      if reservation == None:
+        return None, {}
+      containerState = docker.container.inspect(reservation.reservedContainer.containerDockerName)
+      return reservation.reservedContainer.containerDockerName, containerState
+  except Exception as e:
+    print(f"Something went wrong getting container information for reservation {reservationId}. Error:")
+    print(e)
+    return None, {}
