@@ -211,11 +211,14 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
     )
     session.add(reservation)
     #print(reservation)
+    print("YKS")
     #reservation = session.query(Reservation).filter(  )
     # Append all reserved hardware specs inside the reservation
     for key, val in hardwareSpecs.items():
+      print("KAKS")
       # Check that the amount does not exceed user limits for the given hardware
       hardwareSpec = session.query(HardwareSpec).filter( HardwareSpec.hardwareSpecId == key ).first()
+      print("KOLME")
       if val > hardwareSpec.maximumAmountForUser: raise Exception("Trying to utilize hardware specs above the user maximum amount")
       session.add(
         ReservedHardwareSpec(
