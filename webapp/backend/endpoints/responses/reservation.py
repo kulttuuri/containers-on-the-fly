@@ -56,11 +56,13 @@ def getAvailableHardware(date, duration) -> object:
     for computer in computers:
       for spec in computer["hardwareSpecs"]:
         if spec["type"] in removableHardwareSpecs:
+          print(spec)
           spec["maximumAmount"] -= removableHardwareSpecs[spec["type"]]
           if spec["maximumAmountForUser"] > spec["maximumAmount"]:
             spec["maximumAmountForUser"] = spec["maximumAmount"]
           #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
           if spec["maximumAmount"] < spec["minimumAmount"]:
+            print("Spec: ", spec["type"], " ", spec["maximumAmount"], " is below minimum amount: ", spec["minimumAmount"])
             #print("minimumAmount: ", spec["minimumAmount"])
             #print("maximumAmount: ", spec["maximumAmount"])
             #print("maximumAmountForUser: ", spec["maximumAmountForUser"])
@@ -89,13 +91,15 @@ def getOwnReservations(userId) -> object:
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)
     res["reservedContainer"]["container"] = ORMObjectToDict(reservation.reservedContainer.container)
     # Add all reserved hardware specs
+    # Add only specs over 0
     res["reservedHardwareSpecs"] = []
     for spec in reservation.reservedHardwareSpecs:
-      res["reservedHardwareSpecs"].append({
-        "type": spec.hardwareSpec.type,
-        "format": spec.hardwareSpec.format,
-        "amount": spec.amount
-      })
+      if spec.amount > 0:
+        res["reservedHardwareSpecs"].append({
+          "type": spec.hardwareSpec.type,
+          "format": spec.hardwareSpec.format,
+          "amount": spec.amount
+        })
     reservations.append(res)
   
   return Response(True, "Hardware resources fetched.", { "reservations": reservations })
@@ -217,12 +221,14 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
       # Check that the amount does not exceed user limits for the given hardware
       hardwareSpec = session.query(HardwareSpec).filter( HardwareSpec.hardwareSpecId == key ).first()
       if val > hardwareSpec.maximumAmountForUser: raise Exception("Trying to utilize hardware specs above the user maximum amount")
-      session.add(
-        ReservedHardwareSpec(
-          reservationId = reservation.reservationId,
-          hardwareSpecId = key,
-          amount = val,
-        )
+      # Only add resources over 0
+      if val > 0:
+        session.add(
+          ReservedHardwareSpec(
+            reservationId = reservation.reservationId,
+            hardwareSpecId = key,
+            amount = val,
+          )
       )
     # Create the ReservedContainer
     reservation.reservedContainer = ReservedContainer(

@@ -140,6 +140,7 @@ class HardwareSpec(Base):
   __tablename__ = "HardwareSpec"
   hardwareSpecId = Column(Integer, primary_key = True, autoincrement = True)
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
+  internalId = Column(String, nullable = True) # TODO: Add to diagram
   type = Column(String, nullable = False)
   maximumAmount = Column(Float, nullable = False)
   minimumAmount = Column(Float, nullable = False)

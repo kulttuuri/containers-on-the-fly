@@ -79,7 +79,15 @@
           <v-row v-if="computer && hardwareData">
             <v-col cols="12">
               <h2>Select Hardware</h2>
-              <v-row v-for="spec in hardwareData" :key="spec.name" class="spec-row">
+
+              <v-col cols="12">
+                <h3>GPUs</h3>
+                <v-col cols="6" style="margin: 0 auto">
+                  <v-select v-model="selectedgpus" :items="hardwareDataOnlyGPUs()" attach chips label="GPUs" v-on:input="gpuLimit" :menu-props="{ auto: true }" multiple></v-select>
+                </v-col>
+              </v-col>
+
+              <v-row v-for="spec in hardwareDataNoGPUs()" :key="spec.name" class="spec-row">
                 <v-col cols="12">
                   <h3>{{ spec.type }}</h3>
                 </v-col>
@@ -178,6 +186,7 @@
       computers: null, // Contains a list of all computer items for the computer dropdown
       container: null, // Model for the currently selected container dropdown
       containers: null, // Contains a list of all container items for the container dropdown
+      selectedgpus: [], // Contains a list of all selected gpus
       hardwareData: null, // Contains hardware data for the currently selected computer
       selectedHardwareSpecs: {}, // Selected hardware specs for the current computer
       isSubmittingReservation: false, // Set to true when user is submitting the reservation
@@ -203,8 +212,48 @@
       this.pickedHour = d.getHours() < 10 ? "0"+d.getHours() : d.getHours.toString()
 
       this.fetchReservations()
+
+      // Debug: Skip to step 3
+      
+      this.reserveNow()
+      this.reserveDuration = 5;
+      this.reserveDate = dayjs().toISOString()
+      this.reserveType = "now"
+      this.container = 1
+      this.computer = 1
+      //this.reserveDuration = 
+      //this.fetchAvailableHardware()
     },
     methods: {
+      gpuLimit() {
+        let max = 1;
+        this.hardwareData.forEach((spec) => {
+          if (spec.type === "gpus") max = spec.maximumAmountForUser
+        })
+
+        if (this.selectedgpus.length > max) {
+          this.$store.commit('showMessage', { text: `Maximum of ${max} GPUs can be selected.`, color: "red" })
+          this.selectedgpus.pop()
+        }
+      },
+      hardwareDataNoGPUs() {
+        let data = []
+        this.hardwareData.forEach((spec) => {
+          if (spec.type != "gpu" && spec.type !== "gpus") data.push(spec)
+        })
+        return data
+      },
+      hardwareDataOnlyGPUs() {
+        let data = []
+        this.hardwareData.forEach((spec) => {
+          if (spec.type == "gpu") {
+            //console.log(spec)
+            let obj = { text: `${spec.internalId}: ${spec.format}`, value: spec.hardwareSpecId }
+            data.push(obj)
+          }
+        })
+        return data
+      },
       nextStep() {
         if (this.step == 3) return
         this.step = this.step + 1
@@ -247,14 +296,14 @@
           }
           this.reserveDate = dayjs().toISOString()
           this.reserveType = "now"
-          this.reserveDuration = null
+          this.reserveDuration = 5 // TODO: Change back to null when ready debugging
           this.nextStep()
         })
       },
       reserveLater() {
         this.reserveDate = null
         this.reserveType = "pickdate"
-        this.reserveDuration = null
+        this.reserveDuration = 5 // TODO: Change back to null when ready debugging
       },
       reserveSelectedTime() {
         if (!this.pickedDate) return this.$store.commit('showMessage', { text: "Please select day.", color: "red" })
@@ -358,6 +407,15 @@
         console.log("selected containerId: ", this.container)
         console.log("Selected hardware specs", {...this.selectedHardwareSpecs})
         console.log("Duration:", this.reserveDuration)*/
+        
+        // Add GPUs to reservation
+        this.selectedgpus.forEach((gpu) => {
+          this.selectedHardwareSpecs[gpu] = 1
+        })
+        
+        //console.log({...this.selectedHardwareSpecs})
+        //console.log({...this.selectedgpus})
+
         let params = {
           "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(),
           "computerId": computerId,
