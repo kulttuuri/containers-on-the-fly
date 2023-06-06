@@ -48,6 +48,7 @@ def start_container(pars):
 
         if "gpus" not in pars: pars["gpus"] = None
         if pars["gpus"] == 0: pars["gpus"] = None
+        if pars["gpus"] == "": pars["gpus"] = None
         if "image_version" not in pars: pars["image_version"] = "latest"
         if "interactive" not in pars: pars["interactive"] = True
         if "remove" not in pars: pars["remove"] = True
@@ -55,6 +56,8 @@ def start_container(pars):
         if "password" not in pars: pars["password"] = create_password()
 
         container_name = pars['name']
+
+        print(pars["gpus"])
 
         # Create directory for mounting if it does not exist
         if not os.path.isdir(pars["localMountFolderPath"]):
