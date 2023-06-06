@@ -225,6 +225,9 @@
       //this.fetchAvailableHardware()
     },
     methods: {
+      /**
+       * Limits the amount of selected GPUs to the maximum amount allowed.
+       */
       gpuLimit() {
         let max = 1;
         this.hardwareData.forEach((spec) => {
@@ -236,6 +239,10 @@
           this.selectedgpus.pop()
         }
       },
+      /**
+       * Returns a list of all hardware specs except GPUs in the hardware data.
+       * @returns {Array} Array of all hardware specs except GPUs
+      */
       hardwareDataNoGPUs() {
         let data = []
         this.hardwareData.forEach((spec) => {
@@ -243,25 +250,41 @@
         })
         return data
       },
+      /**
+       * Returns a list of all GPUs in the hardware data.
+       * @returns {Array} Array of all GPUs
+      */
       hardwareDataOnlyGPUs() {
         let data = []
         this.hardwareData.forEach((spec) => {
           if (spec.type == "gpu") {
-            //console.log(spec)
-            let obj = { text: `${spec.internalId}: ${spec.format}`, value: spec.hardwareSpecId }
-            data.push(obj)
+            // Only add GPUs that are reservable
+            if (spec.maximumAmountForUser > 0) {
+              let obj = { text: `${spec.internalId}: ${spec.format}`, value: spec.hardwareSpecId }
+              data.push(obj)
+            }
           }
         })
         return data
       },
+      /**
+       * Goes to the next step in the reservation process.
+       */
       nextStep() {
         if (this.step == 3) return
         this.step = this.step + 1
       },
+      /**
+       * Goes to the previous step in the reservation process.
+       */
       prevStep() {
         if (this.step == 1) return
         this.step = this.step - 1
       },
+      /**
+       * Called when a time slot is selected on the calendar.
+       * @param {Date} time The selected time slot
+       */
       slotSelected(time) {
         checkHardwareAvailability(time, this.minimumDuration, this.$store.getters.user.loginToken).then(res => {
           if (res !== null) {
@@ -271,6 +294,10 @@
           this.nextStep()
         })
       },
+      /**
+       * Called when the computer dropdown is changed.
+       * Sets the hardware data for the selected computer.
+       */
       computerChanged() {
         let currentComputerId = this.computer
         let data = null
@@ -286,9 +313,15 @@
         })
         this.selectedHardwareSpecs = selectedHardwareSpecs
       },
+      /**
+       * Toggles the reservation calendar.
+       */
       toggleReservationCalendar() {
         this.showReservationCalendar = !this.showReservationCalendar
       },
+      /**
+       * Called when the user clicks the "Reserve now" button.
+       */
       reserveNow() {
         checkHardwareAvailability(dayjs().toISOString(), this.minimumDuration, this.$store.getters.user.loginToken).then(res => {
           if (res !== null) {
@@ -311,6 +344,9 @@
         let d = dayjs(this.pickedDate + " " + this.pickedHour, "YYYY-MM-DD HH")
         this.reserveDate = d.toISOString()
       },
+      /**
+       * Fetches all current and upcoming reservations from the server.
+       */
       fetchReservations() {
         this.fetchingReservations = true
         let _this = this
@@ -348,6 +384,9 @@
             _this.fetchingReservations = false
         });
       },
+      /**
+       * Fetches all available hardware from the server.
+       */
       fetchAvailableHardware() {
         this.fetchingComputers = true
         let _this = this
@@ -398,6 +437,9 @@
             _this.fetchingComputers = false
         });
       },
+      /**
+       * Submits the reservation to the server.
+       */
       submitReservation() {
         this.isSubmittingReservation = true
         let _this = this

@@ -9,11 +9,24 @@ from datetime import timezone, timedelta
 from docker.dockerUtils import stop_container
 from settings import settings
 
-# TODO: This should probably be computer specific, so gets back all available hardware specs for the given computer
-# Right now it fails if any of the computers are out of resources for the given time period.
-def getAvailableHardware(date, duration) -> object:
+# TODO: Should be able to send a computer here and get the available hardware specs for it.
+# TODO: Should also be able to only fail there is not enough resources any computer. Right now it fails if any of the computers are out of resources for the given time period.
+def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = None) -> object:
   '''
   Returns a list of all available hardware specs for the given date and duration.
+  
+  Args:
+    date (str): The date when the reservation starts.
+    duration (int): The duration of the reservation in hours.
+    reducableSpecs (dict): If reducableSpecs is given, it will reduce the available hardware specs by the given amount.
+      Example: { "1": 1, "2": 0, ... }
+      Where the key is the hardwareSpecId and the value is the amount to reduce.
+    
+  Returns:
+    object: Response object with status, message and data.
+
+    If status is True, data will contain a list of all available hardware specs for the given date and duration.
+    If status is False, message will contain the error message. The error is usually that there are not enough resources for the given date and duration.
   '''
   date = parser.parse(date)
   endDate = date+relativedelta(hours=+duration)
@@ -27,16 +40,29 @@ def getAvailableHardware(date, duration) -> object:
     )
 
     # All reserved hardware specs for the given time period will be listed here
+    # This loop will go through all reservations and add the reserved hardware specs to this list for the given time period
     removableHardwareSpecs = {}
     for res in reservations:
       for spec in res.reservedHardwareSpecs:
-        type = spec.hardwareSpec.type
+        hardwareSpecId = spec.hardwareSpec.hardwareSpecId
         amount = spec.amount
         
-        if type not in removableHardwareSpecs:
-          removableHardwareSpecs[type] = amount
+        if hardwareSpecId not in removableHardwareSpecs:
+          removableHardwareSpecs[hardwareSpecId] = amount
         else:
-          removableHardwareSpecs[type] += amount
+          removableHardwareSpecs[hardwareSpecId] += amount
+
+    # Reduce the available hardware specs by the given reducable specs, if any
+    if reducableSpecs != None:
+      for key, val in reducableSpecs.items():
+        intKey = int(key)
+        if val == 0: continue
+        if intKey not in removableHardwareSpecs:
+          removableHardwareSpecs[intKey] = val
+        else:
+          removableHardwareSpecs[intKey] += val
+
+    #print("removableHardwareSpecs: ", removableHardwareSpecs)
 
     computers = []
 
@@ -55,9 +81,8 @@ def getAvailableHardware(date, duration) -> object:
 
     for computer in computers:
       for spec in computer["hardwareSpecs"]:
-        if spec["type"] in removableHardwareSpecs:
-          print(spec)
-          spec["maximumAmount"] -= removableHardwareSpecs[spec["type"]]
+        if spec["hardwareSpecId"] in removableHardwareSpecs:
+          spec["maximumAmount"] -= removableHardwareSpecs[spec["hardwareSpecId"]]
           if spec["maximumAmountForUser"] > spec["maximumAmount"]:
             spec["maximumAmountForUser"] = spec["maximumAmount"]
           #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
@@ -166,8 +191,7 @@ def getCurrentReservations() -> object:
 
 def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs):
   # Make sure that there are enough resources for the reservation
-  getAvailableHardwareResponse = getAvailableHardware(date, duration)
-  #print(getAvailableHardwareResponse)
+  getAvailableHardwareResponse = getAvailableHardware(date, duration, hardwareSpecs)
   if (getAvailableHardwareResponse["status"] == False):
     return Response(False, getAvailableHardwareResponse["message"])
 
