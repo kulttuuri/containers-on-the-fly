@@ -212,17 +212,6 @@
       this.pickedHour = d.getHours() < 10 ? "0"+d.getHours() : d.getHours.toString()
 
       this.fetchReservations()
-
-      // Debug: Skip to step 3
-      
-      this.reserveNow()
-      this.reserveDuration = 5;
-      this.reserveDate = dayjs().toISOString()
-      this.reserveType = "now"
-      this.container = 1
-      this.computer = 1
-      //this.reserveDuration = 
-      //this.fetchAvailableHardware()
     },
     methods: {
       /**
@@ -329,14 +318,14 @@
           }
           this.reserveDate = dayjs().toISOString()
           this.reserveType = "now"
-          this.reserveDuration = 5 // TODO: Change back to null when ready debugging
+          this.reserveDuration = null
           this.nextStep()
         })
       },
       reserveLater() {
         this.reserveDate = null
         this.reserveType = "pickdate"
-        this.reserveDuration = 5 // TODO: Change back to null when ready debugging
+        this.reserveDuration = null
       },
       reserveSelectedTime() {
         if (!this.pickedDate) return this.$store.commit('showMessage', { text: "Please select day.", color: "red" })

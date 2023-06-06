@@ -103,6 +103,15 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
     return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
 
 def getOwnReservations(userId) -> object:
+  '''
+  Returns a list of all reservations owned by the given user.
+
+  Args:
+    userId (int): The userId of the user.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
   reservations = []
 
   # Limit listing to 90 days
@@ -116,15 +125,22 @@ def getOwnReservations(userId) -> object:
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)
     res["reservedContainer"]["container"] = ORMObjectToDict(reservation.reservedContainer.container)
     # Add all reserved hardware specs
-    # Add only specs over 0
     res["reservedHardwareSpecs"] = []
     for spec in reservation.reservedHardwareSpecs:
+      # Add only specs over 0
       if spec.amount > 0:
-        res["reservedHardwareSpecs"].append({
-          "type": spec.hardwareSpec.type,
-          "format": spec.hardwareSpec.format,
-          "amount": spec.amount
-        })
+          # Add also internalId for GPUs
+          if spec.hardwareSpec.type == "gpu":
+            format = f"{spec.hardwareSpec.format} (id: {spec.hardwareSpec.internalId})"
+          else:
+            format = spec.hardwareSpec.format
+
+          res["reservedHardwareSpecs"].append({
+            "type": spec.hardwareSpec.type,
+            "format": format,
+            "internalId": spec.hardwareSpec.format,
+            "amount": spec.amount
+          })
     reservations.append(res)
   
   return Response(True, "Hardware resources fetched.", { "reservations": reservations })

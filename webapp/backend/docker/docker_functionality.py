@@ -23,7 +23,7 @@ def start_container(pars):
         ports (list): The ports to be used. In format: [(local_port, container_port), (local_port2, container_port2)]. For example: [(2213, 22)] for SSH.
         localMountFolderPath (string): The folder to mount in the local filesystem. For example: /home/user/docker_mounts
     Optional parameters:
-        gpus (int): The amount of gpus dedicated for the container
+        gpus (string): The amount of gpus dedicated for the container in format "device=0,2,4" where "0", "2" and "4" are device nvidia / cuda IDs. Pass None if no gpus are needed.
         image_version (string) (default: "latest"): The image version to use.
         password (string) (default: random password): Password for the user of the container
         interactive (int) (default: True): Leave stdin open during the duration of the process to allow communication with the parent process. Currently only works with tty=True for interactive use on the terminal.
@@ -67,17 +67,7 @@ def start_container(pars):
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
             volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent"),("/home/aiserver/datasets",f"/home/{pars['username']}/datasets","ro")],
-            #If you spesify number, then that many gpus you get, if you spesify the "device=0" that would give you gpu id 0, "device=4,5" would give you gpus with ids 4,5
-            #gpus=pars['gpus'],
-            # Useampi GPU tulee näin:
-            gpus="device=5",
-            # Sit käynnistä uusiks backend ja backendDockerUtil
-            # pm2 restart backend backendDockerUtil
-            #gpus="device=4,5",
-
-            # select * from Reservation where status = "started" order by startDate asc;
-            # update Reservation set endDate = "2023-08-20 16:46:39.474000" where reservationId = xx;
-
+            gpus=pars['gpus'],
             name = container_name,
             memory = pars['memory'],
             kernel_memory = pars['memory'],

@@ -66,8 +66,12 @@ def startDockerContainer(reservationId: str):
 
     imageName = reservation.reservedContainer.container.imageName
     hwSpecs = {}
+    gpuSpecs = {}
     for spec in reservation.reservedHardwareSpecs:
-      hwSpecs[spec.hardwareSpec.type] = spec.amount
+      if spec.hardwareSpec.type == "gpu":
+        gpuSpecs[spec.hardwareSpec.internalId] = { "amount": spec.amount }
+      else:
+        hwSpecs[spec.hardwareSpec.type] = { "amount": spec.amount }
       #print(f"{spec.hardwareSpec.type}: {spec.amount} {spec.hardwareSpec.format}")
 
     timeNowParsed = timeNow().strftime('%m_%d_%Y_%H_%M_%S')
@@ -88,13 +92,24 @@ def startDockerContainer(reservationId: str):
     userEmailParsed = removeSpecialCharacters(reservation.user.email)
     mountLocation = f'{settings.docker["mountLocation"]}/{userEmailParsed}'
 
+    # Create the GPUs string to be passed to Docker
+    gpusString = ""
+    # Loop through all hwSpecs and find the reserved GPU internal IDs (Nvidia / cuda IDs), if any
+    if len(gpuSpecs) > 0:
+      gpusString = "device="
+      for gpu in gpuSpecs:
+        gpusString = gpusString + gpu + ","
+      
+      # Remove the trailing , from gpuSpecs, if it exists
+      if gpusString[-1] == ",": gpusString = gpusString[:-1]
+
     details = {
       "name": containerName,
       "image": imageName,
       "username": "user",
-      "cpus": int(hwSpecs['cpus']),
-      "gpus": int(hwSpecs['gpus']),
-      "memory": f"{hwSpecs['ram']}g",
+      "cpus": int(hwSpecs['cpus']["amount"]),
+      "gpus": gpusString,
+      "memory": f"{hwSpecs['ram']['amount']}g",
       "shm_size": settings.docker["shm_size"],
       "ports": bindablePorts,
       "localMountFolderPath": mountLocation,
