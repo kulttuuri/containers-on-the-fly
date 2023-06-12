@@ -1,5 +1,5 @@
 from database import Session, Computer, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec
-from docker.docker_functionality import get_email_container_started
+from docker.docker_functionality import get_email_container_started, restart_container
 from helpers.server import Response, ORMObjectToDict
 from helpers.auth import IsAdmin
 from dateutil import parser
@@ -299,3 +299,16 @@ def cancelReservation(userId, reservationId: str):
     session.commit()
 
   return Response(True, "Reservation cancelled.")
+
+def restartContainer(userId, reservationId: str):
+  # Check that user owns the given reservation and it can be found
+  
+  with Session() as session:
+    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
+    if reservation is None: return Response(False, "No reservation found.")
+
+    if (reservation.status == "started"):
+      restart_container(reservation.reservedContainer.containerDockerName)
+      return Response(True, "Container was restarted succesfully.")
+    else:
+      return Response(False, "Reservation is not currently started, so cannot restart the container.")
