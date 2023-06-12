@@ -2,6 +2,12 @@ body {
   background: black;
 }
 
+@media (min-width: 1264px) {
+  .container {
+    max-width: 1400px !important;
+  }
+}
+
 .background-violet {
   background: #453080 !important;
 }
