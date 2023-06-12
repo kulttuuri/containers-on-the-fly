@@ -43,6 +43,7 @@ AppSettings.APIServer.reservation.get_current_reservations = baseReservationUrl 
 AppSettings.APIServer.reservation.create_reservation = baseReservationUrl + "create_reservation"
 AppSettings.APIServer.reservation.get_own_reservations = baseReservationUrl + "get_own_reservations"
 AppSettings.APIServer.reservation.cancel_reservation = baseReservationUrl + "cancel_reservation"
+AppSettings.APIServer.reservation.restart_container = baseReservationUrl + "restart_container"
 
 export default AppSettings;
 ```

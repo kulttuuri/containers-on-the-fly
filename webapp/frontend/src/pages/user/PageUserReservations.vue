@@ -28,7 +28,7 @@
     <v-row v-if="!isFetchingReservations">
       <v-col cols="12">
         <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
-          <UserReservationTable @emitCancelReservation="cancelReservation" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
+          <UserReservationTable @emitCancelReservation="cancelReservation" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
         </div>
         <p v-else class="dim text-center">No servers reserved yet.</p>
       </v-col>
@@ -179,6 +179,53 @@
               _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
             }
             _this.cancellingReservation = false
+        });
+      },
+      restartContainer(reservationId) {
+        let result = window.confirm("Do you really want to restart the docker container?")
+        if (!result) return
+        let params = {
+          "reservationId": reservationId,
+        }
+
+        let _this = this
+        _this.restartingContainer = true
+        let currentUser = this.$store.getters.user
+
+        axios({
+          method: "post",
+          url: this.AppSettings.APIServer.reservation.restart_container,
+          params: params,
+          headers: {
+            "Authorization" : `Bearer ${currentUser.loginToken}`
+          }
+        })
+        .then(function (response) {
+          //console.log(response)
+            // Success
+            if (response.data.status == true) {
+              _this.$store.commit('showMessage', { text: "Container restarted succesfully.", color: "green" })
+              _this.fetchReservations()
+            }
+            // Fail
+            else {
+              console.log("Failed restarting container...")
+              console.log(response)
+              let msg = response && response.data && response.data.message ? response.data.message : "There was an error getting the hardware specs."
+              _this.$store.commit('showMessage', { text: msg, color: "red" })
+            }
+            _this.restartingContainer = false
+        })
+        .catch(function (error) {
+            // Error
+            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
+              _this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
+            }
+            else {
+              console.log(error)
+              _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
+            }
+            _this.restartingContainer = false
         });
       },
       showReservationDetails(reservationId) {
