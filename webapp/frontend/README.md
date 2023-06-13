@@ -29,21 +29,9 @@ AppSettings.APIServer = {
   // URL pointing to your API Server (with trailing slash)
   baseAddress: "http://localhost:8000/api/",
 }
-
 // Pre-set settings for the app, no need to modify these
-AppSettings.APIServer.user = {}
-AppSettings.APIServer.reservation = {}
-let baseUrl = AppSettings.APIServer.baseAddress
-let baseUserUrl = baseUrl + "user/"
-AppSettings.APIServer.user.login = baseUserUrl + "login"
-AppSettings.APIServer.user.check_token = baseUserUrl + "check_token"
-let baseReservationUrl = baseUrl + "reservation/"
-AppSettings.APIServer.reservation.get_available_hardware = baseReservationUrl + "get_available_hardware"
-AppSettings.APIServer.reservation.get_current_reservations = baseReservationUrl + "get_current_reservations"
-AppSettings.APIServer.reservation.create_reservation = baseReservationUrl + "create_reservation"
-AppSettings.APIServer.reservation.get_own_reservations = baseReservationUrl + "get_own_reservations"
-AppSettings.APIServer.reservation.cancel_reservation = baseReservationUrl + "cancel_reservation"
-AppSettings.APIServer.reservation.restart_container = baseReservationUrl + "restart_container"
+const createUrls = require("./AppUrls.js");
+AppSettings.APIServer = createUrls(AppSettings.APIServer.baseAddress);
 
 export default AppSettings;
 ```
