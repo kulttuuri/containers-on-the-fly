@@ -14,33 +14,23 @@ import datetime
 import string
 import secrets
 
-def IsAdmin(email : str) -> bool:
+def IsAdmin(userIdOrEmail) -> bool:
   '''
   Checks that the user with the given email address is in admin role.
+
+  Parameters:
+    userIdOrEmail: userId or email address of the user. Will use userId if integer is given, otherwise email address.
   Returns:
-    true if is admin, false otherwise.
+    True if is admin, False otherwise.
   '''
   with Session() as session:
-    user = session.query(User).filter( User.email == email ).first()
+    user = None
+    if (isinstance(userIdOrEmail, int)):
+      user = session.query(User).filter( User.userId == userIdOrEmail ).first()
+    else:
+      user = session.query(User).filter( User.email == userIdOrEmail ).first()
 
     if (user == None): return False
-
-    isAdmin = False
-    for role in user.roles:
-      if role.name == "admin": isAdmin = True
-    return isAdmin
-
-def IsAdmin(userId : int) -> bool:
-  '''
-  Checks that the user with the given userId is in admin role.
-  Returns:
-    true if is admin, false otherwise.
-  '''
-  with Session() as session:
-    user = session.query(User).filter( User.userId == userId ).first()
-
-    if (user == None): return False
-
     isAdmin = False
     for role in user.roles:
       if role.name == "admin": isAdmin = True

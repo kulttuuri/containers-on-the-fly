@@ -11,7 +11,7 @@ from settings import settings
 
 # TODO: Should be able to send a computer here and get the available hardware specs for it.
 # TODO: Should also be able to only fail there is not enough resources any computer. Right now it fails if any of the computers are out of resources for the given time period.
-def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = None) -> object:
+def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = None, isAdmin = False) -> object:
   '''
   Returns a list of all available hardware specs for the given date and duration.
   
@@ -78,6 +78,12 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
     allContainers = session.query(Container)
     for container in allContainers:
       containers.append(ORMObjectToDict(container))
+
+    # Set all user maximums to max for admins
+    if (isAdmin == True):
+      for computer in computers:
+        for spec in computer["hardwareSpecs"]:
+          spec["maximumAmountForUser"] = spec["maximumAmount"]
 
     for computer in computers:
       for spec in computer["hardwareSpecs"]:
@@ -254,13 +260,14 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
       status = "reserved",
     )
     session.add(reservation)
-    #print(reservation)
-    #reservation = session.query(Reservation).filter(  )
+
     # Append all reserved hardware specs inside the reservation
     for key, val in hardwareSpecs.items():
       # Check that the amount does not exceed user limits for the given hardware
+      # Skipped for admins
       hardwareSpec = session.query(HardwareSpec).filter( HardwareSpec.hardwareSpecId == key ).first()
-      if val > hardwareSpec.maximumAmountForUser: raise Exception("Trying to utilize hardware specs above the user maximum amount")
+      if val > hardwareSpec.maximumAmountForUser and isAdmin == False:
+        return Response(False, f"Trying to utilize hardware specs above the user maximum amount for {hardwareSpec.type} {hardwareSpec.format}: {val} > {hardwareSpec.maximumAmountForUser}")
       # Only add resources over 0
       if val > 0:
         session.add(
