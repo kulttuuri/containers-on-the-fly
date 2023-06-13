@@ -25,6 +25,26 @@ const routes = [
     component: () => import(/* webpackChunkName: "userreserve" */ '../views/user/ViewUserReserve.vue')
   },
   {
+    path: '/admin/reservations',
+    name: 'admin/reservations',
+    component: () => import(/* webpackChunkName: "adminreservations" */ '../views/admin/ViewAdminReservations.vue')
+  },
+  {
+    path: '/admin/users',
+    name: 'admin/users',
+    component: () => import(/* webpackChunkName: "adminusers" */ '../views/admin/ViewAdminUsers.vue')
+  },
+  {
+    path: '/admin/hardware',
+    name: 'admin/hardware',
+    component: () => import(/* webpackChunkName: "adminhardware" */ '../views/admin/ViewAdminHardware.vue')
+  },
+  {
+    path: '/admin/containers',
+    name: 'admin/containers',
+    component: () => import(/* webpackChunkName: "admincontainers" */ '../views/admin/ViewAdminContainers.vue')
+  },
+  {
     // path: "*",
     path: "/:catchAll(.*)",
     name: "NotFound",

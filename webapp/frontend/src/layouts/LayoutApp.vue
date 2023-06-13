@@ -3,8 +3,15 @@
     <v-app v-if="isLoggedIn">
       <v-app-bar app elevation="4">
         <a @click="reservations">Reservations</a>
-        <!--<a @click="profile">Profile</a>-->
         <a @click="logout">Logout</a>
+        <!--<a @click="profile">Profile</a>-->
+        <div class="admin-block" v-if="isAdmin">
+          <p class="admin-text">Admin</p>
+          <a href="/admin/reservations">Reservations</a>
+          <a href="/admin/users">Users</a>
+          <a href="/admin/hardware">Hardware</a>
+          <a href="/admin/containers">Containers</a>
+        </div>
         <p class="loggedInText" v-if="isLoggedIn == true">
           Logged in as
           <br />
@@ -64,6 +71,13 @@
       isLoggedIn() {
         return this.$store.getters.isLoggedIn || false
       },
+      isAdmin() {
+        let currentUser = this.$store.getters.user
+        if (!currentUser) return false
+
+        if (currentUser.role == "admin") return true
+        return false
+      },
       userEmail() {
         if (!this.$store.getters.user) return ""
         return this.$store.getters.user.email || ""
@@ -97,5 +111,25 @@
 .loggedInText span {
   color: white;
   opacity: 80%;
+}
+
+.admin-block {
+  margin-left: 20px;
+}
+
+.admin-block p {
+  margin: 0px;
+  color: gray;
+  font-size: 15px;
+  margin-right: 5px;
+}
+
+.admin-block > a {
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.admin-block > * {
+  display: inline-block;
 }
 </style>
