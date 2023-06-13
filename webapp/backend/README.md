@@ -2,6 +2,39 @@
 
 Backend server for AI Docker server reservation software, written in Python 3. FastAPI is being used for the API implementation.
 
+## database
+
+at the moment, production db is at /home/alposta/aiserver/webapp/backend
+
+### how to use
+--log in to the db
+sudo sqlite3 aiserver.db
+--Look all the tables
+.tables
+--make data look better in terminal
+.mode column
+.headers ON
+--looking data from one table
+select * from "table";
+-- exiting sqlite
+.exit
+--updating
+update Container set imageName = "new name" where containerId = id 
+
+--example, how to check containers in table and add one container there
+--Additions are needed for 2 tables Container and ContainerPort
+
+--listing all 
+select * from Container;
+insert into Container (public, imageName, name, description) values (true, "docker image name", "name to show in frontend", "description");
+
+insert into ContainerPort (containerId, serviceName, port) values (2, "SSH", 22);
+
+####
+changing reservation time
+
+update Reservation set endDate = "2022-12-16 20:16:22.752000" where reservationId = 82 
+
 ## Settings File
 
 The settings file should be first created in order to start working with the project. File should be created in location ``webapp/backend/settings.json``. Below is an example of this file:
