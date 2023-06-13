@@ -285,13 +285,21 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
 
 def cancelReservation(userId, reservationId: str):
   # Check that user owns the given reservation and it can be found
+  # Admins can cancel any reservation
+  with Session() as session:
+    if IsAdmin(userId) == False:
+      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
+      if reservation is None: return Response(False, "No reservation found for this user.")
   
   with Session() as session:
-    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
+    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
     if reservation is None: return Response(False, "No reservation found.")
 
     if (reservation.status == "started"):
-      stop_container(reservation.reservedContainer.containerDockerName)
+      try:
+        stop_container(reservation.reservedContainer.containerDockerName)
+      except Exception as e:
+        print(e)
 
     reservation.status = "stopped"
     reservation.endDate = datetime.datetime.now(datetime.timezone.utc)
@@ -301,10 +309,15 @@ def cancelReservation(userId, reservationId: str):
   return Response(True, "Reservation cancelled.")
 
 def restartContainer(userId, reservationId: str):
-  # Check that user owns the given reservation and it can be found
+  # Check that user owns the given container reservation and it can be found
+  # Admins can restart any container
+  with Session() as session:
+    if IsAdmin(userId) == False:
+      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
+      if reservation is None: return Response(False, "No reservation found for this user.")
   
   with Session() as session:
-    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
+    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
     if reservation is None: return Response(False, "No reservation found.")
 
     if (reservation.status == "started"):

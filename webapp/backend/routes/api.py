@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from endpoints import user, reservation
+from endpoints import user, reservation, admin
 from endpoints.adminRoutes import adminRoles, adminHardwarespecs, adminComputers, adminContainers
 from endpoints.adminRoutes import adminUsers, adminUserWhitelists, adminUserStorages, adminReservations
 from settings import settings
@@ -9,6 +9,7 @@ from database import ContainerPort, Session, User, Role, Computer, HardwareSpec,
 router = APIRouter()
 router.include_router(user.router)
 router.include_router(reservation.router)
+router.include_router(admin.router)
 router.include_router(adminRoles.router)
 router.include_router(adminHardwarespecs.router)
 router.include_router(adminComputers.router)

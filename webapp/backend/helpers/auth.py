@@ -30,6 +30,22 @@ def IsAdmin(email : str) -> bool:
       if role.name == "admin": isAdmin = True
     return isAdmin
 
+def IsAdmin(userId : int) -> bool:
+  '''
+  Checks that the user with the given userId is in admin role.
+  Returns:
+    true if is admin, false otherwise.
+  '''
+  with Session() as session:
+    user = session.query(User).filter( User.userId == userId ).first()
+
+    if (user == None): return False
+
+    isAdmin = False
+    for role in user.roles:
+      if role.name == "admin": isAdmin = True
+    return isAdmin
+
 def GetRole(email : str) -> string:
   '''
   Gets the role (first found role from the database) for the user with the given email.
