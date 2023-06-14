@@ -211,7 +211,7 @@ def getCurrentReservations() -> object:
   
   return Response(True, "Current reservations fetched.", { "reservations": reservations })
 
-def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs):
+def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, adminReserveUserEmail: str = None):
   # Make sure that there are enough resources for the reservation
   getAvailableHardwareResponse = getAvailableHardware(date, duration, hardwareSpecs)
   if (getAvailableHardwareResponse["status"] == False):
@@ -249,6 +249,15 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
       return Response(False, f"Minimum duration is {settings.reservation['minimumDuration']} hours.")
     if (duration > settings.reservation["maximumDuration"]) and isAdmin == False:
       return Response(False, f"Maximum duration is {settings.reservation['maximumDuration']} hours.")
+
+    userId = user.userId
+
+    # If adminReserveUserEmail is given, check that the user exists
+    if adminReserveUserEmail != None and adminReserveUserEmail != "" and isAdmin == True:
+      anotherUser = session.query(User).filter( User.email == adminReserveUserEmail ).first()
+      if (anotherUser == None):
+        return Response(False, "User for which you tried to reserve for did not exist. Check the email address: " + adminReserveUserEmail)
+      user = anotherUser
 
     # Create the base reservation
     reservation = Reservation(

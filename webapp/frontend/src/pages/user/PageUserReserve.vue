@@ -109,8 +109,21 @@
               </v-row>
             </v-col>
           </v-row>
+
+          <!-- Admin extra task: reserve for another user -->
+          <v-col cols="12" v-if="isAdmin && computer && hardwareData" style="margin-top: 30px;">
+              <h2>Reserve for another user</h2>
+              <v-row>
+                <v-col cols="3" style="margin: 0 auto">
+                  <p><span style="color: gray; font-size: 15px;">Admin only!</span> Write email address of another user, or leave empty to reserve for yourself.</p>
+                  <v-text-field v-model="adminReserveUserEmail" v-if="isAdmin" label="" placeholder="Email"></v-text-field>
+                </v-col>
+              </v-row>
+          </v-col>
+
         </v-row>
 
+        <!-- Create reservation button -->
         <v-row v-if="computer && hardwareData">
           <v-col cols="12">
             <v-btn color="primary" @click="submitReservation" :disabled="isSubmittingReservation">Create Reservation</v-btn>
@@ -183,6 +196,7 @@
       pickedDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
       pickedHour: {},
       reservableHours: [],
+      adminReserveUserEmail: null,
       hours: [],
       reserveDurationDays: null,
       reserveDurationHours: null,
@@ -216,7 +230,7 @@
       //this.duration = { "text": "8 hours", "value": 8 }
 
       // If is admin, set days to 60
-      if (this.$store.getters.user.role == "admin") {
+      if (this.isAdmin) {
         this.maximumDurationDays = 60
       }
 
@@ -237,6 +251,17 @@
       this.fetchReservations()
     },
     methods: {
+      /**
+       * Checks if user is admin.
+       * @returns {Boolean} True if user is admin, false if not
+       */
+      isAdmin() {
+        let currentUser = this.$store.getters.user
+        if (!currentUser) return false
+
+        if (currentUser.role == "admin") return true
+        return false
+      },
       /**
        * Limits the amount of selected GPUs to the maximum amount allowed.
        */
@@ -487,7 +512,8 @@
           "computerId": computerId,
           "duration": duration,
           "containerId": this.container,
-          "hardwareSpecs": {...this.selectedHardwareSpecs}
+          "hardwareSpecs": {...this.selectedHardwareSpecs},
+          "adminReserveUserEmail": this.adminReserveUserEmail ? this.adminReserveUserEmail : ""
         }
 
         axios({

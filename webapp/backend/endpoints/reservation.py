@@ -31,7 +31,7 @@ async def getOwnReservations(reservationId: int, token: str = Depends(oauth2_sch
   return functionality.getOwnReservationDetails(reservationId, userId)
 
 @router.post("/create_reservation")
-async def CreateReservation(date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, token: str = Depends(oauth2_scheme)):
+async def CreateReservation(date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, adminReserveUserEmail, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
   try:
     hardwareSpecs = json.loads(hardwareSpecs)
@@ -39,7 +39,7 @@ async def CreateReservation(date: str, duration: int, computerId: int, container
     return Response(False, "Error.")
   
   userId = CheckToken(token)["data"]["userId"]
-  return functionality.createReservation(userId, date, duration, computerId, containerId, hardwareSpecs)
+  return functionality.createReservation(userId, date, duration, computerId, containerId, hardwareSpecs, adminReserveUserEmail)
 
 @router.get("/get_current_reservations")
 async def getCurrentReservations(token: str = Depends(oauth2_scheme)):
