@@ -37,13 +37,21 @@
           </v-col>
           <v-col cols="3" style="margin: 0 auto">
             <h2>Reservation duration</h2>
-            <v-select v-model="reserveDuration" :items="reservableHours" item-text="text" item-value="value" label="Duration"></v-select>
+            <p style="color: gray;">Minimum duration is <b>{{ minimumDuration }}</b> hours.</p>
+            <v-row>
+              <v-col cols="6">
+                <v-select v-model="reserveDurationDays" :items="reservableDays" item-text="text" item-value="value" label="Days"></v-select>
+              </v-col>
+              <v-col cols="6">
+                <v-select v-model="reserveDurationHours" :items="reservableHours" item-text="text" item-value="value" label="Hours"></v-select>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
 
         <v-btn text @click="prevStep()" style="margin-right: 7px">Back</v-btn>
 
-        <v-btn color="primary" @click="fetchAvailableHardware" :disabled="!reserveDuration && !fetchingComputers">Continue</v-btn>
+        <v-btn color="primary" @click="fetchAvailableHardware" :disabled="!reserveDurationDays && !reserveDurationHours && !fetchingComputers">Continue</v-btn>
         <Loading v-if="fetchingComputers" />
       </v-stepper-content>
 
@@ -54,7 +62,7 @@
         <br>
 
         <!-- Select container -->
-        <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers">
+        <v-row v-if="reserveDate != null && reserveDurationDays !== null && reserveDurationHours !== null && !fetchingComputers && allComputers">
           <v-col cols="12">
             <h2>Select Container</h2>
             <v-row>
@@ -66,7 +74,7 @@
         </v-row>
 
         <!-- Select computer, hardware specs & submit -->
-        <v-row v-if="reserveDate != null && reserveDuration !== null && !fetchingComputers && allComputers && container" class="section">      
+        <v-row v-if="reserveDate != null && reserveDurationDays !== null && reserveDurationHours !== null && !fetchingComputers && allComputers && container" class="section">      
           <v-col cols="12">
             <h2>Select Computer</h2>
             <v-row>
@@ -176,7 +184,8 @@
       pickedHour: {},
       reservableHours: [],
       hours: [],
-      reserveDuration: null,
+      reserveDurationDays: null,
+      reserveDurationHours: null,
       fetchingReservations: false, // True if we are fetching all current and upcoming reservations
       allReservations: null, // Contains all current reservations
       fetchingComputers: false, // True if we are fetching computers and their hardware data from the server
@@ -190,18 +199,32 @@
       hardwareData: null, // Contains hardware data for the currently selected computer
       selectedHardwareSpecs: {}, // Selected hardware specs for the current computer
       isSubmittingReservation: false, // Set to true when user is submitting the reservation
+      minimumDurationDays: 0, // TODO: Grab from server settings
+      maximumDurationDays: 2,  // TODO: Grab from server settings      
+      minimumDurationHours: 0, // TODO: Grab from server settings
+      maximumDurationHours: 24,  // TODO: Grab from server settings
       minimumDuration: 5, // TODO: Grab from server settings
-      maximumDuration: 72,  // TODO: Grab from server settings
     }),
     mounted() {
       let d = new Date()
 
       let hours = []
-      for (let i = this.minimumDuration; i < this.maximumDuration; i++) {
+      for (let i = this.minimumDurationHours; i <= this.maximumDurationHours; i++) {
         hours.push( { "text": i + " hours", "value": i } )
       }
       this.reservableHours = hours
       //this.duration = { "text": "8 hours", "value": 8 }
+
+      // If is admin, set days to 60
+      if (this.$store.getters.user.role == "admin") {
+        this.maximumDurationDays = 60
+      }
+
+      let days = []
+      for (let i = this.minimumDurationDays; i <= this.maximumDurationDays; i++) {
+        days.push( { "text": i + " days", "value": i } )
+      }
+      this.reservableDays = days
 
       let dayHours = []
       for (let i = 0; i < 24; i++) {
@@ -261,6 +284,12 @@
        */
       nextStep() {
         if (this.step == 3) return
+
+        let duration = this.reserveDurationDays * 24 + this.reserveDurationHours
+        if (this.step == 2 && duration < this.minimumDuration) {
+          return this.$store.commit('showMessage', { text: "Minimum duration is "+this.minimumDuration+" hours.", color: "red" })
+        }
+
         this.step = this.step + 1
       },
       /**
@@ -275,7 +304,7 @@
        * @param {Date} time The selected time slot
        */
       slotSelected(time) {
-        checkHardwareAvailability(time, this.minimumDuration, this.$store.getters.user.loginToken).then(res => {
+        checkHardwareAvailability(time, this.minimumDurationHours, this.$store.getters.user.loginToken).then(res => {
           if (res !== null) {
             return this.$store.commit('showMessage', { text: res, color: "red" })
           }
@@ -312,20 +341,22 @@
        * Called when the user clicks the "Reserve now" button.
        */
       reserveNow() {
-        checkHardwareAvailability(dayjs().toISOString(), this.minimumDuration, this.$store.getters.user.loginToken).then(res => {
+        checkHardwareAvailability(dayjs().toISOString(), this.minimumDurationHours, this.$store.getters.user.loginToken).then(res => {
           if (res !== null) {
             return this.$store.commit('showMessage', { text: res, color: "red" })
           }
           this.reserveDate = dayjs().toISOString()
           this.reserveType = "now"
-          this.reserveDuration = null
+          this.reserveDurationDays = 0
+          this.reserveDurationHours = null
           this.nextStep()
         })
       },
       reserveLater() {
         this.reserveDate = null
         this.reserveType = "pickdate"
-        this.reserveDuration = null
+        this.reserveDurationDays = 0
+        this.reserveDurationHours = null
       },
       reserveSelectedTime() {
         if (!this.pickedDate) return this.$store.commit('showMessage', { text: "Please select day.", color: "red" })
@@ -382,10 +413,12 @@
         this.computer = null
         let currentUser = this.$store.getters.user
 
+        let duration = this.reserveDurationDays * 24 + this.reserveDurationHours
+
         axios({
           method: "get",
           url: this.AppSettings.APIServer.reservation.get_available_hardware,
-          params: { "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(), duration: this.reserveDuration },
+          params: { "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(), duration: duration },
           headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
         })
         .then(function (response) {
@@ -447,10 +480,12 @@
         //console.log({...this.selectedHardwareSpecs})
         //console.log({...this.selectedgpus})
 
+        let duration = this.reserveDurationDays * 24 + this.reserveDurationHours
+
         let params = {
           "date": dayjs(this.reserveDate).tz("GMT+0").toISOString(),
           "computerId": computerId,
-          "duration": this.reserveDuration,
+          "duration": duration,
           "containerId": this.container,
           "hardwareSpecs": {...this.selectedHardwareSpecs}
         }

@@ -247,7 +247,7 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
     # Check that the duration is between minimum and maximum lengths
     if (duration < settings.reservation["minimumDuration"]):
       return Response(False, f"Minimum duration is {settings.reservation['minimumDuration']} hours.")
-    if (duration > settings.reservation["maximumDuration"]):
+    if (duration > settings.reservation["maximumDuration"]) and isAdmin == False:
       return Response(False, f"Maximum duration is {settings.reservation['maximumDuration']} hours.")
 
     # Create the base reservation
