@@ -66,19 +66,26 @@
           <v-col cols="12">
             <h2>Select Container</h2>
             <v-row>
-              <v-col cols="3" style="margin: 0 auto">
+              <v-col cols="6" style="margin: 0 auto">
                 <v-select v-model="container" :items="containers" item-text="text" item-value="value" label="Container"></v-select>
               </v-col>
             </v-row>
           </v-col>
         </v-row>
 
+        <v-row v-if="container">
+          <v-col cols="6" style="margin: 0 auto;">
+            <!-- Readonly v-textarea, text should come from function getContainerDescription() -->
+            <v-textarea :readonly="true" :value="getContainerDescription" :style="{ userSelect: 'none' }" label="Container Description"></v-textarea>
+          </v-col>
+        </v-row>
+
         <!-- Select computer, hardware specs & submit -->
         <v-row v-if="reserveDate != null && reserveDurationDays !== null && reserveDurationHours !== null && !fetchingComputers && allComputers && container" class="section">      
           <v-col cols="12">
-            <h2>Select Computer</h2>
+            <h2 style="margin-top: 30px;">Select Computer</h2>
             <v-row>
-              <v-col cols="3" style="margin: 0 auto">
+              <v-col cols="6" style="margin: 0 auto">
                 <v-select v-model="computer" v-on:change="computerChanged" :items="computers" item-text="text" item-value="value" label="Computer"></v-select>
               </v-col>
             </v-row>
@@ -460,7 +467,12 @@
               
               let containers = []
               _this.allContainers.forEach((container) => {
-                containers.push({ "value": container.containerId, "text": container.name })
+                if (container.removed == true) return
+                if (!_this.isAdmin() && container.public == false) return
+                let name = container.name
+                if (container.public == false) name = name + " (private)"
+
+                containers.push({ "value": container.containerId, "text": name })
               });
               _this.containers = containers
               _this.nextStep()
@@ -555,6 +567,14 @@
       },
     },
     computed: {
+      getContainerDescription() {
+        if (this.container) {
+          let container = this.allContainers.find(x => x.containerId == this.container)
+          if (container) return container.description
+          else return ""
+        }
+        else return ""
+      },
       parsedTime() {
         return dayjs(this.reserveDate).format("DD.MM.YYYY HH:mm")
       },

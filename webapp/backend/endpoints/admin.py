@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from helpers.server import ForceAuthentication
 from fastapi.security import OAuth2PasswordBearer
 from endpoints.responses import admin as functionality
+from endpoints.models.admin import ContainerEdit
 
 router = APIRouter(
     prefix="/api/admin",
@@ -30,6 +31,21 @@ async def getHardware(token: str = Depends(oauth2_scheme)):
 async def getContainers(token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   return functionality.getContainers()
+
+@router.get("/container")
+async def getContainer(containerId : int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.getContainer(containerId)
+
+@router.post("/save_container")
+async def saveContainer(containerEdit : ContainerEdit, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.saveContainer(containerEdit)
+
+@router.post("/remove_container")
+async def removeContainer(containerId : int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.removeContainer(containerId)
 
 @router.post("/edit_reservation")
 async def editReservation(reservationId : int, endDate : str, token: str = Depends(oauth2_scheme)):

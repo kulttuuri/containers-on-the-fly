@@ -62,6 +62,7 @@ class Container(Base):
   public = Column(Boolean, nullable = False)
   imageName = Column(String, unique = True, nullable = False)
   name = Column(String, nullable = False)
+  removed = Column(Boolean, nullable = True) # TODO: Add to diagram
   description = Column(String, nullable = True)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())

@@ -1,9 +1,10 @@
-from database import Session, Computer, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec
+from database import Session, Computer, ContainerPort, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec
 from dateutil import parser
 from dateutil.relativedelta import *
 from datetime import timezone, timedelta
 from helpers.server import Response, ORMObjectToDict
 import datetime
+from endpoints.models.admin import ContainerEdit
 
 def getReservations() -> object:
   '''
@@ -45,6 +46,86 @@ def getReservations() -> object:
     reservations.append(res)
     
   return Response(True, "Reservations fetched.", { "reservations": reservations })
+
+def saveContainer(containerEdit : ContainerEdit) -> object:
+  '''
+  Edits the given container.
+
+  Parameters:
+    containerId: id of the container to edit.
+    data: New data for the container.
+  
+  Returns:
+    object: Response object with status, message and data.
+
+  '''
+
+  with Session() as session:
+    # If new, create a new container
+    if containerEdit.containerId == -1:
+      container = Container()
+      container.public = containerEdit.data.get("public", False)
+      container.name = containerEdit.data.get("name")
+      container.imageName = containerEdit.data.get("imageName")
+      container.description = containerEdit.data.get("description", "")
+      # Add ports
+      for port in containerEdit.data.get("ports", []):
+        container.containerPorts.append(ContainerPort(port=port["port"], serviceName=port["serviceName"]))
+      session.add(container)
+      session.commit()
+    # Otherwise, edit container
+    else:
+      container = session.query(Container).filter(Container.containerId == containerEdit.containerId).first()
+      if container is None:
+        return Response(False, "Container not found.")
+      else:
+        container.public = containerEdit.data.get("public", False)
+        container.name = containerEdit.data.get("name")
+        container.imageName = containerEdit.data.get("imageName")
+        container.description = containerEdit.data.get("description", "")
+        container.updatedAt = datetime.datetime.now(datetime.timezone.utc)
+        # Remove all removable ports
+        for port in containerEdit.data.get("removedPorts", []):
+          session.query(ContainerPort).filter(ContainerPort.containerPortId == port).delete()
+        # Add all new ports
+        for port in containerEdit.data.get("ports", []):
+          if "containerPortId" not in port:
+            container.containerPorts.append(ContainerPort(port=port["port"], serviceName=port["serviceName"]))
+        # Edit changed ports
+        for port in containerEdit.data.get("ports", []):
+          if "containerPortId" in port:
+            oldPort = session.query(ContainerPort).filter(ContainerPort.containerPortId == port["containerPortId"]).first()
+            if oldPort.port != port["port"] or oldPort.serviceName != port["serviceName"]:
+              oldPort.port = port["port"]
+              oldPort.serviceName = port["serviceName"]
+              oldPort.updatedAt = datetime.datetime.now(datetime.timezone.utc)
+
+        #for port in containerEdit.data.get("ports", []):
+        #  container.containerPorts.append(ContainerPort(port=port["port"], serviceName=port["serviceName"]))
+        session.commit()
+  return Response(True, "Container saved successfully")
+
+def removeContainer(containerId : int) -> object:
+  '''
+  Removes the given container.
+
+  Parameters:
+    containerId: id of the container to remove.
+  
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  with Session() as session:
+    container = session.query(Container).filter(Container.containerId == containerId).first()
+    if container is None:
+      return Response(False, "Container not found.")
+    else:
+      container.removed = True
+      container.public = False
+      session.commit()
+  
+  return Response(True, "Container removed successfully")
 
 def getUsers() -> object:
   '''
@@ -88,7 +169,7 @@ def getHardware() -> object:
 
 def getContainers() -> object:
   '''
-  Returns a list of all containers.
+  Returns a list of all containers which have not been removed.
 
   Returns:
     object: Response object with status, message and data.
@@ -97,13 +178,46 @@ def getContainers() -> object:
   data = []
 
   with Session() as session:
-    query = session.query(Container)
+    # Find all where Container.removed is not True
+    query = session.query(Container).filter(Container.removed.isnot(True))
     for container in query:
       addable = {}
       addable = ORMObjectToDict(container)
+      addable["ports"] = []
+      for port in container.containerPorts:
+        addable["ports"].append({
+          "containerPortId": port.containerPortId,
+          "port": port.port,
+          "serviceName": port.serviceName,
+        })
       data.append(addable)
   
   return Response(True, "Data fetched.", { "containers": data })
+
+def getContainer(containerId : int) -> object:
+  '''
+  Returns the given container.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  addable = {}
+
+  with Session() as session:
+    query = session.query(Container).filter(Container.containerId == containerId).limit(1)
+    for container in query:
+      addable = {}
+      addable = ORMObjectToDict(container)
+      addable["ports"] = []
+      for port in container.containerPorts:
+        addable["ports"].append({
+          "containerPortId": port.containerPortId,
+          "port": port.port,
+          "serviceName": port.serviceName,
+        })
+  
+  return Response(True, "Data fetched.", { "data": addable })
 
 def editReservation(reservationId : int, endDate : str) -> object:
   '''

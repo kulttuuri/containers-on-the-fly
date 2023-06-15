@@ -7,6 +7,12 @@
       :sort-by="'containerId'"
       :sort-desc="true"
       class="elevation-1">
+
+      <!-- Actions -->
+      <template v-slot:item.actions="{item}">
+        <a class="link-action" @click="emitEditContainer(item.containerId)">Edit Container</a>
+        <a class="link-action" @click="emitRemoveContainer(item.containerId)">Remove Container</a>
+      </template>
     </v-data-table>
   </div>
 </template>
@@ -35,6 +41,7 @@
           { text: 'Description', value: 'description' },
           { text: 'Created At', value: 'createdAt' },
           { text: 'Updated At', value: 'updatedAt' },
+          { text: 'Actions', value: 'actions' },
         ],
       }
     }),
@@ -42,6 +49,12 @@
       this.data = this.propItems
     },
     methods: {
+      emitEditContainer(containerId) {
+        this.$emit('emitEditContainer', containerId)
+      },
+      emitRemoveContainer(containerId) {
+        this.$emit('emitRemoveContainer', containerId)
+      },
       toggleReadAll() {
         this.readAll = !this.readAll;
       },
