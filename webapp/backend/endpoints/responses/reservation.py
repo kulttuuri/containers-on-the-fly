@@ -11,7 +11,7 @@ from settings import settings
 
 # TODO: Should be able to send a computer here and get the available hardware specs for it.
 # TODO: Should also be able to only fail there is not enough resources any computer. Right now it fails if any of the computers are out of resources for the given time period.
-def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = None, isAdmin = False) -> object:
+def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = None, isAdmin = False, ignoredReservationId : int = None) -> object:
   '''
   Returns a list of all available hardware specs for the given date and duration.
   
@@ -39,10 +39,13 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
       (Reservation.status == "reserved") | (Reservation.status == "started")
     )
 
+    #print("Ignored reservation ID: ", ignoredReservationId)
+
     # All reserved hardware specs for the given time period will be listed here
     # This loop will go through all reservations and add the reserved hardware specs to this list for the given time period
     removableHardwareSpecs = {}
     for res in reservations:
+      if res.reservationId == ignoredReservationId: continue
       for spec in res.reservedHardwareSpecs:
         hardwareSpecId = spec.hardwareSpec.hardwareSpecId
         amount = spec.amount
@@ -323,6 +326,43 @@ def cancelReservation(userId, reservationId: str):
     session.commit()
 
   return Response(True, "Reservation cancelled.")
+
+def extendReservation(userId, reservationId: str, duration: int):
+  # Check that user owns the given reservation and it can be found
+  # Admins can extend any reservation
+
+  with Session() as session:
+    if IsAdmin(userId) == False:
+      reservationCheck = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
+      if reservationCheck is None: return Response(False, "No reservation found for this user.")
+
+    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
+    if reservation is None: return Response(False, "No reservation found.")
+    
+    if reservation.status != "started":
+      return Response(False, "Reservation is not started, so cannot extend it.")
+    
+    # Check that the duration is between minimum and maximum lengths
+    if duration < 0 or duration > 24:
+      return Response(False, "Duration must be between 0 and 24 hours.")
+
+    # Check that there are enough resources for the reservation extension
+    # Reducable specs comes from the current reservation
+    reducableSpecs = {}
+    for spec in reservation.reservedHardwareSpecs:
+      reducableSpecs[spec.hardwareSpecId] = spec.amount
+    endTimeString = reservation.endDate.strftime("%Y-%m-%d %H:%M:%S")
+    getAvailableHardwareResponse = getAvailableHardware(endTimeString, duration, reducableSpecs, False, reservation.reservationId)
+    if getAvailableHardwareResponse["status"]:
+      # Extend the reservation
+      reservation.endDate = reservation.endDate + relativedelta(hours=+duration)
+      session.commit()
+      return Response(True, "Reservation was extended by " + str(duration) + " hours.")
+    else:
+      print(getAvailableHardwareResponse["message"])
+      return Response(False, "Cannot extend reservation due to lack of resources. Try with less hours.")
+
+  return Response(False, "Error.")
 
 def restartContainer(userId, reservationId: str):
   # Check that user owns the given container reservation and it can be found

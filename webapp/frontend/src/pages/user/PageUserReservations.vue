@@ -28,7 +28,7 @@
     <v-row v-if="!isFetchingReservations">
       <v-col cols="12">
         <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
-          <UserReservationTable @emitCancelReservation="cancelReservation" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
+          <UserReservationTable @emitCancelReservation="cancelReservation" @emitExtendReservation="extendReservation" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
         </div>
         <p v-else class="dim text-center">No servers reserved yet.</p>
       </v-col>
@@ -179,6 +179,61 @@
               _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
             }
             _this.cancellingReservation = false
+        });
+      },
+      extendReservation(reservationId) {
+        let extraHours = prompt("How many hours do you want to extend for? (Max 24 hours). Type for example: 12", "");
+        if (extraHours == null|| extraHours == "") {
+          return;
+        }
+
+        if (isNaN(extraHours)) {
+          this.$store.commit('showMessage', { text: "Please type in a number.", color: "red" })
+          return;
+        }
+        if (parseInt(extraHours) > 24 || parseInt(extraHours) < 0) {
+          this.$store.commit('showMessage', { text: "Please type in a number between 0 and 24.", color: "red" })
+          return;
+        }
+
+        let params = {
+          "reservationId": reservationId,
+          "duration": parseInt(extraHours)
+        }
+
+        let _this = this
+        let currentUser = this.$store.getters.user
+
+        axios({
+          method: "post",
+          url: this.AppSettings.APIServer.reservation.extend_reservation,
+          params: params,
+          headers: {
+            "Authorization" : `Bearer ${currentUser.loginToken}`
+          }
+        })
+        .then(function (response) {
+          //console.log(response)
+            // Success
+            if (response.data.status == true) {
+              _this.$store.commit('showMessage', { text: "Reservation was extended succesfully.", color: "green" })
+              _this.fetchReservations()
+            }
+            // Fail
+            else {
+              let msg = response && response.data && response.data.message ? response.data.message : "There was an error extending."
+              _this.$store.commit('showMessage', { text: msg, color: "red" })
+            }
+        })
+        .catch(function (error) {
+            // Error
+            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
+              _this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
+            }
+            else {
+              console.log(error)
+              _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
+            }
         });
       },
       restartContainer(reservationId) {

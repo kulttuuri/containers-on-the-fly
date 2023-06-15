@@ -52,6 +52,12 @@ async def cancelReservation(reservationId: str, token: str = Depends(oauth2_sche
   userId = CheckToken(token)["data"]["userId"]
   return functionality.cancelReservation(userId, reservationId)
 
+@router.post("/extend_reservation")
+async def extendReservation(reservationId: str, duration : int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token)
+  userId = CheckToken(token)["data"]["userId"]
+  return functionality.extendReservation(userId, reservationId, duration)
+
 @router.post("/restart_container")
 async def RestartContainer(reservationId: str, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)

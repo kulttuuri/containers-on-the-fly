@@ -380,7 +380,7 @@
           this.reserveDate = dayjs().toISOString()
           this.reserveType = "now"
           this.reserveDurationDays = 0
-          this.reserveDurationHours = null
+          this.reserveDurationHours = 0
           this.nextStep()
         })
       },
@@ -388,7 +388,7 @@
         this.reserveDate = null
         this.reserveType = "pickdate"
         this.reserveDurationDays = 0
-        this.reserveDurationHours = null
+        this.reserveDurationHours = 0
       },
       reserveSelectedTime() {
         if (!this.pickedDate) return this.$store.commit('showMessage', { text: "Please select day.", color: "red" })
