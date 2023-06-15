@@ -57,7 +57,11 @@ def start_container(pars):
 
         container_name = pars['name']
 
-        print(pars["gpus"])
+        #print(pars["gpus"])
+
+        gpus = None
+        if pars["gpus"] != None:
+            gpus = f'"{pars["gpus"]}"'
 
         # Create directory for mounting if it does not exist
         if not os.path.isdir(pars["localMountFolderPath"]):
@@ -70,7 +74,7 @@ def start_container(pars):
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
             volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent"),("/home/aiserver/datasets",f"/home/{pars['username']}/datasets","ro")],
-            gpus=pars['gpus'],
+            gpus=gpus,
             name = container_name,
             memory = pars['memory'],
             kernel_memory = pars['memory'],
