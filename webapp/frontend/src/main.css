@@ -52,3 +52,8 @@ body .section {
   cursor: pointer;
   background: #5e5e5e;
 }
+
+.v-textarea.v-input--is-readonly .v-input__slot::before,
+.v-textarea.v-input--is-readonly .v-input__slot::after {
+  border: 0px !important;
+}
