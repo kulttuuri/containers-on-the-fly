@@ -8,6 +8,7 @@ import datetime
 from datetime import timezone, timedelta
 from docker.dockerUtils import stop_container
 from settings import settings
+from endpoints.models.reservation import ReservationFilters
 
 # TODO: Should be able to send a computer here and get the available hardware specs for it.
 # TODO: Should also be able to only fail there is not enough resources any computer. Right now it fails if any of the computers are out of resources for the given time period.
@@ -111,12 +112,13 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
 
     return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
 
-def getOwnReservations(userId) -> object:
+def getOwnReservations(userId, filters : ReservationFilters) -> object:
   '''
   Returns a list of all reservations owned by the given user.
 
   Args:
     userId (int): The userId of the user.
+    filters (ReservationFilters): The filters to apply to the query.
 
   Returns:
     object: Response object with status, message and data.
@@ -129,6 +131,8 @@ def getOwnReservations(userId) -> object:
 
   with Session() as session:
     query = session.query(Reservation).filter( Reservation.userId == userId, Reservation.startDate > minStartDate )
+    if filters.filters["status"] != "":
+      query = query.filter( Reservation.status == filters.filters["status"] )
   for reservation in query:
     res = ORMObjectToDict(reservation)
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)

@@ -25,6 +25,22 @@
       </v-col>
     </v-row>
 
+    <v-row class="text-center row-filters">
+      <v-row>
+        <v-col cols="3" style="margin: 0 auto;">
+          <v-select
+            :items="['All', 'reserved', 'started', 'stopped', 'error']"
+            label="Status"
+            v-model="filters.status"
+            item-text="text"
+            item-value="value"
+            return-object
+            @change="setFilters"
+          ></v-select>
+        </v-col>
+      </v-row>
+    </v-row>
+
     <v-row v-if="!isFetchingReservations">
       <v-col cols="12">
         <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
@@ -57,6 +73,7 @@
       UserReservationsModalConnectionDetails
     },
     data: () => ({
+      filters: { status: { text: "All", value: "All" } },
       intervalFetchReservations: null,
       isFetchingReservations: false,
       reservations: [],
@@ -81,6 +98,9 @@
       this.intervalFetchReservations = setInterval(() => { this.fetchReservations()}, 15000)
     },
     methods: {
+      setFilters() {
+        this.fetchReservations()
+      },
       closeModalConnectionDetails() {
         this.modalConnectionDetailsVisible = false
       },
@@ -101,10 +121,16 @@
         let _this = this
         let currentUser = this.$store.getters.user
         
+        let filters = {}
+        Object.keys(_this.filters).forEach(function(key) {
+          if (_this.filters[key] == "All" || typeof _this.filters[key] !== 'string') filters[key] = ""
+          else filters[key] = _this.filters[key]
+        });
+        
         axios({
-          method: "get",
+          method: "post",
           url: this.AppSettings.APIServer.reservation.get_own_reservations,
-          //params: { }
+          data: { filters: filters },
           headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
         })
         .then(function (response) {
@@ -297,5 +323,12 @@
 <style scoped lang="scss">
   .loading {
     margin: 60px auto;
+  }
+
+  .row-filters {
+    .col-3 {
+      padding-top: 30px;
+      padding-bottom: 0px;
+    }
   }
 </style>

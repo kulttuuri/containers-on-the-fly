@@ -3,6 +3,7 @@ from helpers.server import Response, ForceAuthentication
 from helpers.auth import CheckToken, IsAdmin
 from fastapi.security import OAuth2PasswordBearer
 from endpoints.responses import reservation as functionality
+from endpoints.models.reservation import ReservationFilters
 import json
 
 router = APIRouter(
@@ -18,11 +19,11 @@ async def getAvailableHardware(date : str, duration: int, token: str = Depends(o
   userId = CheckToken(token)["data"]["userId"]
   return functionality.getAvailableHardware(date, duration, None, IsAdmin(userId))
 
-@router.get("/get_own_reservations")
-async def getOwnReservations(token: str = Depends(oauth2_scheme)):
+@router.post("/get_own_reservations")
+async def getOwnReservations(filters : ReservationFilters, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token)
   userId = CheckToken(token)["data"]["userId"]
-  return functionality.getOwnReservations(userId)
+  return functionality.getOwnReservations(userId, filters)
 
 @router.get("/get_own_reservation_details")
 async def getOwnReservations(reservationId: int, token: str = Depends(oauth2_scheme)):
