@@ -1,3 +1,4 @@
+from python_on_whales import docker
 from database import Session, Reservation, ReservedContainerPort
 from helpers.auth import create_password
 from helpers.server import ORMObjectToDict
@@ -65,8 +66,12 @@ def startDockerContainer(reservationId: str):
 
     imageName = reservation.reservedContainer.container.imageName
     hwSpecs = {}
+    gpuSpecs = {}
     for spec in reservation.reservedHardwareSpecs:
-      hwSpecs[spec.hardwareSpec.type] = spec.amount
+      if spec.hardwareSpec.type == "gpu":
+        gpuSpecs[spec.hardwareSpec.internalId] = { "amount": spec.amount }
+      else:
+        hwSpecs[spec.hardwareSpec.type] = { "amount": spec.amount }
       #print(f"{spec.hardwareSpec.type}: {spec.amount} {spec.hardwareSpec.format}")
 
     timeNowParsed = timeNow().strftime('%m_%d_%Y_%H_%M_%S')
@@ -87,13 +92,24 @@ def startDockerContainer(reservationId: str):
     userEmailParsed = removeSpecialCharacters(reservation.user.email)
     mountLocation = f'{settings.docker["mountLocation"]}/{userEmailParsed}'
 
+    # Create the GPUs string to be passed to Docker
+    gpusString = ""
+    # Loop through all hwSpecs and find the reserved GPU internal IDs (Nvidia / cuda IDs), if any
+    if len(gpuSpecs) > 0:
+      gpusString = "device="
+      for gpu in gpuSpecs:
+        gpusString = gpusString + gpu + ","
+      
+      # Remove the trailing , from gpuSpecs, if it exists
+      if gpusString[-1] == ",": gpusString = gpusString[:-1]
+
     details = {
       "name": containerName,
       "image": imageName,
       "username": "user",
-      "cpus": int(hwSpecs['cpus']),
-      "gpus": int(hwSpecs['gpus']),
-      "memory": f"{hwSpecs['ram']}g",
+      "cpus": int(hwSpecs['cpus']["amount"]),
+      "gpus": gpusString,
+      "memory": f"{hwSpecs['ram']['amount']}g",
       "shm_size": settings.docker["shm_size"],
       "ports": bindablePorts,
       "localMountFolderPath": mountLocation,
@@ -147,18 +163,22 @@ def startDockerContainer(reservationId: str):
       print("Container was not started. Logged the error to ReservedContainer.")
 
 def stopDockerContainer(reservationId: str):
-  with Session() as session:
-    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
-    if reservation == None: return False
+  try:
+    with Session() as session:
+      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
+      if reservation == None: return False
 
-    # Can use reservation.reservedContainer.containerDockerId to target the docker container
-    #print("STOPPING CONTAINER:")
-    #print(ORMObjectToDict(reservation))
-    #print(ORMObjectToDict(reservation.reservedContainer))
-    stop_container(reservation.reservedContainer.containerDockerName)
-    reservation.status = "stopped"
-    reservation.reservedContainer.stoppedAt = timeNow()
-    session.commit()
+      # Can use reservation.reservedContainer.containerDockerId to target the docker container
+      #print("STOPPING CONTAINER:")
+      #print(ORMObjectToDict(reservation))
+      #print(ORMObjectToDict(reservation.reservedContainer))
+      stop_container(reservation.reservedContainer.containerDockerName)
+      reservation.status = "stopped"
+      reservation.reservedContainer.stoppedAt = timeNow()
+      session.commit()
+  except Exception as e:
+    print("Error stopping server:")
+    print(e)
 
 def updateRunningContainerStatus(reservationId: str):
   print("IMPLEMENT")
@@ -193,3 +213,39 @@ def getReservationsRequiringStop():
       Reservation.endDate < timeNow()
     )
     return reservations
+
+def getContainerInformation(reservationId: str):
+  '''
+    Returns:
+      On error or if cannot find the container:
+        None, {}
+      Otherwise (example, first is container name / ID and second is the python_on_whales.components.container.models.ContainerState object):
+        "yolov7_12_12_12_2023",
+        python_on_whales.components.container.models.ContainerState object {
+          containerName = 'yolov7_12_12_12_2023',
+          status='running',
+          running=True,
+          paused=False,
+          restarting=False,
+          oom_killed=False,
+          dead=False,
+          pid=1042809,
+          exit_code=0,
+          error='',
+          started_at=datetime.datetime(2023, 5, 22, 17, 47, 42, 381981),
+          tzinfo=datetime.timezone.utc),
+          finished_at=datetime.datetime(1, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+          health=None
+        }
+  '''
+  try:
+    with Session() as session:
+      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
+      if reservation == None:
+        return None, {}
+      containerState = docker.container.inspect(reservation.reservedContainer.containerDockerName)
+      return reservation.reservedContainer.containerDockerName, containerState
+  except Exception as e:
+    print(f"Something went wrong getting container information for reservation {reservationId}. Error:")
+    print(e)
+    return None, {}

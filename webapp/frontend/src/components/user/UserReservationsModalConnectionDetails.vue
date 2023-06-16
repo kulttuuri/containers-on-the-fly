@@ -48,7 +48,7 @@
 
       this.text = ""
       if (this.reservationId != null) {
-        console.log("Mounted and got res id: " + this.reservationId)
+        //console.log("Mounted and got res id: " + this.reservationId)
       }
       axios({
           method: "get",

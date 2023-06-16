@@ -23,7 +23,7 @@ def start_container(pars):
         ports (list): The ports to be used. In format: [(local_port, container_port), (local_port2, container_port2)]. For example: [(2213, 22)] for SSH.
         localMountFolderPath (string): The folder to mount in the local filesystem. For example: /home/user/docker_mounts
     Optional parameters:
-        gpus (int): The amount of gpus dedicated for the container
+        gpus (string): The amount of gpus dedicated for the container in format "device=0,2,4" where "0", "2" and "4" are device nvidia / cuda IDs. Pass None if no gpus are needed.
         image_version (string) (default: "latest"): The image version to use.
         password (string) (default: random password): Password for the user of the container
         interactive (int) (default: True): Leave stdin open during the duration of the process to allow communication with the parent process. Currently only works with tty=True for interactive use on the terminal.
@@ -48,6 +48,7 @@ def start_container(pars):
 
         if "gpus" not in pars: pars["gpus"] = None
         if pars["gpus"] == 0: pars["gpus"] = None
+        if pars["gpus"] == "": pars["gpus"] = None
         if "image_version" not in pars: pars["image_version"] = "latest"
         if "interactive" not in pars: pars["interactive"] = True
         if "remove" not in pars: pars["remove"] = True
@@ -55,6 +56,12 @@ def start_container(pars):
         if "password" not in pars: pars["password"] = create_password()
 
         container_name = pars['name']
+
+        #print(pars["gpus"])
+
+        gpus = None
+        if pars["gpus"] != None:
+            gpus = f'"{pars["gpus"]}"'
 
         # Create directory for mounting if it does not exist
         if not os.path.isdir(pars["localMountFolderPath"]):
@@ -66,17 +73,22 @@ def start_container(pars):
 
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
-            volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent")],
-            gpus=pars['gpus'],
+            volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent"),("/home/aiserver/datasets",f"/home/{pars['username']}/datasets","ro")],
+            gpus=gpus,
             name = container_name,
             memory = pars['memory'],
             kernel_memory = pars['memory'],
             shm_size = pars['shm_size'],
-            remove = pars['remove'],
             cpus = pars['cpus'],
             publish = pars['ports'],
             detach = True,
-            interactive = pars['interactive']
+            interactive = pars['interactive'],
+            
+            # Do not automatically remove the container as it will stop.
+            # Removing a container will be handled manually in the stop_container() function.
+            # If it would be removed, restarting or crashing a container would fully destroy it immediately.
+            remove = False
+
             #user=user
         )
         #print("The running container: ", cont)
@@ -96,12 +108,34 @@ def stop_container(container_name):
     Returns:
         (boolean) True if the container was stopped successfully, otherwise false (as it did not exist)
     '''
+    noErrors = True
     try:
         docker.stop(container_name)
         print(f"Stopped container {container_name}")
     except NoSuchContainer as e:
-        return False
-    return True
+        print(f"Error stopping container: {container_name}")
+        noErrors = False
+    
+    try:
+        docker.remove(container_name)
+        print(f"Removed container {container_name}")
+    except NoSuchContainer as e:
+        print(f"Error removing container: {container_name}")
+        noErrors = False
+    
+    return noErrors
+
+def restart_container(container_name):
+    '''
+    Restarts the container with the given name.
+    '''
+    print("Starting to restart a container...")
+    try:
+        print(f"Restarting container: {container_name}")
+        docker.restart(container_name)
+    except Exception as e:
+        print(f"Could not restart container: {container_name}")
+        pass
 
 def get_email_container_started(image, ip, ports, password, includeEmailDetails, endDate = None):
     '''
@@ -174,6 +208,10 @@ def get_email_container_started(image, ip, ports, password, includeEmailDetails,
     NOTE! only files and folders from ~/persistent folder are
     saved after container stops, so save trained networks, 
     checkpoint files, logs, your datasets etc to that folder.
+
+    Every started container has datasets folder, this folder is READ only, 
+    you cannot modify files inside that folder. If you need to modify dataset, 
+    then copy it to some other directory.
 
     {noReply}
 

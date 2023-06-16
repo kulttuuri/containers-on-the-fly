@@ -23,6 +23,10 @@
       <template v-slot:item.endDate="{item}">
         {{ parseTime(item.endDate) }}
       </template>
+      <!-- User -->
+      <template v-slot:item.userEmail="{item}">
+        {{ item.userEmail }} <small>(id: {{ item.userId }})</small>
+      </template>
       <!-- Resources -->
       <template v-slot:item.resources="{item}">
         {{ getResources(item.reservedHardwareSpecs) }}
@@ -38,7 +42,7 @@
       <!-- Actions -->
       <template v-slot:item.actions="{item}">
         <a class="link-action" v-if="item.status == 'reserved' || item.status == 'started'" @click="emitCancelReservation(item.reservationId)">Cancel Reservation</a>
-        <a class="link-action" v-if="item.status == 'started' && lessHoursThan(new Date(item.endDate), 24)" @click="emitExtendReservation(item.reservationId)">Extend Reservation</a>
+        <a class="link-action" v-if="item.status == 'reserved' || item.status == 'started'" @click="emitChangeEndDate(item.reservationId)">Change End Date</a>
         <a class="link-action" v-if="item.status == 'started'" @click="emitRestartContainer(item.reservationId)">Restart Container</a>
         <a class="link-action" v-if="item.status == 'started'" @click="emitShowReservationDetails(item.reservationId)">Show Details</a>
       </template>
@@ -50,7 +54,7 @@
   import { DisplayTime } from '/src/helpers/time.js'
 
   export default {
-    name: 'UserReservationTable',
+    name: 'AdminReservationTable',
     props: {
       propReservations: {
         type: Array,
@@ -70,6 +74,7 @@
             sortable: false,
             value: 'status',
           },
+          { text: 'User', value: 'userEmail' },
           { text: 'Reserved', value: 'createdAt' },
           { text: 'Starts', value: 'startDate' },
           { text: 'Ends', value: 'endDate' },
@@ -84,16 +89,6 @@
       this.reservations = this.propReservations
     },
     methods: {
-      // Checks if the given time is between the given time + hours
-      lessHoursThan(time, hours) {
-        let curDate = new Date()
-        let afterUtc = new Date(time.getTime() - (time.getTimezoneOffset() * 60000))
-        
-        let diff = afterUtc.getTime() - curDate.getTime()
-        let diffHours = Math.ceil(diff / (1000 * 60 * 60))
-        if (diffHours < 0) return false
-        return diffHours <= hours
-      },
       toggleReadAll() {
         this.readAll = !this.readAll;
       },
@@ -104,9 +99,6 @@
           return text.slice(0,10) + "...";
         }
       },
-      emitExtendReservation(reservationId) {
-        this.$emit('emitExtendReservation', reservationId)
-      },
       emitCancelReservation(reservationId) {
         this.$emit('emitCancelReservation', reservationId)
       },
@@ -115,6 +107,18 @@
       },
       emitShowReservationDetails(reservationId) {
         this.$emit('emitShowReservationDetails', reservationId)
+      },
+      emitChangeEndDate(reservationId) {
+        let endDate = "";
+        // Find from this.reservations the reservation with id reservationId and assign the endDate
+        for (let i = 0; i < this.reservations.length; i++) {
+          if (this.reservations[i].reservationId == reservationId) {
+            endDate = this.reservations[i].endDate;
+            break;
+          }
+        }
+
+        this.$emit('emitChangeEndDate', reservationId, endDate)
       },
       getStatusColor(status) {
         if (status == "reserved") return "primary"

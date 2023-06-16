@@ -1,27 +1,10 @@
 <template>
   <v-container>
-    <v-row class="text-center section">
-      <v-col>
-        <v-btn color="success" large @click="createReservation">Reserve Server</v-btn>
-      </v-col>
-    </v-row>
 
-    <v-row class="text-center" v-if="justReserved">
-      <v-col cols="1"></v-col>
-      <v-col cols="10">
-        <v-alert type="info" :icon="false" dismissible>
-          <h3 style="margin-bottom: 15px;">Reservation created succesfully</h3>
-          <p>Your server has been reserved. You can view the details on how to access the server from this page after the container has been started.</p>
-          <p v-if="informByEmail">You will also be emailed the connection details after the container starts.</p>
-        </v-alert>
-      </v-col>
-      <v-col cols="1"></v-col>
-    </v-row>
-
-    <!-- Title -->
     <v-row class="text-center">
       <v-col cols="12">
-        <h2>Your Reservations</h2>
+        <h4>Admin</h4>
+        <h2>All Reservations</h2>
         <p class="dim">Listing reservations from past 3 months</p>
       </v-col>
     </v-row>
@@ -43,30 +26,32 @@
       </v-row>
     </v-row>
 
-    <!-- Data table -->
     <v-row v-if="!isFetchingReservations">
-      <v-col cols="12">
-        <v-slide-x-transition mode="out-in">
-          <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
-            <UserReservationTable @emitCancelReservation="cancelReservation" @emitExtendReservation="extendReservation" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
-          </div>
-          <p v-else class="dim text-center">No reservations found.</p>
-        </v-slide-x-transition>
-      </v-col>
+        <v-col cols="12">
+          <v-slide-x-transition mode="out-in">
+            <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
+              <AdminReservationTable @emitCancelReservation="cancelReservation" @emitChangeEndDate="changeEndDate" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
+            </div>
+          
+            <p v-else class="dim text-center">No reservations found.</p>
+          </v-slide-x-transition>
+        </v-col>
+      </v-row>
+      <v-row v-else>
+        <v-col cols="12">
+          <Loading class="loading" />
+        </v-col>
     </v-row>
-    <v-row v-else>
-      <v-col cols="12">
-        <Loading class="loading" />
-      </v-col>
-    </v-row>
+
     <UserReservationsModalConnectionDetails :reservationId="modalConnectionDetailsReservationId" v-on:emitModalClose="closeModalConnectionDetails" v-if="modalConnectionDetailsVisible && modalConnectionDetailsReservationId != null"></UserReservationsModalConnectionDetails>
+    
   </v-container>
 </template>
 
 <script>
   const axios = require('axios').default;
   import Loading from '/src/components/global/Loading.vue';
-  import UserReservationTable from '/src/components/user/UserReservationTable.vue';
+  import AdminReservationTable from '/src/components/admin/AdminReservationTable.vue';
   import UserReservationsModalConnectionDetails from '/src/components/user/UserReservationsModalConnectionDetails.vue';
   
   export default {
@@ -74,18 +59,18 @@
 
     components: {
       Loading,
-      UserReservationTable,
+      AdminReservationTable,
       UserReservationsModalConnectionDetails
     },
     data: () => ({
-      filters: { status: { text: "All", value: "All" } },
       intervalFetchReservations: null,
       isFetchingReservations: true,
       reservations: [],
       justReserved: false,
       informByEmail: false,
       modalConnectionDetailsVisible: false,
-      modalConnectionDetailsReservationId: null
+      modalConnectionDetailsReservationId: null,
+      filters: { status: { text: "All", value: "All" } },
     }),
     mounted () {
       if (localStorage.getItem("justReserved") === "true") {
@@ -131,10 +116,10 @@
           if (_this.filters[key] == "All" || typeof _this.filters[key] !== 'string') filters[key] = ""
           else filters[key] = _this.filters[key]
         });
-        
+
         axios({
           method: "post",
-          url: this.AppSettings.APIServer.reservation.get_own_reservations,
+          url: this.AppSettings.APIServer.admin.get_reservations,
           data: { filters: filters },
           headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
         })
@@ -161,6 +146,56 @@
               _this.$store.commit('showMessage', { text: "Unknown error while trying to get reservations.", color: "red" })
             }
             _this.isFetchingReservations = false
+        });
+      },
+      changeEndDate(reservationId, currentEndDate) {
+        let newEndDate = prompt("Enter new end date", currentEndDate);
+        if (newEndDate == null || newEndDate == currentEndDate || newEndDate == "") {
+          this.$store.commit('showMessage', { text: "Not changing end date.", color: "blue" })
+          return;
+        }
+        this.$store.commit('showMessage', { text: "Changing end date.", color: "green" })
+
+        let params = {
+          "reservationId": reservationId,
+          "endDate": newEndDate
+        }
+
+        let _this = this
+        let currentUser = this.$store.getters.user
+
+        axios({
+          method: "post",
+          url: this.AppSettings.APIServer.admin.edit_reservation,
+          params: params,
+          headers: {
+            "Authorization" : `Bearer ${currentUser.loginToken}`
+          }
+        })
+        .then(function (response) {
+          //console.log(response)
+            // Success
+            if (response.data.status == true) {
+              _this.$store.commit('showMessage', { text: "Reservation edited.", color: "green" })
+              _this.fetchReservations()
+            }
+            // Fail
+            else {
+              console.log("Failed editing reservation...")
+              console.log(response)
+              let msg = response && response.data && response.data.message ? response.data.message : "There was an error editing the reservation."
+              _this.$store.commit('showMessage', { text: msg, color: "red" })
+            }
+        })
+        .catch(function (error) {
+            // Error
+            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
+              _this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
+            }
+            else {
+              console.log(error)
+              _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
+            }
         });
       },
       cancelReservation(reservationId) {
@@ -208,61 +243,6 @@
               _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
             }
             _this.cancellingReservation = false
-        });
-      },
-      extendReservation(reservationId) {
-        let extraHours = prompt("How many hours do you want to extend for? (Max 24 hours). Type for example: 12", "");
-        if (extraHours == null|| extraHours == "") {
-          return;
-        }
-
-        if (isNaN(extraHours)) {
-          this.$store.commit('showMessage', { text: "Please type in a number.", color: "red" })
-          return;
-        }
-        if (parseInt(extraHours) > 24 || parseInt(extraHours) < 0) {
-          this.$store.commit('showMessage', { text: "Please type in a number between 0 and 24.", color: "red" })
-          return;
-        }
-
-        let params = {
-          "reservationId": reservationId,
-          "duration": parseInt(extraHours)
-        }
-
-        let _this = this
-        let currentUser = this.$store.getters.user
-
-        axios({
-          method: "post",
-          url: this.AppSettings.APIServer.reservation.extend_reservation,
-          params: params,
-          headers: {
-            "Authorization" : `Bearer ${currentUser.loginToken}`
-          }
-        })
-        .then(function (response) {
-          //console.log(response)
-            // Success
-            if (response.data.status == true) {
-              _this.$store.commit('showMessage', { text: "Reservation was extended succesfully.", color: "green" })
-              _this.fetchReservations()
-            }
-            // Fail
-            else {
-              let msg = response && response.data && response.data.message ? response.data.message : "There was an error extending."
-              _this.$store.commit('showMessage', { text: msg, color: "red" })
-            }
-        })
-        .catch(function (error) {
-            // Error
-            if (error.response && (error.response.status == 400 || error.response.status == 401)) {
-              _this.$store.commit('showMessage', { text: error.response.data.detail, color: "red" })
-            }
-            else {
-              console.log(error)
-              _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
-            }
         });
       },
       restartContainer(reservationId) {
@@ -326,12 +306,5 @@
 <style scoped lang="scss">
   .loading {
     margin: 60px auto;
-  }
-
-  .row-filters {
-    .col-3 {
-      padding-top: 30px;
-      padding-bottom: 0px;
-    }
   }
 </style>

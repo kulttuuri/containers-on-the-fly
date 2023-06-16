@@ -8,4 +8,5 @@ package-lock.json
 webapp/frontend/package-lock.json
 webapp/backend/.vscode/
 .env
+**/*.db
 mounts/
