@@ -18,6 +18,7 @@
       <v-col cols="1"></v-col>
     </v-row>
 
+    <!-- Title -->
     <v-row class="text-center">
       <v-col cols="12">
         <h2>Your Reservations</h2>
@@ -25,6 +26,7 @@
       </v-col>
     </v-row>
 
+    <!-- Filters -->
     <v-row class="text-center row-filters">
       <v-row>
         <v-col cols="3" style="margin: 0 auto;">
@@ -41,12 +43,15 @@
       </v-row>
     </v-row>
 
+    <!-- Data table -->
     <v-row v-if="!isFetchingReservations">
       <v-col cols="12">
-        <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
-          <UserReservationTable @emitCancelReservation="cancelReservation" @emitExtendReservation="extendReservation" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
-        </div>
-        <p v-else class="dim text-center">No servers reserved yet.</p>
+        <v-slide-x-transition mode="out-in">
+          <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
+            <UserReservationTable @emitCancelReservation="cancelReservation" @emitExtendReservation="extendReservation" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
+          </div>
+          <p v-else class="dim text-center">No reservations found.</p>
+        </v-slide-x-transition>
       </v-col>
     </v-row>
     <v-row v-else>
@@ -75,7 +80,7 @@
     data: () => ({
       filters: { status: { text: "All", value: "All" } },
       intervalFetchReservations: null,
-      isFetchingReservations: false,
+      isFetchingReservations: true,
       reservations: [],
       justReserved: false,
       informByEmail: false,
@@ -157,8 +162,6 @@
             }
             _this.isFetchingReservations = false
         });
-
-        this.isFetchingReservations = false
       },
       cancelReservation(reservationId) {
         let result = window.confirm("Do you really want to cancel this reservation?")

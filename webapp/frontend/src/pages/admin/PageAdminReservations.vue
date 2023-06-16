@@ -9,20 +9,42 @@
       </v-col>
     </v-row>
 
+    <!-- Filters -->
+    <v-row class="text-center row-filters">
+      <v-row>
+        <v-col cols="3" style="margin: 0 auto;">
+          <v-select
+            :items="['All', 'reserved', 'started', 'stopped', 'error']"
+            label="Status"
+            v-model="filters.status"
+            item-text="text"
+            item-value="value"
+            return-object
+            @change="setFilters"
+          ></v-select>
+        </v-col>
+      </v-row>
+    </v-row>
+
     <v-row v-if="!isFetchingReservations">
-      <v-col cols="12">
-        <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
-          <AdminReservationTable @emitCancelReservation="cancelReservation" @emitChangeEndDate="changeEndDate" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
-        </div>
-        <p v-else class="dim text-center">No servers reserved yet.</p>
-      </v-col>
+        <v-col cols="12">
+          <v-slide-x-transition mode="out-in">
+            <div v-if="reservations && reservations.length > 0" style="margin-top: 50px">
+              <AdminReservationTable @emitCancelReservation="cancelReservation" @emitChangeEndDate="changeEndDate" @emitRestartContainer="restartContainer" @emitShowReservationDetails="showReservationDetails" v-bind:propReservations="reservations" />
+            </div>
+          
+            <p v-else class="dim text-center">No reservations found.</p>
+          </v-slide-x-transition>
+        </v-col>
+      </v-row>
+      <v-row v-else>
+        <v-col cols="12">
+          <Loading class="loading" />
+        </v-col>
     </v-row>
-    <v-row v-else>
-      <v-col cols="12">
-        <Loading class="loading" />
-      </v-col>
-    </v-row>
+
     <UserReservationsModalConnectionDetails :reservationId="modalConnectionDetailsReservationId" v-on:emitModalClose="closeModalConnectionDetails" v-if="modalConnectionDetailsVisible && modalConnectionDetailsReservationId != null"></UserReservationsModalConnectionDetails>
+    
   </v-container>
 </template>
 
@@ -42,12 +64,13 @@
     },
     data: () => ({
       intervalFetchReservations: null,
-      isFetchingReservations: false,
+      isFetchingReservations: true,
       reservations: [],
       justReserved: false,
       informByEmail: false,
       modalConnectionDetailsVisible: false,
-      modalConnectionDetailsReservationId: null
+      modalConnectionDetailsReservationId: null,
+      filters: { status: { text: "All", value: "All" } },
     }),
     mounted () {
       if (localStorage.getItem("justReserved") === "true") {
@@ -65,6 +88,9 @@
       this.intervalFetchReservations = setInterval(() => { this.fetchReservations()}, 15000)
     },
     methods: {
+      setFilters() {
+        this.fetchReservations()
+      },
       closeModalConnectionDetails() {
         this.modalConnectionDetailsVisible = false
       },
@@ -85,10 +111,16 @@
         let _this = this
         let currentUser = this.$store.getters.user
         
+        let filters = {}
+        Object.keys(_this.filters).forEach(function(key) {
+          if (_this.filters[key] == "All" || typeof _this.filters[key] !== 'string') filters[key] = ""
+          else filters[key] = _this.filters[key]
+        });
+
         axios({
-          method: "get",
+          method: "post",
           url: this.AppSettings.APIServer.admin.get_reservations,
-          //params: { }
+          data: { filters: filters },
           headers: {"Authorization" : `Bearer ${currentUser.loginToken}`}
         })
         .then(function (response) {
@@ -115,8 +147,6 @@
             }
             _this.isFetchingReservations = false
         });
-
-        this.isFetchingReservations = false
       },
       changeEndDate(reservationId, currentEndDate) {
         let newEndDate = prompt("Enter new end date", currentEndDate);

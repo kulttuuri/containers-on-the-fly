@@ -5,10 +5,14 @@ from datetime import timezone, timedelta
 from helpers.server import Response, ORMObjectToDict
 import datetime
 from endpoints.models.admin import ContainerEdit
+from endpoints.models.reservation import ReservationFilters
 
-def getReservations() -> object:
+def getReservations(filters : ReservationFilters) -> object:
   '''
   Returns a list of all reservations.
+
+  Args:
+    filters (ReservationFilters): The filters to apply to the query.
 
   Returns:
     object: Response object with status, message and data.
@@ -21,6 +25,8 @@ def getReservations() -> object:
 
   with Session() as session:
     query = session.query(Reservation).filter(Reservation.startDate > minStartDate )
+    if filters.filters["status"] != "":
+      query = query.filter( Reservation.status == filters.filters["status"] )
   for reservation in query:
     res = ORMObjectToDict(reservation)
     res["userEmail"] = reservation.user.email

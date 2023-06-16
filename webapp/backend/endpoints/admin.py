@@ -3,6 +3,7 @@ from helpers.server import ForceAuthentication
 from fastapi.security import OAuth2PasswordBearer
 from endpoints.responses import admin as functionality
 from endpoints.models.admin import ContainerEdit
+from endpoints.models.reservation import ReservationFilters
 
 router = APIRouter(
     prefix="/api/admin",
@@ -12,10 +13,10 @@ router = APIRouter(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
 
-@router.get("/reservations")
-async def getReservations(token: str = Depends(oauth2_scheme)):
+@router.post("/reservations")
+async def getReservations(filters : ReservationFilters, token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
-  return functionality.getReservations()
+  return functionality.getReservations(filters)
 
 @router.get("/users")
 async def getUsers(token: str = Depends(oauth2_scheme)):
