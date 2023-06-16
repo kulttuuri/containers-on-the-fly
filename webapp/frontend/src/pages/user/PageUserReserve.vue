@@ -130,6 +130,16 @@
 
         </v-row>
 
+        <!-- Notification of depleted resources -->
+        <v-row v-if="refreshTip">
+          <v-col cols="6" style="margin: 0 auto;">
+            <v-alert class="refresh-tip" color="info" title="Information">
+              <v-btn style="margin-bottom: 10px;" @click="refreshHardware">Refresh Hardware Data</v-btn>
+              <p>If there were not enough resources for reservation, then click the button above to refresh the hardware data.</p>
+            </v-alert>
+          </v-col>
+        </v-row>
+
         <!-- Create reservation button -->
         <v-row v-if="computer && hardwareData">
           <v-col cols="12">
@@ -205,6 +215,7 @@
       reservableHours: [],
       adminReserveUserEmail: null,
       hours: [],
+      refreshTip: false, // True if there were not enough resources for reservation, shows a tip to refresh hardware data
       reserveDurationDays: null,
       reserveDurationHours: null,
       fetchingReservations: false, // True if we are fetching all current and upcoming reservations
@@ -258,6 +269,13 @@
       this.fetchReservations()
     },
     methods: {
+      /**
+       * Refreshes the hardware data.
+       */
+      refreshHardware() {
+        this.fetchAvailableHardware();
+        this.refreshTip = false;
+      },
       /**
        * Checks if user is admin.
        * @returns {Boolean} True if user is admin, false if not
@@ -362,6 +380,9 @@
           selectedHardwareSpecs[spec.hardwareSpecId] = spec.defaultAmountForUser
         })
         this.selectedHardwareSpecs = selectedHardwareSpecs
+
+        // Set default values for selected GPUs
+        this.selectedgpus = []
       },
       /**
        * Toggles the reservation calendar.
@@ -545,11 +566,13 @@
               localStorage.setItem("justReservedInformEmail", response.data.data.informByEmail)
               _this.$router.push("/user/reservations")
               _this.$store.commit('showMessage', { text: "Reservation created succesfully!", color: "green" })
+              _this.refreshTip = false;
             }
             // Fail
             else {
               let msg = response && response.data && response.data.message ? response.data.message + " Please select less resources or go back and select another time." : "There was an error getting the hardware specs."
               _this.$store.commit('showMessage', { text: msg, color: "red" })
+              _this.refreshTip = true;
             }
             _this.isSubmittingReservation = false
         })
@@ -563,6 +586,7 @@
               _this.$store.commit('showMessage', { text: "Unknown error.", color: "red" })
             }
             _this.isSubmittingReservation = false
+            _this.refreshTip = true;
         });
       },
     },
