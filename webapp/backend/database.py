@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from settings import settings
 import pymysql
-engine = create_engine(settings.database["engineUri"] + settings.database["filePath"], echo=settings.database["debugPrinting"], future=True)
+engine = create_engine(settings.database["engineUri"], echo=settings.database["debugPrinting"], future=True)
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
@@ -70,10 +70,10 @@ class Container(Base):
 
   containerId = Column(Integer, primary_key = True, autoincrement = True)
   public = Column(Boolean, nullable = False)
-  imageName = Column(String, unique = True, nullable = False)
-  name = Column(String, nullable = False)
+  imageName = Column(Text, unique = True, nullable = False)
+  name = Column(Text, nullable = False)
   removed = Column(Boolean, nullable = True) # TODO: Add to diagram
-  description = Column(String, nullable = True)
+  description = Column(Text, nullable = True)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -163,8 +163,8 @@ class HardwareSpec(Base):
 
   hardwareSpecId = Column(Integer, primary_key = True, autoincrement = True)
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
-  internalId = Column(String, nullable = True) # TODO: Add to diagram
-  type = Column(String, nullable = False)
+  internalId = Column(Text, nullable = True) # TODO: Add to diagram
+  type = Column(Text, nullable = False)
   maximumAmount = Column(Float, nullable = False)
   minimumAmount = Column(Float, nullable = False)
   maximumAmountForUser = Column(Float, nullable = False)

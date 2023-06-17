@@ -228,7 +228,6 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
   endDate = date+relativedelta(hours=+duration)
 
   with Session() as session:
-
     # Check that user exists
     user = session.query(User).filter( User.userId == userId ).first()
     if (user == None):
@@ -275,21 +274,19 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
       computerId = computerId,
       status = "reserved",
     )
-    session.add(reservation)
 
     # Append all reserved hardware specs inside the reservation
     for key, val in hardwareSpecs.items():
-      print("KAKS")
       # Check that the amount does not exceed user limits for the given hardware
       # Skipped for admins
       hardwareSpec = session.query(HardwareSpec).filter( HardwareSpec.hardwareSpecId == key ).first()
+      
       if val > hardwareSpec.maximumAmountForUser and isAdmin == False:
         return Response(False, f"Trying to utilize hardware specs above the user maximum amount for {hardwareSpec.type} {hardwareSpec.format}: {val} > {hardwareSpec.maximumAmountForUser}")
       # Only add resources over 0
       if val > 0:
-        session.add(
+        reservation.reservedHardwareSpecs.append(
           ReservedHardwareSpec(
-            reservationId = reservation.reservationId,
             hardwareSpecId = key,
             amount = val,
           )
@@ -301,6 +298,7 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
     #print(ORMObjectToDict(reservation))
     #print(ORMObjectToDict(reservation.reservedContainer))
     user.reservations.append(reservation)
+    session.add(reservation)
     session.commit()
 
     informByEmail = settings.docker["sendEmail"]
