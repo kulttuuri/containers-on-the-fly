@@ -33,85 +33,91 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
   date = parser.parse(date)
   endDate = date+relativedelta(hours=+duration)
 
+  # Fetch all required data first
   with Session() as session:
-  
-    reservations = session.query(Reservation).filter(
-      Reservation.startDate < endDate,
-      Reservation.endDate > date,
-      (Reservation.status == "reserved") | (Reservation.status == "started")
-    )
-
-    #print("Ignored reservation ID: ", ignoredReservationId)
-
-    # All reserved hardware specs for the given time period will be listed here
-    # This loop will go through all reservations and add the reserved hardware specs to this list for the given time period
-    removableHardwareSpecs = {}
-    for res in reservations:
-      if res.reservationId == ignoredReservationId: continue
-      for spec in res.reservedHardwareSpecs:
-        hardwareSpecId = spec.hardwareSpec.hardwareSpecId
-        amount = spec.amount
-        
-        if hardwareSpecId not in removableHardwareSpecs:
-          removableHardwareSpecs[hardwareSpecId] = amount
-        else:
-          removableHardwareSpecs[hardwareSpecId] += amount
-
-    # Reduce the available hardware specs by the given reducable specs, if any
-    if reducableSpecs != None:
-      for key, val in reducableSpecs.items():
-        intKey = int(key)
-        if val == 0: continue
-        if intKey not in removableHardwareSpecs:
-          removableHardwareSpecs[intKey] = val
-        else:
-          removableHardwareSpecs[intKey] += val
-
-    #print("removableHardwareSpecs: ", removableHardwareSpecs)
-
-    computers = []
-
+    reservations = session.query(Reservation)\
+      .options(
+        joinedload(Reservation.reservedHardwareSpecs)
+      )\
+      .filter(
+        Reservation.startDate < endDate,
+        Reservation.endDate > date,
+        (Reservation.status == "reserved") | (Reservation.status == "started")
+      )
     allComputers = session.query(Computer)
-    for computer in allComputers:
-      compDict = ORMObjectToDict(computer)
-      compDict["hardwareSpecs"] = []
-      for spec in computer.hardwareSpecs:
-        compDict["hardwareSpecs"].append(ORMObjectToDict(spec))
-      computers.append(compDict)
-
-    containers = []
     allContainers = session.query(Container)
-    for container in allContainers:
-      containers.append(ORMObjectToDict(container))
+    session.close()
 
-    # Set all user maximums to max for admins
-    if (isAdmin == True):
-      for computer in computers:
-        for spec in computer["hardwareSpecs"]:
-          spec["maximumAmountForUser"] = spec["maximumAmount"]
 
+  #print("Ignored reservation ID: ", ignoredReservationId)
+
+  # All reserved hardware specs for the given time period will be listed here
+  # This loop will go through all reservations and add the reserved hardware specs to this list for the given time period
+  removableHardwareSpecs = {}
+  for res in reservations:
+    if res.reservationId == ignoredReservationId: continue
+    for spec in res.reservedHardwareSpecs:
+      hardwareSpecId = spec.hardwareSpec.hardwareSpecId
+      amount = spec.amount
+      
+      if hardwareSpecId not in removableHardwareSpecs:
+        removableHardwareSpecs[hardwareSpecId] = amount
+      else:
+        removableHardwareSpecs[hardwareSpecId] += amount
+
+  # Reduce the available hardware specs by the given reducable specs, if any
+  if reducableSpecs != None:
+    for key, val in reducableSpecs.items():
+      intKey = int(key)
+      if val == 0: continue
+      if intKey not in removableHardwareSpecs:
+        removableHardwareSpecs[intKey] = val
+      else:
+        removableHardwareSpecs[intKey] += val
+
+  #print("removableHardwareSpecs: ", removableHardwareSpecs)
+
+  computers = []
+
+  for computer in allComputers:
+    compDict = ORMObjectToDict(computer)
+    compDict["hardwareSpecs"] = []
+    for spec in computer.hardwareSpecs:
+      compDict["hardwareSpecs"].append(ORMObjectToDict(spec))
+    computers.append(compDict)
+
+  containers = []
+  for container in allContainers:
+    containers.append(ORMObjectToDict(container))
+
+  # Set all user maximums to max for admins
+  if (isAdmin == True):
     for computer in computers:
       for spec in computer["hardwareSpecs"]:
-        if spec["hardwareSpecId"] in removableHardwareSpecs:
-          spec["maximumAmount"] -= removableHardwareSpecs[spec["hardwareSpecId"]]
-          if spec["maximumAmountForUser"] > spec["maximumAmount"]:
-            spec["maximumAmountForUser"] = spec["maximumAmount"]
-          #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
-          if spec["maximumAmount"] < spec["minimumAmount"]:
-            print("Spec: ", spec["type"], " ", spec["maximumAmount"], " is below minimum amount: ", spec["minimumAmount"])
-            #print("minimumAmount: ", spec["minimumAmount"])
-            #print("maximumAmount: ", spec["maximumAmount"])
-            #print("maximumAmountForUser: ", spec["maximumAmountForUser"])
-            specMessage = ""
-            specMax = spec['maximumAmount']
-            if specMax < 0: specMax = 0
-            if spec["type"] == "ram":
-              specMessage = f"Available: {specMax} {spec['format']} {spec['type']}."
-            else:
-              specMessage = f"Available: {specMax} {spec['type']}."
-            return Response(False, f"Not enough resources to make a reservation: {spec['type']}. {specMessage}")
+        spec["maximumAmountForUser"] = spec["maximumAmount"]
 
-    return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
+  for computer in computers:
+    for spec in computer["hardwareSpecs"]:
+      if spec["hardwareSpecId"] in removableHardwareSpecs:
+        spec["maximumAmount"] -= removableHardwareSpecs[spec["hardwareSpecId"]]
+        if spec["maximumAmountForUser"] > spec["maximumAmount"]:
+          spec["maximumAmountForUser"] = spec["maximumAmount"]
+        #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
+        if spec["maximumAmount"] < spec["minimumAmount"]:
+          print("Spec: ", spec["type"], " ", spec["maximumAmount"], " is below minimum amount: ", spec["minimumAmount"])
+          #print("minimumAmount: ", spec["minimumAmount"])
+          #print("maximumAmount: ", spec["maximumAmount"])
+          #print("maximumAmountForUser: ", spec["maximumAmountForUser"])
+          specMessage = ""
+          specMax = spec['maximumAmount']
+          if specMax < 0: specMax = 0
+          if spec["type"] == "ram":
+            specMessage = f"Available: {specMax} {spec['format']} {spec['type']}."
+          else:
+            specMessage = f"Available: {specMax} {spec['type']}."
+          return Response(False, f"Not enough resources to make a reservation: {spec['type']}. {specMessage}")
+
+  return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
 
 def getOwnReservations(userId, filters : ReservationFilters) -> object:
   '''
