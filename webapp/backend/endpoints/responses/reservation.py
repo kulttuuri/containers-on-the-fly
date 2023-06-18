@@ -9,6 +9,7 @@ from datetime import timezone, timedelta
 from docker.dockerUtils import stop_container
 from settings import settings
 from endpoints.models.reservation import ReservationFilters
+from sqlalchemy.orm import joinedload
 
 # TODO: Should be able to send a computer here and get the available hardware specs for it.
 # TODO: Should also be able to only fail there is not enough resources any computer. Right now it fails if any of the computers are out of resources for the given time period.
@@ -130,9 +131,14 @@ def getOwnReservations(userId, filters : ReservationFilters) -> object:
   minStartDate = timeNow() - timedelta(days=90)
 
   with Session() as session:
-    query = session.query(Reservation).filter( Reservation.userId == userId, Reservation.startDate > minStartDate )
+    query = session.query(Reservation).options(
+      joinedload(Reservation.reservedHardwareSpecs),
+      joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.container)
+      ).filter( Reservation.userId == userId, Reservation.startDate > minStartDate )
     if filters.filters["status"] != "":
       query = query.filter( Reservation.status == filters.filters["status"] )
+    session.close()
+  
   for reservation in query:
     res = ORMObjectToDict(reservation)
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from settings import settings
 import pymysql
-engine = create_engine(settings.database["engineUri"], echo=settings.database["debugPrinting"], future=True, pool_size=40, max_overflow=80)
+engine = create_engine(settings.database["engineUri"], echo=settings.database["debugPrinting"], future=True, pool_size=512, max_overflow=1024)
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
@@ -196,3 +196,14 @@ Base.metadata.create_all(engine)
 # Create session to interact with the database
 from sqlalchemy.orm import sessionmaker
 Session = sessionmaker(bind = engine)
+
+# DEBUG: DEBUG THE AMOUNT OF POOLED AND OVERFLOW CONNECTIONS
+'''from sqlalchemy import event
+def checkout_listener(dbapi_con, con_record, con_proxy):
+    print("A connection was checked out")
+def checkin_listener(dbapi_con, con_record):
+    print("A connection was returned to the pool")
+    with Session() as session:
+      print(session.get_bind().pool.status())
+event.listen(engine, "checkout", checkout_listener)
+event.listen(engine, "checkin", checkin_listener)'''
