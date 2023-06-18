@@ -206,10 +206,13 @@ def getCurrentReservations() -> object:
   minStartDate = timeNow() - timedelta(days=14)
 
   with Session() as session:
-    query = session.query(Reservation).filter(
-    ((Reservation.status == "reserved") | (Reservation.status == "started")),
-    (Reservation.startDate > minStartDate)
-  )
+    query = session.query(Reservation)\
+      .options(joinedload(Reservation.reservedHardwareSpecs))\
+      .filter(
+        ((Reservation.status == "reserved") | (Reservation.status == "started")),
+        (Reservation.startDate > minStartDate)
+      )
+    session.close()
   for reservation in query:
     specs = []
     for spec in reservation.reservedHardwareSpecs:
@@ -380,19 +383,22 @@ def extendReservation(userId, reservationId: str, duration: int):
   return Response(False, "Error.")
 
 def restartContainer(userId, reservationId: str):
+  reservation = None
   # Check that user owns the given container reservation and it can be found
   # Admins can restart any container
   with Session() as session:
+    reservation = session.query(Reservation)\
+      .options(joinedload(Reservation.reservedContainer))\
+      .filter( Reservation.reservationId == reservationId )
     if IsAdmin(userId) == False:
-      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
-      if reservation is None: return Response(False, "No reservation found for this user.")
+      reservation = reservation.query(Reservation).filter(Reservation.userId == userId )
+    session.close()
   
-  with Session() as session:
-    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
-    if reservation is None: return Response(False, "No reservation found.")
+  reservation = reservation.first()
+  if reservation is None: return Response(False, "No reservation found.")
 
-    if (reservation.status == "started"):
-      restart_container(reservation.reservedContainer.containerDockerName)
-      return Response(True, "Container was restarted succesfully.")
-    else:
-      return Response(False, "Reservation is not currently started, so cannot restart the container.")
+  if (reservation.status == "started"):
+    restart_container(reservation.reservedContainer.containerDockerName)
+    return Response(True, "Container was restarted succesfully.")
+  else:
+    return Response(False, "Reservation is not currently started, so cannot restart the container.")
