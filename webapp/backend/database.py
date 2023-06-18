@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from settings import settings
 import pymysql
-engine = create_engine(settings.database["engineUri"], echo=settings.database["debugPrinting"], future=True)
+engine = create_engine(settings.database["engineUri"], echo=settings.database["debugPrinting"], future=True, pool_size=40, max_overflow=80)
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
