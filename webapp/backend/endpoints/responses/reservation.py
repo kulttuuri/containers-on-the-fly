@@ -183,7 +183,7 @@ def getOwnReservationDetails(reservationId, userId) -> object:
     for port in reservation.reservedContainer.reservedContainerPorts:
       serviceName = port.containerPort.serviceName
       outsidePort = port.outsidePort
-      localPort = port.localPort
+      localPort = port.containerPort.port
       portsForEmail.append({ "serviceName": serviceName, "localPort": localPort, "outsidePort": outsidePort })
 
     connectionText = get_email_container_started(
