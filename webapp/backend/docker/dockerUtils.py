@@ -79,15 +79,18 @@ def startDockerContainer(reservationId: str):
     containerName = f"reservation-{reservation.reservationId}-{imageName}-{timeNowParsed}"
     reservation.reservedContainer.containerDockerName = containerName
 
-    bindablePorts = []
-    portsForEmail = []
+    ports = []
 
     # Set bindable ports for the reservation container
     for port in reservation.reservedContainer.container.containerPorts:
       #print(port.port)
       outsidePort = get_available_port()
-      bindablePorts.append( (outsidePort, port.port) )
-      portsForEmail.append({ "serviceName": port.serviceName, "localPort": port.port, "outsidePort": outsidePort })
+      ports.append({
+        "containerPortId" : port.containerPortId,
+        "serviceName": port.serviceName,
+        "localPort": port.port,
+        "outsidePort": outsidePort
+      })
 
     userEmailParsed = removeSpecialCharacters(reservation.user.email)
     mountLocation = f'{settings.docker["mountLocation"]}/{userEmailParsed}'
@@ -99,9 +102,13 @@ def startDockerContainer(reservationId: str):
       gpusString = "device="
       for gpu in gpuSpecs:
         gpusString = gpusString + gpu + ","
-      
       # Remove the trailing , from gpuSpecs, if it exists
       if gpusString[-1] == ",": gpusString = gpusString[:-1]
+
+    # Create the port string to be passed to Docker
+    portsForContainer = []
+    for port in ports:
+      portsForContainer.append( (port["outsidePort"], port["localPort"]) )
 
     details = {
       "name": containerName,
@@ -111,7 +118,7 @@ def startDockerContainer(reservationId: str):
       "gpus": gpusString,
       "memory": f"{hwSpecs['ram']['amount']}g",
       "shm_size": settings.docker["shm_size"],
-      "ports": bindablePorts,
+      "ports": portsForContainer,
       "localMountFolderPath": mountLocation,
       "password": sshPassword
     }
@@ -125,10 +132,10 @@ def startDockerContainer(reservationId: str):
     if cont_was_started == True:
       print(f"Container with Docker name {cont_name} was started succesfully.")
       # Set bound ports
-      for port in bindablePorts:
+      for port in ports:
         reservation.reservedContainer.reservedContainerPorts.append(ReservedContainerPort(
-          outsidePort = port[0],
-          localPort = port[1]
+          outsidePort = port["outsidePort"],
+          containerPortForeign = port["containerPortId"]
         ))
 
       # Set basic reservation status
@@ -140,7 +147,7 @@ def startDockerContainer(reservationId: str):
         body =  get_email_container_started(
           imageName,
           reservation.computer.ip,
-          portsForEmail,
+          ports,
           sshPassword,
           True,
           reservation.endDate)
