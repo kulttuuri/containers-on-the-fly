@@ -71,9 +71,18 @@ def start_container(pars):
         # Set correct file permissions for the mount folder
         os.chmod(pars["localMountFolderPath"], 0o777)
 
+        # Add volumes and mounts
+        volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent")]
+        if "extraMounts" in settings.docker and len(settings.docker["extraMounts"]) > 0:
+            for mount in settings.docker["extraMounts"]:
+                if mount["readOnly"]:
+                    volumes.append((mount["mountLocation"], f"/home/{pars['username']}/{mount['containerFolderName']}", "ro"))
+                else:
+                    volumes.append((mount["mountLocation"], f"/home/{pars['username']}/{mount['containerFolderName']}"))
+
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
-            volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent"),("/home/aiserver/datasets",f"/home/{pars['username']}/datasets","ro")],
+            volumes = volumes,
             gpus=gpus,
             name = container_name,
             memory = pars['memory'],
