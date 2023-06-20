@@ -131,7 +131,7 @@ def getOwnReservations(userId, filters : ReservationFilters) -> object:
     object: Response object with status, message and data.
   '''
   reservations = []
-
+  
   # Limit listing to 90 days
   def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
   minStartDate = timeNow() - timedelta(days=90)

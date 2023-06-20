@@ -4,6 +4,7 @@ from settings import settings
 from helpers.auth import CreateLoginToken, HashPassword, IsCorrectPassword, CheckToken, GetLDAPUser, GetRole
 from fastapi import HTTPException, status
 from datetime import datetime
+from logger import log
 
 def login(username, password):
   '''
@@ -48,6 +49,8 @@ def login(username, password):
       user.loginToken = CreateLoginToken()
       user.loginTokenCreatedAt = datetime.utcnow()
       session.commit()
+      log.info(f"User {user.email} logged in.")
+      log.info(user)
       return {
         "access_token": user.loginToken,
         "token_type": "bearer"
