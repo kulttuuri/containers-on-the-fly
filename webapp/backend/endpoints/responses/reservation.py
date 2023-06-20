@@ -131,16 +131,21 @@ def getOwnReservations(userId, filters : ReservationFilters) -> object:
     object: Response object with status, message and data.
   '''
   reservations = []
-  
+
   # Limit listing to 90 days
   def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
   minStartDate = timeNow() - timedelta(days=90)
 
   with Session() as session:
-    query = session.query(Reservation).options(
-      joinedload(Reservation.reservedHardwareSpecs),
-      joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.container)
-      ).filter( Reservation.userId == userId, Reservation.startDate > minStartDate )
+    query = session.query(Reservation)\
+      .options(
+        joinedload(Reservation.reservedHardwareSpecs),
+        joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.reservedContainerPorts),
+        joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.container)
+      ).\
+      filter(
+        Reservation.userId == userId,
+        Reservation.startDate > minStartDate)
     if filters.filters["status"] != "":
       query = query.filter( Reservation.status == filters.filters["status"] )
     session.close()
@@ -149,6 +154,14 @@ def getOwnReservations(userId, filters : ReservationFilters) -> object:
     res = ORMObjectToDict(reservation)
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)
     res["reservedContainer"]["container"] = ORMObjectToDict(reservation.reservedContainer.container)
+    res["reservedContainer"]["reservedPorts"] = []
+    # Only add ports if the reservation is started as the ports are unbound after the reservation is stopped
+    if reservation.status == "started":
+      for reservedPort in reservation.reservedContainer.reservedContainerPorts:
+        portObj = ORMObjectToDict(reservedPort)
+        portObj["localPort"] = reservedPort.containerPort.port
+        portObj["serviceName"] = reservedPort.containerPort.serviceName
+        res["reservedContainer"]["reservedPorts"].append(portObj)
     # Add all reserved hardware specs
     res["reservedHardwareSpecs"] = []
     for spec in reservation.reservedHardwareSpecs:
