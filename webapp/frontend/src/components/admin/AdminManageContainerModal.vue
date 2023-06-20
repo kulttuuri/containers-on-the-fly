@@ -73,7 +73,7 @@
   export default {
     name: "AdminManageContainerModal",
     props: {
-      propData: Object, // Contains the ID of the container to edit, or "new" if creating new
+      propData: [ Number, String ], // Contains the ID of the container to edit, or "new" if creating new
     },
     data() {
       return {
