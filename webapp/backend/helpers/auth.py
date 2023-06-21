@@ -13,6 +13,7 @@ from datetime import timedelta
 import datetime
 import string
 import secrets
+from sqlalchemy.orm import joinedload
 
 def IsAdmin(userIdOrEmail) -> bool:
   '''
@@ -43,14 +44,15 @@ def GetRole(email : str) -> string:
     'user' if role was not found for the user, otherwise the name of the role.
   '''
   with Session() as session:
-    user = session.query(User).filter( User.email == email ).first()
+    user = session.query(User).options(joinedload(User.roles)).filter( User.email == email ).first()
+    session.close()
 
-    if (user == None): return "user"
+  if (user == None): return "user"
 
-    userRole = "user"
-    if (len(user.roles) > 0):
-      userRole = user.roles[0].name
-    return userRole
+  userRole = "user"
+  if (len(user.roles) > 0):
+    userRole = user.roles[0].name
+  return userRole
 
 def IsLoggedIn(token : str):
   '''
@@ -81,12 +83,13 @@ def CheckToken(token : str) -> object:
 
   with Session() as session:
     user = session.query(User).filter( User.loginToken == token, User.loginTokenCreatedAt > minStartDate ).first()
+    session.close()
 
-    if user is not None:
-      userRole = GetRole(user.email)
-      return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "role": userRole })
-    else:
-      return helpers.server.Response(False, "Invalid token.")
+  if user is not None:
+    userRole = GetRole(user.email)
+    return helpers.server.Response(True, "Token OK.", { "userId": user.userId, "email": user.email, "role": userRole })
+  else:
+    return helpers.server.Response(False, "Invalid token.")
 
 def CreateLoginToken() -> str:
   '''

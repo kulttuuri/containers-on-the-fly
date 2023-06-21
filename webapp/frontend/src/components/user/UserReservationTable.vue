@@ -31,6 +31,10 @@
       <template v-slot:item.containerImage="{item}">
         {{ item.reservedContainer.container.imageName }}
       </template>
+      <!-- Ports -->
+      <template v-slot:item.ports="{item}">
+        <div v-html="getPorts(item.reservedContainer.reservedPorts)"></div>
+      </template>
       <!-- Container Status -->
       <template v-slot:item.containerStatus="{item}">
         {{ item.status == "error" && item.reservedContainer.containerDockerErrorMessage ? getText(item.reservedContainer.containerDockerErrorMessage) : item.reservedContainer.containerStatus }}
@@ -75,6 +79,7 @@
           { text: 'Ends', value: 'endDate' },
           { text: 'Resources', value: 'resources' },
           { text: 'Container Image', value: 'containerImage' },
+          { text: 'Ports', value: 'ports' },
           { text: 'Container Status', value: 'containerStatus' },
           { text: 'actions', value: 'actions' },
         ],
@@ -84,6 +89,18 @@
       this.reservations = this.propReservations
     },
     methods: {
+      // Returns a string of all ports for a reservation
+      getPorts(ports) {
+        if (ports) {
+          let portsString = ""
+          for (let i = 0; i < ports.length; i++) {
+            portsString += ports[i].localPort + " -> " + ports[i].outsidePort + " (" + ports[i].serviceName + ")"
+            portsString += i != ports.length - 1 ? "<br />" : ""
+          }
+          return portsString
+        }
+        return ""
+      },
       // Checks if the given time is between the given time + hours
       lessHoursThan(time, hours) {
         let curDate = new Date()

@@ -6,6 +6,7 @@ from helpers.server import Response, ORMObjectToDict
 import datetime
 from endpoints.models.admin import ContainerEdit
 from endpoints.models.reservation import ReservationFilters
+from sqlalchemy.orm import joinedload
 
 def getReservations(filters : ReservationFilters) -> object:
   '''
@@ -24,14 +25,33 @@ def getReservations(filters : ReservationFilters) -> object:
   minStartDate = timeNow() - timedelta(days=90)
 
   with Session() as session:
-    query = session.query(Reservation).filter(Reservation.startDate > minStartDate )
+    query = session.query(Reservation)\
+      .options(
+        joinedload(Reservation.reservedHardwareSpecs),
+        joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.reservedContainerPorts),
+        joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.container)
+      )\
+      .filter(Reservation.startDate > minStartDate )
     if filters.filters["status"] != "":
       query = query.filter( Reservation.status == filters.filters["status"] )
+    session.close()
+
   for reservation in query:
     res = ORMObjectToDict(reservation)
     res["userEmail"] = reservation.user.email
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)
     res["reservedContainer"]["container"] = ORMObjectToDict(reservation.reservedContainer.container)
+    
+    # Add all reserved ports
+    res["reservedContainer"]["reservedPorts"] = []
+    # Only add ports if the reservation is started as the ports are unbound after the reservation is stopped
+    if reservation.status == "started":
+      for reservedPort in reservation.reservedContainer.reservedContainerPorts:
+        portObj = ORMObjectToDict(reservedPort)
+        portObj["localPort"] = reservedPort.containerPort.port
+        portObj["serviceName"] = reservedPort.containerPort.serviceName
+        res["reservedContainer"]["reservedPorts"].append(portObj)
+    
     # Add all reserved hardware specs
     res["reservedHardwareSpecs"] = []
     for spec in reservation.reservedHardwareSpecs:

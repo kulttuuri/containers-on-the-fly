@@ -9,6 +9,7 @@ from datetime import timezone, timedelta
 from docker.dockerUtils import stop_container
 from settings import settings
 from endpoints.models.reservation import ReservationFilters
+from sqlalchemy.orm import joinedload
 
 # TODO: Should be able to send a computer here and get the available hardware specs for it.
 # TODO: Should also be able to only fail there is not enough resources any computer. Right now it fails if any of the computers are out of resources for the given time period.
@@ -32,85 +33,91 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
   date = parser.parse(date)
   endDate = date+relativedelta(hours=+duration)
 
+  # Fetch all required data first
   with Session() as session:
-  
-    reservations = session.query(Reservation).filter(
-      Reservation.startDate < endDate,
-      Reservation.endDate > date,
-      (Reservation.status == "reserved") | (Reservation.status == "started")
-    )
-
-    #print("Ignored reservation ID: ", ignoredReservationId)
-
-    # All reserved hardware specs for the given time period will be listed here
-    # This loop will go through all reservations and add the reserved hardware specs to this list for the given time period
-    removableHardwareSpecs = {}
-    for res in reservations:
-      if res.reservationId == ignoredReservationId: continue
-      for spec in res.reservedHardwareSpecs:
-        hardwareSpecId = spec.hardwareSpec.hardwareSpecId
-        amount = spec.amount
-        
-        if hardwareSpecId not in removableHardwareSpecs:
-          removableHardwareSpecs[hardwareSpecId] = amount
-        else:
-          removableHardwareSpecs[hardwareSpecId] += amount
-
-    # Reduce the available hardware specs by the given reducable specs, if any
-    if reducableSpecs != None:
-      for key, val in reducableSpecs.items():
-        intKey = int(key)
-        if val == 0: continue
-        if intKey not in removableHardwareSpecs:
-          removableHardwareSpecs[intKey] = val
-        else:
-          removableHardwareSpecs[intKey] += val
-
-    #print("removableHardwareSpecs: ", removableHardwareSpecs)
-
-    computers = []
-
+    reservations = session.query(Reservation)\
+      .options(
+        joinedload(Reservation.reservedHardwareSpecs)
+      )\
+      .filter(
+        Reservation.startDate < endDate,
+        Reservation.endDate > date,
+        (Reservation.status == "reserved") | (Reservation.status == "started")
+      )
     allComputers = session.query(Computer)
-    for computer in allComputers:
-      compDict = ORMObjectToDict(computer)
-      compDict["hardwareSpecs"] = []
-      for spec in computer.hardwareSpecs:
-        compDict["hardwareSpecs"].append(ORMObjectToDict(spec))
-      computers.append(compDict)
-
-    containers = []
     allContainers = session.query(Container)
-    for container in allContainers:
-      containers.append(ORMObjectToDict(container))
+    session.close()
 
-    # Set all user maximums to max for admins
-    if (isAdmin == True):
-      for computer in computers:
-        for spec in computer["hardwareSpecs"]:
-          spec["maximumAmountForUser"] = spec["maximumAmount"]
 
+  #print("Ignored reservation ID: ", ignoredReservationId)
+
+  # All reserved hardware specs for the given time period will be listed here
+  # This loop will go through all reservations and add the reserved hardware specs to this list for the given time period
+  removableHardwareSpecs = {}
+  for res in reservations:
+    if res.reservationId == ignoredReservationId: continue
+    for spec in res.reservedHardwareSpecs:
+      hardwareSpecId = spec.hardwareSpec.hardwareSpecId
+      amount = spec.amount
+      
+      if hardwareSpecId not in removableHardwareSpecs:
+        removableHardwareSpecs[hardwareSpecId] = amount
+      else:
+        removableHardwareSpecs[hardwareSpecId] += amount
+
+  # Reduce the available hardware specs by the given reducable specs, if any
+  if reducableSpecs != None:
+    for key, val in reducableSpecs.items():
+      intKey = int(key)
+      if val == 0: continue
+      if intKey not in removableHardwareSpecs:
+        removableHardwareSpecs[intKey] = val
+      else:
+        removableHardwareSpecs[intKey] += val
+
+  #print("removableHardwareSpecs: ", removableHardwareSpecs)
+
+  computers = []
+
+  for computer in allComputers:
+    compDict = ORMObjectToDict(computer)
+    compDict["hardwareSpecs"] = []
+    for spec in computer.hardwareSpecs:
+      compDict["hardwareSpecs"].append(ORMObjectToDict(spec))
+    computers.append(compDict)
+
+  containers = []
+  for container in allContainers:
+    containers.append(ORMObjectToDict(container))
+
+  # Set all user maximums to max for admins
+  if (isAdmin == True):
     for computer in computers:
       for spec in computer["hardwareSpecs"]:
-        if spec["hardwareSpecId"] in removableHardwareSpecs:
-          spec["maximumAmount"] -= removableHardwareSpecs[spec["hardwareSpecId"]]
-          if spec["maximumAmountForUser"] > spec["maximumAmount"]:
-            spec["maximumAmountForUser"] = spec["maximumAmount"]
-          #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
-          if spec["maximumAmount"] < spec["minimumAmount"]:
-            print("Spec: ", spec["type"], " ", spec["maximumAmount"], " is below minimum amount: ", spec["minimumAmount"])
-            #print("minimumAmount: ", spec["minimumAmount"])
-            #print("maximumAmount: ", spec["maximumAmount"])
-            #print("maximumAmountForUser: ", spec["maximumAmountForUser"])
-            specMessage = ""
-            specMax = spec['maximumAmount']
-            if specMax < 0: specMax = 0
-            if spec["type"] == "ram":
-              specMessage = f"Available: {specMax} {spec['format']} {spec['type']}."
-            else:
-              specMessage = f"Available: {specMax} {spec['type']}."
-            return Response(False, f"Not enough resources to make a reservation: {spec['type']}. {specMessage}")
+        spec["maximumAmountForUser"] = spec["maximumAmount"]
 
-    return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
+  for computer in computers:
+    for spec in computer["hardwareSpecs"]:
+      if spec["hardwareSpecId"] in removableHardwareSpecs:
+        spec["maximumAmount"] -= removableHardwareSpecs[spec["hardwareSpecId"]]
+        if spec["maximumAmountForUser"] > spec["maximumAmount"]:
+          spec["maximumAmountForUser"] = spec["maximumAmount"]
+        #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
+        if spec["maximumAmount"] < spec["minimumAmount"]:
+          print("Spec: ", spec["type"], " ", spec["maximumAmount"], " is below minimum amount: ", spec["minimumAmount"])
+          #print("minimumAmount: ", spec["minimumAmount"])
+          #print("maximumAmount: ", spec["maximumAmount"])
+          #print("maximumAmountForUser: ", spec["maximumAmountForUser"])
+          specMessage = ""
+          specMax = spec['maximumAmount']
+          if specMax < 0: specMax = 0
+          if spec["type"] == "ram":
+            specMessage = f"Available: {specMax} {spec['format']} {spec['type']}."
+          else:
+            specMessage = f"Available: {specMax} {spec['type']}."
+          return Response(False, f"Not enough resources to make a reservation: {spec['type']}. {specMessage}")
+
+  return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
 
 def getOwnReservations(userId, filters : ReservationFilters) -> object:
   '''
@@ -130,13 +137,31 @@ def getOwnReservations(userId, filters : ReservationFilters) -> object:
   minStartDate = timeNow() - timedelta(days=90)
 
   with Session() as session:
-    query = session.query(Reservation).filter( Reservation.userId == userId, Reservation.startDate > minStartDate )
+    query = session.query(Reservation)\
+      .options(
+        joinedload(Reservation.reservedHardwareSpecs),
+        joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.reservedContainerPorts),
+        joinedload(Reservation.reservedContainer).joinedload(ReservedContainer.container)
+      ).\
+      filter(
+        Reservation.userId == userId,
+        Reservation.startDate > minStartDate)
     if filters.filters["status"] != "":
       query = query.filter( Reservation.status == filters.filters["status"] )
+    session.close()
+  
   for reservation in query:
     res = ORMObjectToDict(reservation)
     res["reservedContainer"] = ORMObjectToDict(reservation.reservedContainer)
     res["reservedContainer"]["container"] = ORMObjectToDict(reservation.reservedContainer.container)
+    res["reservedContainer"]["reservedPorts"] = []
+    # Only add ports if the reservation is started as the ports are unbound after the reservation is stopped
+    if reservation.status == "started":
+      for reservedPort in reservation.reservedContainer.reservedContainerPorts:
+        portObj = ORMObjectToDict(reservedPort)
+        portObj["localPort"] = reservedPort.containerPort.port
+        portObj["serviceName"] = reservedPort.containerPort.serviceName
+        res["reservedContainer"]["reservedPorts"].append(portObj)
     # Add all reserved hardware specs
     res["reservedHardwareSpecs"] = []
     for spec in reservation.reservedHardwareSpecs:
@@ -171,7 +196,7 @@ def getOwnReservationDetails(reservationId, userId) -> object:
     for port in reservation.reservedContainer.reservedContainerPorts:
       serviceName = port.containerPort.serviceName
       outsidePort = port.outsidePort
-      localPort = port.localPort
+      localPort = port.containerPort.port
       portsForEmail.append({ "serviceName": serviceName, "localPort": localPort, "outsidePort": outsidePort })
 
     connectionText = get_email_container_started(
@@ -191,13 +216,16 @@ def getCurrentReservations() -> object:
   reservations = []
 
   def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
-  minStartDate = timeNow() - timedelta(days=14)
+  minEndDate = timeNow() - timedelta(days=5)
 
   with Session() as session:
-    query = session.query(Reservation).filter(
-    ((Reservation.status == "reserved") | (Reservation.status == "started")),
-    (Reservation.startDate > minStartDate)
-  )
+    query = session.query(Reservation)\
+      .options(joinedload(Reservation.reservedHardwareSpecs))\
+      .filter(
+        ((Reservation.status == "reserved") | (Reservation.status == "started")),
+        (Reservation.endDate > minEndDate),
+      )
+    session.close()
   for reservation in query:
     specs = []
     for spec in reservation.reservedHardwareSpecs:
@@ -228,7 +256,6 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
   endDate = date+relativedelta(hours=+duration)
 
   with Session() as session:
-
     # Check that user exists
     user = session.query(User).filter( User.userId == userId ).first()
     if (user == None):
@@ -275,20 +302,19 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
       computerId = computerId,
       status = "reserved",
     )
-    session.add(reservation)
 
     # Append all reserved hardware specs inside the reservation
     for key, val in hardwareSpecs.items():
       # Check that the amount does not exceed user limits for the given hardware
       # Skipped for admins
       hardwareSpec = session.query(HardwareSpec).filter( HardwareSpec.hardwareSpecId == key ).first()
+      
       if val > hardwareSpec.maximumAmountForUser and isAdmin == False:
         return Response(False, f"Trying to utilize hardware specs above the user maximum amount for {hardwareSpec.type} {hardwareSpec.format}: {val} > {hardwareSpec.maximumAmountForUser}")
       # Only add resources over 0
       if val > 0:
-        session.add(
+        reservation.reservedHardwareSpecs.append(
           ReservedHardwareSpec(
-            reservationId = reservation.reservationId,
             hardwareSpecId = key,
             amount = val,
           )
@@ -300,6 +326,7 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
     #print(ORMObjectToDict(reservation))
     #print(ORMObjectToDict(reservation.reservedContainer))
     user.reservations.append(reservation)
+    session.add(reservation)
     session.commit()
 
     informByEmail = settings.docker["sendEmail"]
@@ -369,19 +396,22 @@ def extendReservation(userId, reservationId: str, duration: int):
   return Response(False, "Error.")
 
 def restartContainer(userId, reservationId: str):
+  reservation = None
   # Check that user owns the given container reservation and it can be found
   # Admins can restart any container
   with Session() as session:
+    reservation = session.query(Reservation)\
+      .options(joinedload(Reservation.reservedContainer))\
+      .filter( Reservation.reservationId == reservationId )
     if IsAdmin(userId) == False:
-      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
-      if reservation is None: return Response(False, "No reservation found for this user.")
+      reservation = reservation.query(Reservation).filter(Reservation.userId == userId )
+    session.close()
   
-  with Session() as session:
-    reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
-    if reservation is None: return Response(False, "No reservation found.")
+  reservation = reservation.first()
+  if reservation is None: return Response(False, "No reservation found.")
 
-    if (reservation.status == "started"):
-      restart_container(reservation.reservedContainer.containerDockerName)
-      return Response(True, "Container was restarted succesfully.")
-    else:
-      return Response(False, "Reservation is not currently started, so cannot restart the container.")
+  if (reservation.status == "started"):
+    restart_container(reservation.reservedContainer.containerDockerName)
+    return Response(True, "Container was restarted succesfully.")
+  else:
+    return Response(False, "Reservation is not currently started, so cannot restart the container.")

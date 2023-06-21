@@ -68,7 +68,6 @@ class Settings:
         # database
         if not hasattr(s, 'database'): die("database")
         if "engineUri" not in s.database: die("database.engineUri")
-        if "filePath" not in s.database: die("database.filePath")
         if "debugPrinting" not in s.database: die("database.debugPrinting")
         # docker
         if not hasattr(s, 'docker'): die("docker")

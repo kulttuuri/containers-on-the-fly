@@ -127,8 +127,12 @@ export const store = new Vuex.Store({
           if (error.response && error.response.status == 400) {
             return payload.callback(Response(false, error.response.data.detail));
           }
+          // Unauthorized
           else if (error.response && error.response.status == 401) {
-            return payload.callback(Response(false, error.response.data.detail));
+            console.log("Unauthorized – Logging user out.")
+            _this.commit("logoutUser")
+            if (state.initializing) state.initializing = false
+            return payload.callback(Response(false, "Invalid login token."));
           }
           else {
             console.log(error)
@@ -143,7 +147,7 @@ export const store = new Vuex.Store({
     },
     // Logs out the currently logged-in user, if any.
     logoutUser(state, payload) {
-      if (!payload.callback) payload.callback = () => { };
+      if (payload && !payload.callback) payload.callback = () => { };
       state.user.loginToken = ""
       state.user.email = ""
       state.user.loggedinAt = ""

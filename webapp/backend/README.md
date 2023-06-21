@@ -2,165 +2,9 @@
 
 Backend server for AI Docker server reservation software, written in Python 3. FastAPI is being used for the API implementation.
 
-## database
-
-at the moment, production db is at /home/alposta/aiserver/webapp/backend
-
-### how to use
---log in to the db
-sudo sqlite3 aiserver.db
---Look all the tables
-.tables
---make data look better in terminal
-.mode column
-.headers ON
---looking data from one table
-select * from "table";
--- exiting sqlite
-.exit
---updating
-update Container set imageName = "new name" where containerId = id 
-
---example, how to check containers in table and add one container there
---Additions are needed for 2 tables Container and ContainerPort
-
---listing all 
-select * from Container;
-insert into Container (public, imageName, name, description) values (true, "docker image name", "name to show in frontend", "description");
-
-insert into ContainerPort (containerId, serviceName, port) values (2, "SSH", 22);
-
-####
-changing reservation time
-
-update Reservation set endDate = "2022-12-16 20:16:22.752000" where reservationId = 82 
-
 ## Settings File
 
-The settings file should be first created in order to start working with the project. File should be created in location ``webapp/backend/settings.json``. Below is an example of this file:
-
-```json
-{
-  "app": {
-    "name": "SAMK AI Server",
-    "logoUrl": "/static/logos/logo.png",
-    "host": "127.0.0.1",
-    "url": "http://localhost",
-    "port": 8000,
-    "production": false,
-    "addTestDataInDevelopment": true
-  },
-  "admincli": {
-    "address": "127.0.0.1",
-    "username": "aiserveradmin@samk.fi",
-    "allowedIpAddresses": [
-      "127.0.0.1",
-      "92.162.12.15"
-    ]
-  },
-  "login": {
-    "loginType": "password",
-    "useWhitelist": false
-  },
-  "session": {
-    "timeoutMinutes": 1440
-  },
-  "database": {
-    "engineUri": "sqlite+pysqlite:///",
-    "filePath": "aiserver.db",
-    "debugPrinting": false
-  }
-}
-```
-
-### Host
-
-**Setting**: ``app.host``
-
-**Description**: IP address or domain name of your server. Web server will be bound to this address.
-
-### URL
-
-**Setting**: ``app.url``
-
-**Description**: URL address to your server (without trailing slash).
-
-### Port
-
-**Setting**: ``app.port``
-
-**Description**: Port to be used.
-
-### Production
-
-**Setting**: ``app.production``
-
-**Description**: When running the server in production, set ``app.production`` to ``true`` so that no additional debug printing will occur in the server console.
-
-### Add Test Data
-
-**Setting**: ``app.addTestDataInDevelopment``
-
-**Description**: When running the server in development mode and ``app.addTestDataInDevelopment`` is set to ``true``, the app will add some testing credentials, containers, hardware and other data. Have a look at the file ``routes/api.py`` for more reference on this.
-
-### Address
-
-**Setting**: ``admincli.address``
-
-**Description**: IP address or domain name of your server. API access will go through this address. For example 127.0.0.1:8000.
-
-### Username
-
-**Setting**: ``admincli.username``
-
-**Description**: The default username for logging into admin command-line interface.
-
-### Allowed IP Addresses
-
-**Setting**: ``admincli.allowedIpAddresses``
-
-**Description**: List of IP addresses allowed to use the admin command-line interface.
-
-### Login Type
-
-**Setting**: ``login.loginType``
-
-**Description**: ``login.loginType`` can be either ``password`` or ``LDAP``. Read below for more information about these options.
-
-#### Password
-
-By setting the ``login.loginType`` to ``password``, login will be done using the ``User`` database. If utilizing this feature, check the file ``admin.py`` for example on how to add users with a password.
-
-#### LDAP
-
-By setting the ``login.loginType`` to ``LDAP``, external LDAP or LDAPS can be used to login user against. If using this login type, some additional information will also be required. Below is an example of this additional information:
-
-```json
-  "login": {
-    "loginType": "LDAP",
-    "ldap": {
-      "url": "ldaps://url",
-      "usernameFormat": "{username}@ad.local",
-      "passwordFormat": "{password}",
-      "ldapDomain": "dc=ad,dc=local",
-      "searchMethod": "(sAMAccountName={username})",
-      "accountField": "sAMAccountName",
-      "emailField": "mail"
-    }
-  },
-```
-
-### Login Whitelisting
-
-**Setting**: ``login.useWhitelist``
-
-**Description**: By setting ``login.useWhitelist`` to ``true``, only users that exist in the table ``UserWhitelist`` can login. If utilizing this feature, check the file ``admin.py`` for example on how to whitelist user(s). Whitelisting occurs by user email address.
-
-### Session Timeout
-
-**Setting**: ``session.timeoutMinutes``
-
-**Description**: ``session.timeoutMinutes`` determines how long will logged-in user stay logged in (in minutes). This is set to 1440 minutes by default which means 24 hours.
+The settings file should be first created to start working on the project. The file should be created in the location ``webapp/backend/settings.json``. An example settings file with comments can be found at ``webapp/backend/settings_example.json``.
 
 ## Requirements
 
@@ -179,9 +23,9 @@ First, install the pip packages written in the ``requirements.txt`` file (you on
 pip install -r requirements.txt
 ```
 
-Then, to install the python-ldap package, on Ubuntu you have to run ``apt install python3-ldap``, but on other operating systems you have to run: ``pip3 install python-ldap``.
+Then, to install the ``python-ldap`` package, on Ubuntu you have to run ``apt install python3-ldap``, but on other operating systems you have to run: ``pip3 install python-ldap``.
 
-After that, server can be started by using the pre-made start script:
+After that, the server can be started by using the pre-made start script:
 
 ```
 ./start
@@ -226,7 +70,7 @@ pm2 logs backend
 pm2 logs backendDockerUtil
 ```
 
-Or to monitor the resource usage:
+Or to monitor resource usage:
 
 ```
 pm2 monit
@@ -234,7 +78,23 @@ pm2 monit
 
 ## Settings
 
-All the main settings are located in file `settings.json`.
+All the main settings are located in file `settings.json`. If ``app.addTestDataInDevelopment`` in ``settings.json`` file is set to true, test data will be added as a starting point.
+
+### Default Credentials
+
+Default admin and a regular user are added as a starting point when adding test data and password logins are the way to log in.
+
+**Credentials:**
+
+```
+username: aiserveradmin@samk.fi
+password: test
+```
+
+```
+username: aiserveruser@samk.fi
+password: test
+```
 
 ## Specific Details
 
@@ -242,13 +102,13 @@ All the main settings are located in file `settings.json`.
 
 Login uses oAuth2 standards. Login creates a bearer token used for all methods meant only for logged-in users.
 
-Endpoint for login is (send the data in POST form data, using username and password):
+The endpoint for login is (send the data in POST form data, using username and password):
 
 ```
 /api/login
 ```
 
-And endpoint for checking the current token is (send the data in bearer authentication header):
+And endpoint for checking the current token is (send the data in the bearer authentication header):
 
 ```
 /api/check_token
@@ -256,4 +116,4 @@ And endpoint for checking the current token is (send the data in bearer authenti
 
 ### Timezones & Timestamps
 
-All DateTimes, Dates and Timestamps stored in the database should be stored in UTC + 0 format. This way we can ensure that the times are always right.
+All DateTimes, Dates and Timestamps stored in the database should be stored in UTC + 0 format. Using this, it can be ensured that the times are always right.
