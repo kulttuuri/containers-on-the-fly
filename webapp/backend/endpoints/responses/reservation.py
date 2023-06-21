@@ -216,14 +216,14 @@ def getCurrentReservations() -> object:
   reservations = []
 
   def timeNow(): return datetime.datetime.now(datetime.timezone.utc)
-  minStartDate = timeNow() - timedelta(days=14)
+  minEndDate = timeNow() - timedelta(days=5)
 
   with Session() as session:
     query = session.query(Reservation)\
       .options(joinedload(Reservation.reservedHardwareSpecs))\
       .filter(
         ((Reservation.status == "reserved") | (Reservation.status == "started")),
-        (Reservation.startDate > minStartDate)
+        (Reservation.endDate > minEndDate),
       )
     session.close()
   for reservation in query:
