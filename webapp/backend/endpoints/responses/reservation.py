@@ -44,10 +44,9 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
         Reservation.endDate > date,
         (Reservation.status == "reserved") | (Reservation.status == "started")
       )
-    allComputers = session.query(Computer)
+    allComputers = session.query(Computer).filter(Computer.removed.isnot(True), Computer.public.is_(True))
     allContainers = session.query(Container)
     session.close()
-
 
   #print("Ignored reservation ID: ", ignoredReservationId)
 
@@ -119,7 +118,7 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
 
   return Response(True, "Hardware resources fetched.", { "computers": computers, "containers": containers })
 
-def getOwnReservations(userId, filters : ReservationFilters) -> object:
+def getOwnReservations(userId : int, filters : ReservationFilters) -> object:
   '''
   Returns a list of all reservations owned by the given user.
 
@@ -183,7 +182,7 @@ def getOwnReservations(userId, filters : ReservationFilters) -> object:
   
   return Response(True, "Hardware resources fetched.", { "reservations": reservations })
 
-def getOwnReservationDetails(reservationId, userId) -> object:
+def getOwnReservationDetails(reservationId : int, userId : int) -> object:
   with Session() as session:
     # Check that the reservation exists and is owned by the current user
     reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId, Reservation.userId == userId ).first()
@@ -246,7 +245,7 @@ def getCurrentReservations() -> object:
   
   return Response(True, "Current reservations fetched.", { "reservations": reservations })
 
-def createReservation(userId, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, adminReserveUserEmail: str = None):
+def createReservation(userId : int, date: str, duration: int, computerId: int, containerId: int, hardwareSpecs, adminReserveUserEmail: str = None):
   # Make sure that there are enough resources for the reservation
   getAvailableHardwareResponse = getAvailableHardware(date, duration, hardwareSpecs)
   if (getAvailableHardwareResponse["status"] == False):
@@ -333,7 +332,7 @@ def createReservation(userId, date: str, duration: int, computerId: int, contain
 
     return Response(True, "Reservation created succesfully!", { "informByEmail": informByEmail })
 
-def cancelReservation(userId, reservationId: str):
+def cancelReservation(userId : int, reservationId: str):
   # Check that user owns the given reservation and it can be found
   # Admins can cancel any reservation
   with Session() as session:
@@ -358,7 +357,7 @@ def cancelReservation(userId, reservationId: str):
 
   return Response(True, "Reservation cancelled.")
 
-def extendReservation(userId, reservationId: str, duration: int):
+def extendReservation(userId : int, reservationId: str, duration: int):
   # Check that user owns the given reservation and it can be found
   # Admins can extend any reservation
 
@@ -395,7 +394,7 @@ def extendReservation(userId, reservationId: str, duration: int):
 
   return Response(False, "Error.")
 
-def restartContainer(userId, reservationId: str):
+def restartContainer(userId : int, reservationId: str):
   reservation = None
   # Check that user owns the given container reservation and it can be found
   # Admins can restart any container

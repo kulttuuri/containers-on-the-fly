@@ -20,12 +20,12 @@ class CustomLogger(logging.Logger):
     try:
       # Print database objects as dictionaries
       if isinstance(msg, Base):
-        return f"{linesep}{msg}: {ORMObjectToDict(msg)}"
+        return f"{linesep}{msg}{linesep}{linesep}{ORMObjectToDict(msg)}"
       else:
-        return f"{linesep} + {msg}"
+        return f"{linesep}{msg}"
     except:
-      return f"{linesep} + {msg}"
-  
+      return f"{linesep}{msg}"
+
   def debug(self, msg, *args, **kwargs):
     super().debug(self.getMsg(msg), *args, **kwargs)
   def info(self, msg, *args, **kwargs):
