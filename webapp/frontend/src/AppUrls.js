@@ -25,9 +25,13 @@ function createUrls(baseAddress) {
     URLS.admin.get_users = baseAdminUrl + "users"
     URLS.admin.get_hardware = baseAdminUrl + "hardware"
     URLS.admin.get_containers = baseAdminUrl + "containers"
+    URLS.admin.get_computers = baseAdminUrl + "computers"
+    URLS.admin.get_computer = baseAdminUrl + "computer"
     URLS.admin.get_container = baseAdminUrl + "container"
     URLS.admin.save_container = baseAdminUrl + "save_container"
+    URLS.admin.save_computer = baseAdminUrl + "save_computer"
     URLS.admin.remove_container = baseAdminUrl + "remove_container"
+    URLS.admin.remove_computer = baseAdminUrl + "remove_computer"
     URLS.admin.get_ports = baseAdminUrl + "ports"
     URLS.admin.edit_reservation = baseAdminUrl + "edit_reservation"
 

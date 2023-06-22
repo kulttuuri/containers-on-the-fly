@@ -151,6 +151,7 @@ class Computer(Base):
   computerId = Column(Integer, primary_key = True, autoincrement = True)
   public = Column(Boolean, nullable = False)
   name = Column(Text, nullable = False, unique = True)
+  removed = Column(Boolean, nullable = True) # TODO: Add to diagram
   ip = Column(Text, nullable = False)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())

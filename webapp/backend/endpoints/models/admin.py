@@ -7,3 +7,10 @@ class ContainerEdit(BaseModel):
     '''
     containerId: int
     data: Dict[str, Any]
+
+class ComputerEdit(BaseModel):
+    '''
+    For editing a computer.
+    '''
+    computerId: int
+    data: Dict[str, Any]

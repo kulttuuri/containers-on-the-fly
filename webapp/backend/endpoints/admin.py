@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from helpers.server import ForceAuthentication
 from fastapi.security import OAuth2PasswordBearer
 from endpoints.responses import admin as functionality
-from endpoints.models.admin import ContainerEdit
+from endpoints.models.admin import ContainerEdit, ComputerEdit
 from endpoints.models.reservation import ReservationFilters
 
 router = APIRouter(
@@ -32,6 +32,26 @@ async def getHardware(token: str = Depends(oauth2_scheme)):
 async def getContainers(token: str = Depends(oauth2_scheme)):
   ForceAuthentication(token, "admin")
   return functionality.getContainers()
+
+@router.get("/computers")
+async def getComputers(token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.getComputers()
+
+@router.get("/computer")
+async def getComputer(computerId : int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.getComputer(computerId)
+
+@router.post("/save_computer")
+async def saveComputer(computerEdit : ComputerEdit, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.saveComputer(computerEdit)
+
+@router.post("/remove_computer")
+async def removeComputer(computerId : int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.removeComputer(computerId)
 
 @router.get("/container")
 async def getContainer(containerId : int, token: str = Depends(oauth2_scheme)):

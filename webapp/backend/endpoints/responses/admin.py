@@ -4,9 +4,10 @@ from dateutil.relativedelta import *
 from datetime import timezone, timedelta
 from helpers.server import Response, ORMObjectToDict
 import datetime
-from endpoints.models.admin import ContainerEdit
+from endpoints.models.admin import ContainerEdit, ComputerEdit
 from endpoints.models.reservation import ReservationFilters
 from sqlalchemy.orm import joinedload
+from logger import log
 
 def getReservations(filters : ReservationFilters) -> object:
   '''
@@ -224,6 +225,9 @@ def getContainer(containerId : int) -> object:
   '''
   Returns the given container.
 
+  Parameters:
+    containerId: id of the container to fetch.
+
   Returns:
     object: Response object with status, message and data.
   '''
@@ -244,6 +248,202 @@ def getContainer(containerId : int) -> object:
         })
   
   return Response(True, "Data fetched.", { "data": addable })
+
+def getComputers() -> object:
+  '''
+  Returns a list of all computers.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  data = []
+
+  with Session() as session:
+    query = session.query(Computer).filter(Computer.removed.isnot(True))
+    for computer in query:
+      addable = {}
+      addable = ORMObjectToDict(computer)
+      addable["hardwareSpecs"] = []
+      for spec in computer.hardwareSpecs:
+        addable["hardwareSpecs"].append(ORMObjectToDict(spec))
+      data.append(addable)
+  
+  return Response(True, "Data fetched.", { "computers": data })
+
+def getComputer(computerId : int) -> object:
+  '''
+  Returns a single computer.
+
+  Parameters:
+    computerId: id of the computer to fetch.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  data = {}
+
+  with Session() as session:
+    query = session.query(Computer).filter( Computer.computerId == computerId ).limit(1)
+    for computer in query:
+      addable = {}
+      addable = ORMObjectToDict(computer)
+      addable["hardware"] = {}
+      addable["hardware"]["gpus"] = []
+      for spec in computer.hardwareSpecs:
+        if spec.type == "cpus":
+          addable["hardware"]["cpu"] = ORMObjectToDict(spec)
+        if spec.type == "ram":
+          addable["hardware"]["ram"] = ORMObjectToDict(spec)
+        if spec.type == "gpus":
+          addable["hardware"]["gpu"] = ORMObjectToDict(spec)
+        if spec.type == "gpu":
+          addable["hardware"]["gpus"].append(ORMObjectToDict(spec))
+        #print(ORMObjectToDict(spec))
+        #addable["hardwareSpecs"].append(ORMObjectToDict(spec))
+      data = addable
+
+  return Response(True, "Data fetched.", { "data": data })
+
+def saveComputer(computerEdit : ComputerEdit) -> object:
+  '''
+  Edits the given computer.
+
+  Parameters:
+    computerId: id of the computer to edit.
+    data: New data for the computer.
+  
+  Returns:
+    object: Response object with status, message and data.
+
+  '''
+  
+  with Session() as session:
+    # If new, create a new computer
+    if computerEdit.computerId == -1:
+      hardware = computerEdit.data.get("hardware")
+      computer = Computer()
+      computer.public = computerEdit.data.get("public", False)
+      computer.name = computerEdit.data.get("name")
+      computer.ip = computerEdit.data.get("ip")
+      # Add hardware specs
+      cpu = HardwareSpec(
+        type = "cpus",
+        format = "CPUs",
+        maximumAmount = hardware.get("cpu").get("maximumAmount"),
+        minimumAmount = hardware.get("cpu").get("minimumAmount"),
+        maximumAmountForUser = hardware.get("cpu").get("maximumAmountForUser"),
+        defaultAmountForUser = hardware.get("cpu").get("defaultAmountForUser"),
+      )
+      computer.hardwareSpecs.append(cpu)
+      ram = HardwareSpec(
+        type = "ram",
+        format = "GB",
+        maximumAmount = hardware.get("ram").get("maximumAmount"),
+        minimumAmount = hardware.get("ram").get("minimumAmount"),
+        maximumAmountForUser = hardware.get("ram").get("maximumAmountForUser"),
+        defaultAmountForUser = hardware.get("ram").get("defaultAmountForUser"),
+      )
+      computer.hardwareSpecs.append(ram)
+      gpus = HardwareSpec(
+        type = "gpus",
+        format = "GB",
+        maximumAmount = len(hardware.get("gpus")),
+        minimumAmount = 0,
+        defaultAmountForUser = 0,
+        maximumAmountForUser = hardware.get("gpu").get("maximumAmountForUser"),
+      )
+      computer.hardwareSpecs.append(gpus)
+      # Add GPUs
+      for gpu in hardware.get("gpus"):
+        gpuSpec = HardwareSpec(
+          type = "gpu",
+          format = gpu.get("format", ""),
+          maximumAmount = 1,
+          minimumAmount = 0,
+          defaultAmountForUser = 0,
+          maximumAmountForUser = 1,
+          internalId = gpu.get("internalId", ""))
+        computer.hardwareSpecs.append(gpuSpec)
+      session.add(computer)
+      session.commit()
+    # Otherwise, edit computer
+    else:
+      log.debug(computerEdit.data.get("hardware").get("gpus"))
+      computer = session.query(Computer).filter(Computer.computerId == computerEdit.computerId).first()
+      if computer is None:
+        return Response(False, "Computer not found.")
+      else:
+        computer.public = computerEdit.data.get("public", False)
+        computer.name = computerEdit.data.get("name")
+        computer.ip = computerEdit.data.get("ip")
+        computer.updatedAt = datetime.datetime.now(datetime.timezone.utc)
+        # Update hardware specs
+        for spec in computer.hardwareSpecs:
+          if spec.type == "cpus":
+            spec.maximumAmount = computerEdit.data.get("hardware").get("cpu").get("maximumAmount")
+            spec.minimumAmount = computerEdit.data.get("hardware").get("cpu").get("minimumAmount")
+            spec.maximumAmountForUser = computerEdit.data.get("hardware").get("cpu").get("maximumAmountForUser")
+            spec.defaultAmountForUser = computerEdit.data.get("hardware").get("cpu").get("defaultAmountForUser")
+          if spec.type == "ram":
+            spec.maximumAmount = computerEdit.data.get("hardware").get("ram").get("maximumAmount")
+            spec.minimumAmount = computerEdit.data.get("hardware").get("ram").get("minimumAmount")
+            spec.maximumAmountForUser = computerEdit.data.get("hardware").get("ram").get("maximumAmountForUser")
+            spec.defaultAmountForUser = computerEdit.data.get("hardware").get("ram").get("defaultAmountForUser")
+          if spec.type == "gpus":
+            spec.maximumAmount = len(computerEdit.data.get("hardware").get("gpus"))
+            spec.maximumAmountForUser = computerEdit.data.get("hardware").get("gpu").get("maximumAmountForUser")
+        # Remove all removable GPUs
+        for spec in computerEdit.data.get("removedGPUs", []):
+          session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == spec).delete()
+        # Add all new GPUs
+        for gpu in computerEdit.data.get("hardware").get("gpus", []):
+          if "hardwareSpecId" not in gpu:
+            computer.hardwareSpecs.append(HardwareSpec(
+              type = "gpu",
+              format = gpu.get("format", ""),
+              internalId = gpu.get("internalId", ""),
+              maximumAmount = 1,
+              minimumAmount = 0,
+              defaultAmountForUser = 0,
+              maximumAmountForUser = 1,
+            ))
+        # Edit changed GPUs
+        for gpu in computerEdit.data.get("hardware").get("gpus", []):
+          if "hardwareSpecId" in gpu:
+            oldGPU = session.query(HardwareSpec).filter(HardwareSpec.hardwareSpecId == gpu["hardwareSpecId"]).first()
+            if oldGPU.format != gpu["format"] or oldGPU.internalId != gpu["internalId"]:
+              oldGPU.format = gpu["format"]
+              oldGPU.internalId = gpu["internalId"]
+              oldGPU.updatedAt = datetime.datetime.now(datetime.timezone.utc)
+
+        #for port in containerEdit.data.get("ports", []):
+        #  container.containerPorts.append(ContainerPort(port=port["port"], serviceName=port["serviceName"]))
+        session.commit()
+  return Response(True, "Computer saved successfully")
+
+def removeComputer(computerId : int) -> object:
+  '''
+  Removes the given computer.
+
+  Parameters:
+    computerId: id of the computer to remove.
+  
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  with Session() as session:
+    computer = session.query(Computer).filter(Computer.computerId == computerId).first()
+    if computer is None:
+      return Response(False, "Computer not found.")
+    else:
+      computer.removed = True
+      computer.public = False
+      session.commit()
+  
+  return Response(True, "Computer removed successfully")
 
 def editReservation(reservationId : int, endDate : str) -> object:
   '''

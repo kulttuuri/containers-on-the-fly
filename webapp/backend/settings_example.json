@@ -54,6 +54,10 @@
   "docker": {
     // Set to true to enable starting virtual servers.
     "enabled": true,
+    // Name of the server. This is used by the backend docker utility to start docker container in the correct server.
+    // This should be the same as specified in the database for the computer as name.
+    // For example: aiserver
+    "serverName": "aiserver",
     // Full path to the location where docker will mount user files, without the ending slash. For example: /home/aiserver/mounts
     // Each user will have a folder in this location for saving persistent data, with the user's email (special characters removed) as the folder name
     // For example: "/home/aiserver/persistent_mounts"

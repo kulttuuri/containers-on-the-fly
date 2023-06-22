@@ -1,6 +1,7 @@
 import logging
 from database import Base
 from helpers.server import ORMObjectToDict
+from os import linesep
 
 class CustomLogger(logging.Logger):
   '''
@@ -19,12 +20,14 @@ class CustomLogger(logging.Logger):
     try:
       # Print database objects as dictionaries
       if isinstance(msg, Base):
-        return f"{msg}: {ORMObjectToDict(msg)}"
+        return f"{linesep}{msg}{linesep}{linesep}{ORMObjectToDict(msg)}"
       else:
-        return msg
+        return f"{linesep}{msg}"
     except:
-      return msg
-  
+      return f"{linesep}{msg}"
+
+  def debug(self, msg, *args, **kwargs):
+    super().debug(self.getMsg(msg), *args, **kwargs)
   def info(self, msg, *args, **kwargs):
     super().info(self.getMsg(msg), *args, **kwargs)
   def warning(self, msg, *args, **kwargs):
@@ -33,6 +36,25 @@ class CustomLogger(logging.Logger):
     super().error(self.getMsg(msg), *args, **kwargs)
   def critical(self, msg, *args, **kwargs):
     super().critical(self.getMsg(msg), *args, **kwargs)
+
+class ColoredFormatter(logging.Formatter):
+  """Logging Formatter to add colors based on the log level."""
+
+  format_dict = {
+    logging.DEBUG: "\033[34m",       # Blue
+    logging.INFO: "\033[92m",        # Green
+    logging.WARNING: "\033[93m",     # Yellow
+    logging.ERROR: "\033[91m",       # Red
+    logging.CRITICAL: "\033[1;91m",  # Bright red
+  }
+
+  def format(self, record):
+    log_color = self.format_dict.get(record.levelno)
+    reset_color = "\033[0m"
+    gray_color = "\033[37m"
+    formatter = f"{log_color}%(levelname)s - %(asctime)s - %(filename)s:%(lineno)d:{reset_color} %(message)s{linesep}"
+    self._style._fmt = formatter
+    return super().format(record)
 
 # Set our custom logger as the default logger
 logging.setLoggerClass(CustomLogger)
@@ -54,7 +76,7 @@ console_handler.setLevel(logging.DEBUG)
 #file_handler.setLevel(logging.DEBUG)
 
 # Create formatter and add it to handlers
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
+formatter = ColoredFormatter()
 console_handler.setFormatter(formatter)
 #file_handler.setFormatter(formatter)
 
