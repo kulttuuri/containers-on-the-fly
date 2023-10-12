@@ -99,6 +99,12 @@ def getAvailableHardware(date : str, duration : int, reducableSpecs : dict = Non
     for spec in computer["hardwareSpecs"]:
       if spec["hardwareSpecId"] in removableHardwareSpecs:
         spec["maximumAmount"] -= removableHardwareSpecs[spec["hardwareSpecId"]]
+        
+        # Prevent any resource going below 0
+        if (spec["maximumAmount"] < 0):
+          spec["maximumAmount"] = 0
+
+        #print(f"Reducing " + str(removableHardwareSpecs[spec["hardwareSpecId"]]) + " from max: " + str(spec["maximumAmount"]))
         if spec["maximumAmountForUser"] > spec["maximumAmount"]:
           spec["maximumAmountForUser"] = spec["maximumAmount"]
         #print("Reducing spec: ", spec["type"], " ", removableHardwareSpecs[spec["type"]], " max: " , spec["maximumAmount"], "maxForUser: ", spec["maximumAmountForUser"])
