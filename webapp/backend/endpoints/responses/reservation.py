@@ -409,7 +409,7 @@ def restartContainer(userId : int, reservationId: str):
       .options(joinedload(Reservation.reservedContainer))\
       .filter( Reservation.reservationId == reservationId )
     if IsAdmin(userId) == False:
-      reservation = reservation.query(Reservation).filter(Reservation.userId == userId )
+      reservation = reservation.filter(Reservation.userId == userId )
     session.close()
   
   reservation = reservation.first()
