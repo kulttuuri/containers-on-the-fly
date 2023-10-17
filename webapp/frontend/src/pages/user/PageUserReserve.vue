@@ -360,7 +360,6 @@
        * Checks if there is enough hardware resources from current time + minimumHours
        */
        reserveNow() {
-        console.log("Reserve now");
         checkHardwareAvailability(dayjs().toISOString(), this.minimumDurationHours, this.$store.getters.user.loginToken).then(res => {
           if (res !== null) {
             return this.$store.commit('showMessage', { text: res, color: "red" })

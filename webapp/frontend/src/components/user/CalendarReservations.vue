@@ -16,10 +16,20 @@
               mdi-chevron-right
             </v-icon>
           </v-btn>
+          <v-select
+            v-model="type"
+            :items="types"
+            dense
+            outlined
+            hide-details
+            class="ma-2"
+            label="type"
+          ></v-select>
+          <v-spacer></v-spacer>
+          <v-spacer></v-spacer>
           <v-toolbar-title v-if="$refs.calendar">
             {{ $refs.calendar.title }}
           </v-toolbar-title>
-          <v-spacer></v-spacer>
         </v-toolbar>
       </v-sheet>
       <v-sheet height="600">
@@ -94,6 +104,7 @@
     data: () => ({
       focus: '',
       type: 'week',
+      types: ['month', 'week', 'day', '4day'],
       weekdays: [1,2,3,4,5,6,0],
       typeToLabel: {
         month: 'Month',
