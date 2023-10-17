@@ -348,9 +348,33 @@
       prevStep() {
         if (this.step == 1) return
         this.step = this.step - 1
+
+        // If going back to step 2 (select reservation duration), reset all selected containers, computers and hardware specs
+        if (this.step == 2) {
+          this.container = null
+          this.computer = null
+        }
+      },
+      /**
+       * Called when the user clicks the "Reserve now" button.
+       * Checks if there is enough hardware resources from current time + minimumHours
+       */
+       reserveNow() {
+        console.log("Reserve now");
+        checkHardwareAvailability(dayjs().toISOString(), this.minimumDurationHours, this.$store.getters.user.loginToken).then(res => {
+          if (res !== null) {
+            return this.$store.commit('showMessage', { text: res, color: "red" })
+          }
+          this.reserveDate = dayjs().toISOString()
+          this.reserveType = "now"
+          this.reserveDurationDays = 0
+          this.reserveDurationHours = 0
+          this.nextStep()
+        })
       },
       /**
        * Called when a time slot is selected on the calendar.
+       * Checks if there is enough hardware resources in the selected time + minimumHours
        * @param {Date} time The selected time slot
        */
       slotSelected(time) {
@@ -359,6 +383,8 @@
             return this.$store.commit('showMessage', { text: res, color: "red" })
           }
           this.reserveDate = time.toISOString()
+          this.reserveDurationDays = 0
+          this.reserveDurationHours = 0
           this.nextStep()
         })
       },
@@ -389,33 +415,6 @@
        */
       toggleReservationCalendar() {
         this.showReservationCalendar = !this.showReservationCalendar
-      },
-      /**
-       * Called when the user clicks the "Reserve now" button.
-       */
-      reserveNow() {
-        checkHardwareAvailability(dayjs().toISOString(), this.minimumDurationHours, this.$store.getters.user.loginToken).then(res => {
-          if (res !== null) {
-            return this.$store.commit('showMessage', { text: res, color: "red" })
-          }
-          this.reserveDate = dayjs().toISOString()
-          this.reserveType = "now"
-          this.reserveDurationDays = 0
-          this.reserveDurationHours = 0
-          this.nextStep()
-        })
-      },
-      reserveLater() {
-        this.reserveDate = null
-        this.reserveType = "pickdate"
-        this.reserveDurationDays = 0
-        this.reserveDurationHours = 0
-      },
-      reserveSelectedTime() {
-        if (!this.pickedDate) return this.$store.commit('showMessage', { text: "Please select day.", color: "red" })
-        if (!this.pickedHour) return this.$store.commit('showMessage', { text: "Please select hour.", color: "red" })
-        let d = dayjs(this.pickedDate + " " + this.pickedHour, "YYYY-MM-DD HH")
-        this.reserveDate = d.toISOString()
       },
       /**
        * Fetches all current and upcoming reservations from the server.
