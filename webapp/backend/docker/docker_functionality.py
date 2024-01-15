@@ -116,7 +116,17 @@ def start_container(pars):
         stop_container(container_name)
         return False, e, None
 
-    return True, container_name, pars["password"]
+    try:
+        non_critical_errors = ""
+        #This will check if the user has config.bash in config folder. If yes, then this config.bash will be executed, before container is given to user
+        if os.path.exists(f'{pars["localMountFolderPath"]}/config/config.bash'):
+            docker.execute(container=container_name, command=["/bin/bash","-c", "/home/user/persistent/config/config.bash"], user="root")
+    except Exception as e:
+        print(f"Something went wrong when running users config.bash in  {container_name}. This is not critical, most likely user error")
+        print(e)
+        non_critical_errors = "Something went wrong when running users config.bash, from /home/persistent/config, check your script."
+
+    return True, container_name, pars["password"], non_critical_errors
 
 def stop_container(container_name):
     '''
@@ -153,7 +163,7 @@ def restart_container(container_name):
         print(f"Could not restart container: {container_name}")
         pass
 
-def get_email_container_started(image, ip, ports, password, includeEmailDetails, endDate = None):
+def get_email_container_started(image, ip, ports, password, includeEmailDetails, non_critical_errors, endDate = None):
     '''
     Gets the email body to send when a container is started.
     Required Parameters:
@@ -234,6 +244,8 @@ def get_email_container_started(image, ip, ports, password, includeEmailDetails,
     {webAddress}
     
     {helpText}
+
+    {non_critical_errors}
     """
 
     return body

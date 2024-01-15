@@ -125,7 +125,7 @@ def startDockerContainer(reservationId: str):
     cont_was_started = False
 
     try:
-      cont_was_started, cont_name, cont_password = start_container(details)
+      cont_was_started, cont_name, cont_password, non_critical_errors = start_container(details)
     except Exception as e:
       next
     
@@ -150,7 +150,9 @@ def startDockerContainer(reservationId: str):
           ports,
           sshPassword,
           True,
-          reservation.endDate)
+          non_critical_errors,
+          reservation.endDate
+          )
         send_email(reservation.user.email, "AI Server is ready to use!", body)
       
       session.commit()
