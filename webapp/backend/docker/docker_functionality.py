@@ -103,7 +103,9 @@ def start_container(pars):
             # Do not automatically remove the container as it will stop.
             # Removing a container will be handled manually in the stop_container() function.
             # If it would be removed, restarting or crashing a container would fully destroy it immediately.
-            remove = False
+            remove = False,
+            # Looks every time if there is newer image in local registery
+            pull="always"
 
             #user=user
         )
