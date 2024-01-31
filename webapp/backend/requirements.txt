@@ -27,3 +27,4 @@ typer==0.9.0
 typing_extensions==4.1.1
 urllib3==1.26.12
 uvicorn==0.17.6
+pyldap==3.0.0.post1

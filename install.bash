@@ -15,7 +15,7 @@ echo "Running with sudo privileges."
 
 # Update and install initial packages
 sudo apt update
-sudo apt install -y python3-pip python3-ldap
+sudo apt install -y python3-pip libsasl2-dev libldap2-dev libssl-dev
 sudo ubuntu-drivers install nvidia:535-server
 
 # Configure Git (this is idempotent, so running it multiple times is fine)
@@ -93,6 +93,8 @@ update_docker_daemon_config() {
 
 # Main execution
 update_docker_daemon_config
+# add user to docker group
+sudo usermod -aG docker aiserver
 
 # Restart Docker Daemon to apply changes
 sudo systemctl restart docker
