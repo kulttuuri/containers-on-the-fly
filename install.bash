@@ -15,7 +15,7 @@ echo "Running with sudo privileges."
 
 # Update and install initial packages
 sudo apt update
-sudo apt install -y python3-pip
+sudo apt install -y python3-pip python3-ldap
 sudo ubuntu-drivers install nvidia:535-server
 
 # Configure Git (this is idempotent, so running it multiple times is fine)
