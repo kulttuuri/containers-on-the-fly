@@ -52,8 +52,9 @@ fi
 pip install -r requirements.txt
 
 
-# make sure that your docker can use the local repo, that has no sertificate
 
+# make sure that your docker can use the local repo, that has no sertificate
+sudo apt install -y jq
 # Docker Daemon Configuration File
 DOCKER_DAEMON_CONFIG="/etc/docker/daemon.json"
 
