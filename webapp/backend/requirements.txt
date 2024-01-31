@@ -1,6 +1,7 @@
 anyio==3.5.0
 asgiref==3.5.0
 certifi==2022.9.24
+charset-normalizer==2.1.1
 click==8.0.4
 fastapi==0.75.0
 greenlet==1.1.2
@@ -12,6 +13,7 @@ MarkupSafe==2.1.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pydantic==1.9.0
+PyMySQL==1.1.0
 python-dateutil==2.8.2
 python-multipart==0.0.5
 python-on-whales==0.68.0
@@ -21,6 +23,7 @@ sniffio==1.2.0
 SQLAlchemy==1.4.32
 starlette==0.17.1
 tqdm==4.64.1
+typer==0.9.0
 typing_extensions==4.1.1
 urllib3==1.26.12
 uvicorn==0.17.6
