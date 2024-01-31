@@ -58,7 +58,7 @@ if ! command -v pm2 > /dev/null; then
 fi
 
 # Install Python requirements (assumes requirements.txt is present)
-pip install -r requirements.txt
+pip install -r /home/aiserver/aiserver/webapp/backend/requirements.txt
 
 
 
