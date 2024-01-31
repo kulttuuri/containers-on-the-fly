@@ -85,7 +85,6 @@ def start_container(pars):
         ram_disk_size = "1073741824" # 1G in bytes, if I understanded correctly, this need to be in bytes, not 1GB etc
         tmpfs_config = f"type=tmpfs,destination={mount_path},tmpfs-size={ram_disk_size}" 
         ram_mounts = [tmpfs_config]
-
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
             volumes = volumes,
@@ -105,7 +104,7 @@ def start_container(pars):
             # If it would be removed, restarting or crashing a container would fully destroy it immediately.
             remove = False,
             # Looks every time if there is newer image in local registery
-            pull="always"
+            pull='always'
 
             #user=user
         )
