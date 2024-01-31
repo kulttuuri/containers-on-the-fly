@@ -4,6 +4,15 @@
 ### This script installs all needed things to run aiserver ### 
 ##############################################################
 
+# Check if the script is run as root
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run with sudo privileges."
+    exit 1
+fi
+
+# Rest of your script goes here
+echo "Running with sudo privileges."
+
 # Update and install initial packages
 sudo apt update
 sudo apt install -y python3-pip
