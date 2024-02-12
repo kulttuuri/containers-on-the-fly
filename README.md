@@ -12,6 +12,14 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 
 ![image](https://user-images.githubusercontent.com/3810422/197524065-1a6b3452-e449-458c-a703-edd699a43f3b.png)
 
+## Software Architecture
+
+![image](/additional_documentation/architecture.png)
+
+By default, the Main Server contains the web servers, database, and local docker registry. These services can also be distributed to other servers, if required to.
+
+The Container Servers run, stop, and restart the containers reserved. Container server can also be distributed to the Main Server. It is possible to scale the service to multiple servers by adding more servers running the Container Server.
+
 ## Technologies Used
 
 The app is split into two projects: frontend and backend. The frontend can be located from `webapp/frontend` and backend from `webapp/backend`. Both the frontend and backend will run on different ports. The backend also includes a separate script for starting and stopping the reserved containers.
