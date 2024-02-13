@@ -1,5 +1,5 @@
 from python_on_whales import docker
-from database import Session, Reservation, ReservedContainerPort
+from database import Session, Reservation, Computer, ReservedContainerPort
 from helpers.auth import create_password
 from helpers.server import ORMObjectToDict
 #from dateutil import parser
@@ -199,28 +199,71 @@ def updateRunningContainerStatus(reservationId: str):
     reservation.reservedContainer.containerStatus = "Container status here..."
     session.commit()
 
-def getReservationsRequiringStart():
+def getReservationsRequiringStart(computerId : int):
+  '''
+  Returns all reservations requiring start in the given computer.
+  Parameters:
+    computerId: ID of the computer.
+  
+  Returns:
+    List of reservations requiring start in the given computer.
+  '''
   with Session() as session:
     reservations = session.query(Reservation).filter(
       Reservation.status == "reserved",
+      Reservation.computerId == computerId,
       Reservation.startDate < timeNow()
     )
     return reservations
 
-def getRunningReservations():
+def getRunningReservations(computerId : int):
+  '''
+  Returns all running reservations in the given computer.
+  Parameters:
+    computerId: ID of the computer.
+  
+  Returns:
+    List of running reservations in the given computer.
+  '''
   with Session() as session:
     reservations = session.query(Reservation).filter(
       Reservation.status == "started",
       Reservation.startDate < timeNow(),
+      Reservation.computerId == computerId,
       Reservation.endDate > timeNow()
     )
     return reservations
 
-def getReservationsRequiringStop():
+def getReservationsRequiringStop(computerId : int):
+  '''
+  Returns all reservations requiring stop in the given computer.
+  Parameters:
+    computerId: ID of the computer.
+  
+  Returns:
+    List of reservations requiring stop in the given computer.
+  '''
   with Session() as session:
     reservations = session.query(Reservation).filter(
-      Reservation.status == "started",
+      Reservation.computerId == computerId,
       Reservation.endDate < timeNow()
+    )
+    return reservations
+
+def getReservationsRequiringRestart(computerId : int):
+  '''
+  Returns all reservations requiring restart in the given computer.
+  Parameters:
+    computerId: ID of the computer.
+  
+  Returns:
+    List of reservations requiring restart in the given computer.
+  '''
+  with Session() as session:
+    reservations = session.query(Reservation).filter(
+      Reservation.status == "restart",
+      Reservation.computerId == computerId,
+      Reservation.endDate > timeNow()
     )
     return reservations
 
@@ -259,3 +302,25 @@ def getContainerInformation(reservationId: str):
     print(f"Something went wrong getting container information for reservation {reservationId}. Error:")
     print(e)
     return None, {}
+
+def getComputerId(computerName: str):
+  '''
+  Gets the ID of the computer in the database with the given name.
+
+  Parameters:
+    computerName: Name of the computer (in the database)
+  
+  Returns:
+    ID of the computer, or None if it was not found or we encounter any exception.
+  '''
+  try:
+    with Session() as session:
+      computer = session.query(Computer).filter( Computer.name == computerName ).first()
+      if computer == None:
+        return None
+      return computer.computerId
+  except Exception as e:
+    print(f"Something went wrong getting computer ID for name: {computerName}. Error:")
+    print(e)
+    return None
+  

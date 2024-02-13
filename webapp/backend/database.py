@@ -100,7 +100,7 @@ class ReservedContainer(Base):
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   startedAt = Column(DateTime, nullable = True)
   stoppedAt = Column(DateTime, nullable = True)
-  containerDockerName = Column(Text, nullable = True) # Used for stopping the container
+  containerDockerName = Column(Text, nullable = True)
   containerStatus = Column(Text, nullable = True) # Coming from Docker
   containerDockerId = Column(Text, nullable = True) # Coming from Docker
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
@@ -138,7 +138,7 @@ class Reservation(Base):
   endDate = Column(DateTime, nullable = False)
   createdAt = Column(DateTime(timezone=True), server_default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
-  status = Column(Text, nullable = False) # reserved, started, stopped, error
+  status = Column(Text, nullable = False) # reserved, started, stopped, error, restart
 
   user = relationship("User", back_populates = "reservations")
   reservedContainer = relationship("ReservedContainer", back_populates = "reservation")
