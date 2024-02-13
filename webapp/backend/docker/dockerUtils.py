@@ -125,10 +125,7 @@ def startDockerContainer(reservationId: str):
     cont_was_started = False
     #print(details)
 
-    try:
-      cont_was_started, cont_name, cont_password, errors, non_critical_errors = start_container(details)
-    except Exception as e:
-      next
+    cont_was_started, cont_name, cont_password, errors, non_critical_errors = start_container(details)
     
     if cont_was_started == True:
       print(f"Container with Docker name {cont_name} was started succesfully.")
