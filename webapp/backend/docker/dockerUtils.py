@@ -9,7 +9,7 @@ from datetime import timezone
 import datetime
 from helpers.auth import create_password
 from settings import settings
-from docker.docker_functionality import get_email_container_started, start_container, stop_container
+from docker.docker_functionality import get_email_container_started, start_container, stop_container, restart_container
 import random
 import socket
 import os
@@ -185,6 +185,19 @@ def stopDockerContainer(reservationId: str):
       session.commit()
   except Exception as e:
     print("Error stopping server:")
+    print(e)
+
+def restartDockerContainer(reservationId: str):
+  try:
+    with Session() as session:
+      reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
+      if reservation == None: return False
+
+      restart_container(reservation.reservedContainer.containerDockerName)
+      reservation.status = "started"
+      session.commit()
+  except Exception as e:
+    print("Error restarting server:")
     print(e)
 
 def updateRunningContainerStatus(reservationId: str):

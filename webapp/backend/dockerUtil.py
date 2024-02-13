@@ -1,5 +1,4 @@
-from docker.dockerUtils import getComputerId, getContainerInformation, getRunningReservations, getReservationsRequiringStart, getReservationsRequiringStop, stopDockerContainer, startDockerContainer, getReservationsRequiringRestart
-from docker.docker_functionality import restart_container
+from docker.dockerUtils import getComputerId, getContainerInformation, getRunningReservations, getReservationsRequiringStart, getReservationsRequiringStop, stopDockerContainer, startDockerContainer, getReservationsRequiringRestart, restartDockerContainer
 from time import sleep
 from settings import settings
 import datetime
@@ -61,7 +60,7 @@ def restartCrashedServers():
         #print(containerName, containerState)
         #print(containerState.state.status)
         if containerState.state.status == "exited":
-          restart_container(containerName)
+          restartDockerContainer(reservation.reservationId)
       except Exception as e:
         print(f"Error restarting a container:")
         print(e)
@@ -81,7 +80,7 @@ def restartServersRequiringRestart():
   for reservation in reservations:
     if settings.docker["enabled"] == True:
       try:
-        restart_container(reservation.reservedContainer.containerDockerName)
+        restartDockerContainer(reservation.reservationId)
       except Exception as e:
         print(f"Error restarting a container:")
         print(e)
