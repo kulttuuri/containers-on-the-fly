@@ -246,6 +246,7 @@ def getReservationsRequiringStop(computerId : int):
   with Session() as session:
     reservations = session.query(Reservation).filter(
       Reservation.computerId == computerId,
+      Reservation.status == "started",
       Reservation.endDate < timeNow()
     )
     return reservations
