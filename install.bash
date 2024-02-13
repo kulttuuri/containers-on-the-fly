@@ -60,7 +60,13 @@ fi
 # Install Python requirements (assumes requirements.txt is present)
 pip install -r /home/aiserver/aiserver/webapp/backend/requirements.txt
 
+#nvidia docker runtime
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia.gpg
+curl -fsSL https://nvidia.github.io/nvidia-container-runtime/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia-container-runtime.gpg
+curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia-docker.gpg
 
+sudo apt-get update
+sudo apt-get install -y nvidia-docker2
 
 # make sure that your docker can use the local repo, that has no sertificate
 sudo apt install -y jq
