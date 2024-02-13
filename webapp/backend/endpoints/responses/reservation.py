@@ -416,7 +416,7 @@ def restartContainer(userId : int, reservationId: str):
   if reservation is None: return Response(False, "No reservation found.")
 
   if (reservation.status == "started"):
-    reservation.status = "requires_restart"
+    reservation.status = "restart"
     session.commit()
     return Response(True, "Container will be restarted.")
   else:
