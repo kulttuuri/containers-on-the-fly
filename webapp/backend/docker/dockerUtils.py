@@ -76,7 +76,7 @@ def startDockerContainer(reservationId: str):
 
     timeNowParsed = timeNow().strftime('%m_%d_%Y_%H_%M_%S')
 
-    containerName = f"reservation-{reservation.reservationId}-{imageName}-{timeNowParsed}"
+    containerName = f"reservation-{reservation.reservationId}-{imageName.replace(':', '').replace('/', '')}-{timeNowParsed}"
     reservation.reservedContainer.containerDockerName = containerName
 
     ports = []
@@ -123,9 +123,10 @@ def startDockerContainer(reservationId: str):
       "password": sshPassword
     }
     cont_was_started = False
+    #print(details)
 
     try:
-      cont_was_started, cont_name, cont_password = start_container(details)
+      cont_was_started, cont_name, cont_password, non_critical_errors = start_container(details)
     except Exception as e:
       next
     
@@ -150,7 +151,9 @@ def startDockerContainer(reservationId: str):
           ports,
           sshPassword,
           True,
-          reservation.endDate)
+          non_critical_errors,
+          reservation.endDate
+          )
         send_email(reservation.user.email, "AI Server is ready to use!", body)
       
       session.commit()

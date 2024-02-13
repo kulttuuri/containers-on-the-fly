@@ -80,9 +80,15 @@ def start_container(pars):
                 else:
                     volumes.append((mount["mountLocation"], f"/home/{pars['username']}/{mount['containerFolderName']}"))
 
+        #testing ram disk
+        mount_path = "/home/user/ram_disk"
+        ram_disk_size = "1073741824" # 1G in bytes, if I understanded correctly, this need to be in bytes, not 1GB etc
+        tmpfs_config = f"type=tmpfs,destination={mount_path},tmpfs-size={ram_disk_size}" 
+        ram_mounts = [tmpfs_config]
         cont = docker.run(
             f"{pars['image']}:{pars['image_version']}",
             volumes = volumes,
+            mounts = [ram_mounts], # added this for ramdisk
             gpus=gpus,
             name = container_name,
             memory = pars['memory'],
@@ -96,7 +102,9 @@ def start_container(pars):
             # Do not automatically remove the container as it will stop.
             # Removing a container will be handled manually in the stop_container() function.
             # If it would be removed, restarting or crashing a container would fully destroy it immediately.
-            remove = False
+            remove = False,
+            # Looks every time if there is newer image in local registery
+            pull='always'
 
             #user=user
         )
@@ -109,7 +117,17 @@ def start_container(pars):
         stop_container(container_name)
         return False, e, None
 
-    return True, container_name, pars["password"]
+    try:
+        non_critical_errors = ""
+        #This will check if the user has config.bash in config folder. If yes, then this config.bash will be executed, before container is given to user
+        if os.path.exists(f'{pars["localMountFolderPath"]}/config/config.bash'):
+            docker.execute(container=container_name, command=["/bin/bash","-c", "/home/user/persistent/config/config.bash"], user="root")
+    except Exception as e:
+        print(f"Something went wrong when running users config.bash in  {container_name}. This is not critical, most likely user error")
+        print(e)
+        non_critical_errors = "Something went wrong when running users config.bash, from /home/persistent/config, check your script."
+
+    return True, container_name, pars["password"], non_critical_errors
 
 def stop_container(container_name):
     '''
@@ -146,7 +164,7 @@ def restart_container(container_name):
         print(f"Could not restart container: {container_name}")
         pass
 
-def get_email_container_started(image, ip, ports, password, includeEmailDetails, endDate = None):
+def get_email_container_started(image, ip, ports, password, includeEmailDetails, non_critical_errors, endDate = None):
     '''
     Gets the email body to send when a container is started.
     Required Parameters:
@@ -227,6 +245,8 @@ def get_email_container_started(image, ip, ports, password, includeEmailDetails,
     {webAddress}
     
     {helpText}
+
+    {non_critical_errors}
     """
 
     return body
