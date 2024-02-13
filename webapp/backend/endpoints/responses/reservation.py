@@ -416,7 +416,8 @@ def restartContainer(userId : int, reservationId: str):
   if reservation is None: return Response(False, "No reservation found.")
 
   if (reservation.status == "started"):
-    restart_container(reservation.reservedContainer.containerDockerName)
-    return Response(True, "Container was restarted succesfully.")
+    reservation.status = "requires_restart"
+    session.commit()
+    return Response(True, "Container will be restarted.")
   else:
     return Response(False, "Reservation is not currently started, so cannot restart the container.")
