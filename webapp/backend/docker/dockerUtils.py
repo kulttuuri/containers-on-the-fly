@@ -126,7 +126,7 @@ def startDockerContainer(reservationId: str):
     #print(details)
 
     try:
-      cont_was_started, cont_name, cont_password, non_critical_errors = start_container(details)
+      cont_was_started, cont_name, cont_password, errors, non_critical_errors = start_container(details)
     except Exception as e:
       next
     
@@ -160,13 +160,13 @@ def startDockerContainer(reservationId: str):
     else:
       # Set error message to database
       reservation.status = "error"
-      reservation.reservedContainer.containerDockerErrorMessage = str(cont_name)
+      reservation.reservedContainer.containerDockerErrorMessage = str(errors)
       session.commit()
 
       # Send email about the error
       if (settings.docker["sendEmail"] == True):
         body = f"Your AI server reservation did not start as there was an error. {os.linesep}{os.linesep}"
-        body += f"The error was: {os.linesep}{os.linesep}{cont_name}{os.linesep}{os.linesep}"
+        body += f"The error was: {os.linesep}{os.linesep}{errors}{os.linesep}{os.linesep}"
         body += "Please do not reply to this email, this email is sent from a noreply email address."
         send_email(reservation.user.email, "AI Server did not start", body)
 

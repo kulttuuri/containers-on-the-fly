@@ -30,10 +30,12 @@ def start_container(pars):
         remove (int) (default: True): If this is True, removes the container after it is stopped.
         shm_size (int): The size of the shared memory. For example: 1g
     Returns:
-        tuple:
-            (boolean) True if the container was started successfully,
-            (string) The name of the container,
-            (string) The password of the container user
+        namedtuple:
+            (boolean) started: True if the container was started successfully,
+            (string) container_name: The name of the container (if any),
+            (string) password: The password of the container user (if any),
+            (string) error_message: Error message(s) (if any),
+            (string) non_critical_error: Non-critical error messages (if any)
     """
 
     try:
@@ -115,7 +117,7 @@ def start_container(pars):
         print(f"Something went wrong starting container {container_name}. Trying to stop the container. Error:")
         print(e)
         stop_container(container_name)
-        return False, e, None
+        return False, "", "", e, None
 
     try:
         non_critical_errors = ""
@@ -127,7 +129,7 @@ def start_container(pars):
         print(e)
         non_critical_errors = "Something went wrong when running users config.bash, from /home/persistent/config, check your script."
 
-    return True, container_name, pars["password"], non_critical_errors
+    return True, container_name, pars["password"], "", non_critical_errors
 
 def stop_container(container_name):
     '''
