@@ -16,13 +16,19 @@
         <v-row>
           <v-col>
             <h1 style="margin-bottom: 10px;">Reserve Server</h1>
-            <p class="dim">Click on a time slot on the calendar or <b><a style="font-size: 115%;" @click="reserveNow">click here</a></b> to make a reservation right now.</p>
-            <p class="dim">All times are in timezone <strong>{{globalTimezone}}</strong></p>
+            <p>When do you want to start the reservation?</p>
+            
+            <v-btn large @click="reserveNow" style="margin-bottom: 20px; margin-top: 30px;" color="green">Reserve Now</v-btn>
+            <p class="dim" style="font-weight: 17px;">OR</p>
+            <p class="dim">To reserve into future, click on the time in the calendar.</p>
           </v-col>
         </v-row>
         <v-row>
           <v-col class="section">
-            <p><small><a @click="fetchReservations">Refresh reservations</a></small></p>
+            <div style="text-align: right">
+              <p style="margin-bottom: 0px;"><small>All times are in timezone <strong>{{globalTimezone}}</strong></small></p>
+              <p><small><a @click="fetchReservations">Refresh reservations</a></small></p>
+            </div>
             <CalendarReservations v-if="allReservations" :propReservations="allReservations" @slotSelected="slotSelected" />
           </v-col>
         </v-row>
@@ -118,7 +124,7 @@
           </v-row>
 
           <!-- Admin extra task: reserve for another user -->
-          <v-col cols="12" v-if="isAdmin && computer && hardwareData" style="margin-top: 30px;">
+          <v-col cols="12" v-if="isAdmin() && computer && hardwareData" style="margin-top: 30px;">
               <h2>Reserve for another user</h2>
               <v-row>
                 <v-col cols="3" style="margin: 0 auto">
