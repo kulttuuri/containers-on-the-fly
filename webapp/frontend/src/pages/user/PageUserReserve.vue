@@ -238,7 +238,7 @@
       selectedHardwareSpecs: {}, // Selected hardware specs for the current computer
       isSubmittingReservation: false, // Set to true when user is submitting the reservation
       minimumDurationDays: 0, // TODO: Grab from server settings
-      maximumDurationDays: 2,  // TODO: Grab from server settings      
+      maximumDurationDays: 4,  // TODO: Grab from server settings      
       minimumDurationHours: 0, // TODO: Grab from server settings
       maximumDurationHours: 24,  // TODO: Grab from server settings
       minimumDuration: 5, // TODO: Grab from server settings
