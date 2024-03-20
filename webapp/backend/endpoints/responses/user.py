@@ -49,8 +49,8 @@ def login(username, password):
       user.loginToken = CreateLoginToken()
       user.loginTokenCreatedAt = datetime.utcnow()
       session.commit()
-      log.info(f"User {user.email} logged in.")
-      log.info(user)
+      #log.info(f"User {user.email} logged in.")
+      #log.info(user)
       return {
         "access_token": user.loginToken,
         "token_type": "bearer"
