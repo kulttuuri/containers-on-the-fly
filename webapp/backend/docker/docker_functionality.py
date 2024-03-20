@@ -183,23 +183,32 @@ def get_email_container_started(image, ip, ports, password, includeEmailDetails,
 
     helpText = ""
     if "helpEmailAddress" in settings.email and includeEmailDetails:
-        helpText = f"If you need help, contact: {settings.email['helpEmailAddress']}"
+        helpText = f"If you need help, contact: {settings.email['helpEmailAddress']}{linesep}{linesep}"
 
     helpTextSSH = ""
     foundItem = None
     for port in ports:
         if (port["serviceName"] == "SSH"):
             foundItem = port
-            helpTextSSH = f"Connecting from Unix terminal: ssh user@{ip} -p {port['outsidePort']}"
-            helpTextSSH += linesep
-            helpTextSSH += f"    Password: {password}"
+            helpTextSSH += f"Connecting with Visual Studio Code (SSH):{linesep}"
+            helpTextSSH += f"user@{ip}:{port['outsidePort']}"
             helpTextSSH += linesep + linesep
+            helpTextSSH += f"Connecting from the terminal (SSH):{linesep}"
+            helpTextSSH += f"ssh user@{ip} -p {port['outsidePort']}"
+            helpTextSSH += linesep + linesep
+            helpTextSSH += f"Password for the SSH connection:" + linesep
+            helpTextSSH += f"{password}"
+            helpTextSSH += linesep
     if foundItem is not None:
         ports.remove(foundItem)
 
     helpTextOther = ""
-    for port in ports:
-        helpTextOther += f"Service {port['serviceName']} is also available through: {ip}:{port['outsidePort']} {linesep}{linesep}"
+    if len(ports) > 0:
+        helpTextOther += f"{linesep}"
+        for port in ports:
+            helpTextOther += f"Service {port['serviceName']} is available through: {ip}:{port['outsidePort']} {linesep}"
+        helpTextOther += f"{linesep}-----{linesep}"
+
 
     generalText = ""
     if "generalText" in settings.docker:
@@ -207,8 +216,7 @@ def get_email_container_started(image, ip, ports, password, includeEmailDetails,
 
     webAddress = ""
     if "clientUrl" in settings.app and includeEmailDetails:
-        webAddress = f"You can access your reservations through: "
-        webAddress += settings.app['clientUrl']
+        webAddress = f"You can access your reservations through: {settings.app['clientUrl']}{linesep}{linesep}"
     
     endDateText = ""
     # TODO: Get endDate in user timezone and after that add in the email
@@ -221,34 +229,29 @@ def get_email_container_started(image, ip, ports, password, includeEmailDetails,
 
     startMessage = ""
     if includeEmailDetails:
-        startMessage = f"Container with image {image} is ready to use.{linesep}"
+        startMessage = f"Container with image {image} is ready to use.{linesep}{linesep}-----{linesep}"
 
     noReply = ""
     if includeEmailDetails:
-        noReply = "This is a noreply email account. Please do not reply to this email."
+        noReply = f"This is a noreply email account. Please do not reply to this email.{linesep}{linesep}"
 
     # Body text
     body = f"""
-    {startMessage}
-    {generalText}{linesep}
-    IP of the machine is {ip}.{linesep}
-    {helpTextSSH}
-    {helpTextOther}
-    NOTE! only files and folders from ~/persistent folder are
-    saved after container stops, so save trained networks, 
-    checkpoint files, logs, your datasets etc to that folder.
+{startMessage}
+{helpTextSSH}
+-----
+{helpTextOther}
+IP address of the machine: {ip}
 
-    Every started container has datasets folder, this folder is READ only, 
-    you cannot modify files inside that folder. If you need to modify dataset, 
-    then copy it to some other directory.
+{generalText}
 
-    {noReply}
+Every server contains the same two folders in home folder: persistent and datasets.
 
-    {webAddress}
-    
-    {helpText}
+persistent: Files and folders in the persistent folder are saved after container stops, so save trained networks, your code, checkpoint files, logs, your datasets etc. to that folder.
 
-    {non_critical_errors}
-    """
+datasets: This folder is read-only. This folder contains existing datasets and scripts which you can utilize.
+
+{noReply}{webAddress}{helpText}{non_critical_errors}
+"""
 
     return body
