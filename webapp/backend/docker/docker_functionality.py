@@ -22,6 +22,7 @@ def start_container(pars):
         memory (string): The amount of RAM memory dedicated for the container. For example: "1g" or "8g"
         ports (list): The ports to be used. In format: [(local_port, container_port), (local_port2, container_port2)]. For example: [(2213, 22)] for SSH.
         localMountFolderPath (string): The folder to mount in the local filesystem. For example: /home/user/docker_mounts
+        dbUserId (string): User ID from the database who started the container
     Optional parameters:
         gpus (string): The amount of gpus dedicated for the container in format "device=0,2,4" where "0", "2" and "4" are device nvidia / cuda IDs. Pass None if no gpus are needed.
         image_version (string) (default: "latest"): The image version to use.
@@ -47,6 +48,7 @@ def start_container(pars):
         if "memory" not in pars: raise Exception("Missing parameter: memory")
         if "ports" not in pars: raise Exception("Missing parameter: ports")
         if "localMountFolderPath" not in pars: raise Exception("Missing parameter: localMountFolderPath")
+        if "dbUserId" not in pars: raise Exception("Missing parameter: dbUserId")
 
         if "gpus" not in pars: pars["gpus"] = None
         if pars["gpus"] == 0: pars["gpus"] = None

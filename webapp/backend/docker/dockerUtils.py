@@ -120,7 +120,8 @@ def startDockerContainer(reservationId: str):
       "shm_size": settings.docker["shm_size"],
       "ports": portsForContainer,
       "localMountFolderPath": mountLocation,
-      "password": sshPassword
+      "password": sshPassword,
+      "dbUserId": reservation.userId
     }
     cont_was_started = False
     #print(details)
