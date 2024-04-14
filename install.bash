@@ -68,6 +68,25 @@ curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey | sudo gpg --dearmor -o
 sudo apt-get update
 sudo apt-get install -y nvidia-docker2
 
+# make sure that autoupdate don't update nvidia drivers, that will need reboot, so system is broken until that
+# Path to the unattended-upgrades configuration file
+CONFIG_FILE="/etc/apt/apt.conf.d/50unattended-upgrades"
+
+# Check if the NVIDIA blacklist entry exists
+if grep -q "Unattended-Upgrade::Package-Blacklist" "$CONFIG_FILE"; then
+    # If the blacklist entry exists, check if nvidia-* is already in the blacklist
+    if ! grep -q "\"nvidia-*\";" "$CONFIG_FILE"; then
+        # If nvidia-* is not in the blacklist, add it
+        sudo sed -i '/Unattended-Upgrade::Package-Blacklist {/a \    "nvidia-*";' "$CONFIG_FILE"
+    fi
+else
+    # If the blacklist entry does not exist, add the entire blacklist block
+    sudo sed -i '/^Unattended-Upgrade::Origins-Pattern {/a Unattended-Upgrade::Package-Blacklist {\n    "nvidia-*";\n};' "$CONFIG_FILE"
+fi
+
+echo "Unattended upgrades configuration updated successfully."
+
+
 # make sure that your docker can use the local repo, that has no sertificate
 sudo apt install -y jq
 # Docker Daemon Configuration File
