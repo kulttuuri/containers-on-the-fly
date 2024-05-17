@@ -5,7 +5,9 @@ Instant Up. Timely Down. Simple web-based Docker container reservation platform.
 
 ## Description
 
-With this Web app, users permitted to access the app can easily reserve Docker containers with hardware resources needed for their projects. Includes integrated user management software and integration to LDAP systems.
+With this Web app, users permitted to access the app can easily reserve Docker containers with hardware resources needed for their projects. The user can select the start and end time for the container reservation. Multiple servers can be integrated for reservations.
+
+Users can login with username & password combination, or through LDAP. Includes also admin-level management tools in the web app.
 
 Originally created in Satakunta University of Applied Sciences to give AI students a solution to handle their AI calculating in a dedicated server.
 
