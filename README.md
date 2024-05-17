@@ -1,8 +1,15 @@
-# Docker Web Reservation Tool
+# Containers on the Fly
+Instant Up. Timely Down. Simple web-based Docker container reservation platform.
+
+<img width="508" alt="image" src="https://github.com/Satakunnan-ammattikorkeakoulu/containers-on-the-fly/assets/3810422/f2434322-1f32-4039-953f-5375c81603ee">
+
+## Description
 
 With this Web app, users permitted to access the app can easily reserve Docker containers with hardware resources needed for their projects. Includes integrated user management software and integration to LDAP systems.
 
 Originally created in Satakunta University of Applied Sciences to give AI students a solution to handle their AI calculating in a dedicated server.
+
+## Screenshots
 
 ![image](https://user-images.githubusercontent.com/3810422/197523647-d603e763-fbf8-42cc-b211-1ca1343e2550.png)
 
