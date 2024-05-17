@@ -1,7 +1,7 @@
 # Containers on the Fly
 Instant Up. Timely Down. Simple web-based Docker container reservation platform.
 
-<img width="508" alt="image" src="https://github.com/Satakunnan-ammattikorkeakoulu/containers-on-the-fly/assets/3810422/f2434322-1f32-4039-953f-5375c81603ee">
+<img width="500" alt="image 7" src="https://github.com/Satakunnan-ammattikorkeakoulu/containers-on-the-fly/assets/3810422/61a9d8d4-c788-4528-a245-3930543a7a34">
 
 ## Description
 
