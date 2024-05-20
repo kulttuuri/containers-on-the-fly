@@ -8,7 +8,7 @@ FOLDER_SRC=src
 APP_ENTRYPOINT=$(FOLDER_SRC)/main.py
 CONFIG_BACKEND_SETTINGS = "user_config/backend_settings.json"
 CONFIG_FRONTEND_SETTINGS = "user_config/frontend_settings.js"
-CONFIG_NGINX_SETTINGS = "user_config/nginx_config.json"
+CONFIG_NGINX_SETTINGS = "user_config/nginx_settings.conf"
 
 GREEN=\033[0;32m
 RED=\033[0;31m
@@ -48,8 +48,8 @@ check-os-ubuntu: # Checks if the operating system is Ubuntu. Stops executing if 
 # Production targets
 
 install-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for web servers. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
-	# TODO: Run the scripts/install script
-	@./scripts/install.bash
+	@chmod +x scripts/install_webserver_dependencies.bash
+	@./scripts/install_webserver_dependencies.bash
 
 setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Setups the web servers. Run this at least once before calling run-webservers. Installs and configures all required services (like mariadb, nginx, npm, nodejs, python...)
 	# TODO: Install NGINX, MariaDB etc...
@@ -59,6 +59,7 @@ setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Setups the we
 run-webservers: verify-all-config-files-exist ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 
 	@cp user_config/backend_settings.json webapp/backend/settings.json
 	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
+	@systemctl reload nginx
 	@cd webapp/frontend && pm2 restart frontend 2>/dev/null || pm2 start "npm run production" --name frontend
 	@cd webapp/backend && pm2 restart backend 2>/dev/null || pm2 start "python3 main.py" --name backend
 	@pm2 save
