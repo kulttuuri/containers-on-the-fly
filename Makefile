@@ -72,7 +72,7 @@ run-webservers: verify-all-config-files-exist ## Runs the web servers or restart
 	echo "" && \
 	echo "$(GREEN)Web servers (frontend, backend) have been started / restarted!$(RESET)" && \
 	echo "Access the launched web interface at: $(GREEN)$$CLIENT_URL$(RESET) (it can take several seconds for the server to launch)" && \
-	echo "You can view any logs (errors) using the $(GREEN)make view-logs$(RESET) command."
+	echo "You can view any logs (errors) using the $(GREEN)make logs$(RESET) command."
 
 setup-docker-utility: ## Setups the Docker utility. The Docker utility will start, stop, and restart the containers on this machine. Call 'make run-docker-utility' after setup.
 	# Check that the backend settings configuration file exists
