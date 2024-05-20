@@ -1,5 +1,5 @@
-PYTHON=python3
-PIP=pip3
+PYTHON=python
+PIP=pip
 
 # Define variables
 BACKEND_PATH = webapp/backend
@@ -11,6 +11,7 @@ CONFIG_FRONTEND_SETTINGS = "user_config/frontend_settings.js"
 CONFIG_NGINX_SETTINGS = "user_config/nginx_config.json"
 
 GREEN=\033[0;32m
+RED=\033[0;31m
 RESET=\033[0m
 
 help:
@@ -64,7 +65,16 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 	# TODO: Other required configurations
 
 run-docker-utility: ## Runs the Docker utility. pm2 process manager is used to run the script in the background.
-	# TODO: Verify that connection to the database can be made successfully
+	@echo "Verifying that connection to the database can be made using the $(CONFIG_BACKEND_SETTINGS) setting engineUri..."
+	@CONNECTION_URI=$$(grep '"engineUri"' $(CONFIG_BACKEND_SETTINGS) | sed 's/.*"engineUri": "\(.*\)".*/\1/') && \
+	CONNECTION_OK=$$(python scripts/verify_db_connection.py "$$CONNECTION_URI") && \
+	if [ "$$CONNECTION_OK" = "CONNECTION_OK" ]; then \
+		echo "Connection to the database was successful. Proceeding."; \
+	else \
+		echo "\n$(RED)Connection to the database could not be established. Please check that you have the $(CONFIG_BACKEND_SETTINGS) setting engineUri properly set and that connection to the database can be made (firewalls etc...).$(RESET)"; \
+		exit 1; \
+	fi
+
 	@cp user_config/backend_settings.json webapp/backend/settings.json
 	@cd webapp/backend && pm2 restart backendDockerUtil 2>/dev/null || pm2 start "python3 dockerUtil.py" --name backendDockerUtil --log-date-format="DD-MM-YYYY HH:mm"
 	@pm2 save
