@@ -5,6 +5,7 @@ from endpoints.adminRoutes import adminUsers, adminUserWhitelists, adminUserStor
 from settings import settings
 from helpers.auth import HashPassword
 from database import ContainerPort, Session, User, Role, Computer, HardwareSpec, UserStorage, Container
+import base64
 
 router = APIRouter()
 router.include_router(user.router)
@@ -40,14 +41,14 @@ if settings.app["production"] == False:
       session.commit()
     
     # Admin user
-    adminUser = session.query(User).filter( User.email == "aiserveradmin@samk.fi" ).first()
+    adminUser = session.query(User).filter( User.email == "admin@foo.com" ).first()
     if adminUser is None:
-      print("Creating test data: admin user with email aiserveradmin@samk.fi")
+      print("Creating test data: admin user with email admin@foo.com")
       hash = HashPassword("test")
       adminUser = User(
-        email = "aiserveradmin@samk.fi",
-        password = hash["hashedPassword"],
-        passwordSalt = hash["salt"]
+        email = "admin@foo.com",
+        password = base64.b64encode(hash["hashedPassword"]).decode('utf-8'),
+        passwordSalt = base64.b64encode(hash["salt"]).decode('utf-8')
       )
       adminRole = session.query(Role).filter( Role.name == "admin" ).first()
       adminUser.roles.append(adminRole)
@@ -56,14 +57,14 @@ if settings.app["production"] == False:
       session.commit()
     
     # Normal User
-    normalUser = session.query(User).filter( User.email == "aiserveruser@samk.fi" ).first()
+    normalUser = session.query(User).filter( User.email == "user@foo.com" ).first()
     if normalUser is None:
-      print("Creating test data: normal user with email aiserveruser@samk.fi")
+      print("Creating test data: normal user with email user@foo.com")
       hash = HashPassword("test")
       normalUser = User(
-        email = "aiserveruser@samk.fi",
-        password = hash["hashedPassword"],
-        passwordSalt = hash["salt"]
+        email = "user@foo.com",
+        password = base64.b64encode(hash["hashedPassword"]).decode('utf-8'),
+        passwordSalt = base64.b64encode(hash["salt"]).decode('utf-8')
       )
       normalUser.userStorage.append(UserStorage( maxSpace = "5000", maxSpaceFormat = "mb" ))
       session.add(normalUser)
