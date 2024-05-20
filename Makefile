@@ -6,6 +6,7 @@ BACKEND_PATH = webapp/backend
 BACKEND_SRC = main.py
 FOLDER_SRC=src
 APP_ENTRYPOINT=$(FOLDER_SRC)/main.py
+CONFIG_SETTINGS = "user_config/settings"
 CONFIG_BACKEND_SETTINGS = "user_config/backend_settings.json"
 CONFIG_FRONTEND_SETTINGS = "user_config/frontend_settings.js"
 CONFIG_NGINX_SETTINGS = "user_config/nginx_settings.conf"
@@ -23,17 +24,21 @@ help:
 
 # Helper targets
 
-verify-all-config-files-exist: # Verified that all configuration files exists in the user_config folder.
+verify-all-config-files-exist: # Verify that all configuration files exists in the user_config folder.
+	@if [ ! -e $(CONFIG_SETTINGS) ]; then \
+		echo "Error: $(CONFIG_SETTINGS) does not exist. Please copy the example settings file from the user_config/examples folder to user_config location and write your own configurations first."; \
+		exit 1; \
+	fi
 	@if [ ! -e $(CONFIG_BACKEND_SETTINGS) ]; then \
-		echo "Error: $(CONFIG_BACKEND_SETTINGS) does not exist. Please copy the example settings file from the user_config folder to this location and write your own configurations first."; \
+		echo "Error: $(CONFIG_BACKEND_SETTINGS) does not exist. Please copy the example settings file from the user_config/examples folder to user_config location and write your own configurations first."; \
 		exit 1; \
 	fi
 	@if [ ! -e $(CONFIG_FRONTEND_SETTINGS) ]; then \
-		echo "Error: $(CONFIG_FRONTEND_SETTINGS) does not exist.  Please copy the example settings file from the user_config folder to this location and write your own configurations first."; \
+		echo "Error: $(CONFIG_FRONTEND_SETTINGS) does not exist.  Please copy the example settings file from the user_config/examples folder to user_config location and write your own configurations first."; \
 		exit 1; \
 	fi
 	@if [ ! -e $(CONFIG_NGINX_SETTINGS) ]; then \
-		echo "Error: $(CONFIG_NGINX_SETTINGS) does not exist.  Please copy the example settings file from the user_config folder to this location and write your own configurations first."; \
+		echo "Error: $(CONFIG_NGINX_SETTINGS) does not exist.  Please copy the example settings file from the user_config/examples folder to user_config location and write your own configurations first."; \
 		exit 1; \
 	fi
 
@@ -55,6 +60,8 @@ setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and 
 	echo "\n$(GREEN)Setup successful! Now run 'make run-webservers' to start the web servers.\n"
 
 run-webservers: verify-all-config-files-exist ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 
+	# TODO: Move settings from the settings file to backend and frontend settings files.
+	
 	@cp user_config/backend_settings.json webapp/backend/settings.json
 	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	@systemctl reload nginx

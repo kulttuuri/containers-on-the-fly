@@ -1,0 +1,19 @@
+# Server Configurations
+SERVER_IP_ADDRESS=127.0.0.1
+SERVER_WEB_ADDRESS=http://127.0.0.1
+
+# MySQL Database Configurations
+MARIADB_SERVER_ADDRESS=localhost
+MARIADB_DB_NAME=containerfly
+MARIADB_DB_USER=containerflyuser
+MARIADB_DB_USER_PASSWORD=password
+
+# Git Configurations
+GIT_NAME=Your name here
+GIT_EMAIL=your email address here
+
+# Docker Configurations
+DOCKER_REGISTRY_ADDRESS=127.0.0.1:5000
+
+# Other
+TIMEZONE=Europe/Helsinki
