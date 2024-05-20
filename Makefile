@@ -21,9 +21,9 @@ help:
 	@grep '^[[:alnum:]_-]*:.* ##' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS=":.* ## "}; {printf "> make %-25s\n%s\n\n", $$1, $$2};'
 
-# Scripts for production
+# Helper targets
 
-verify-all-config-files-exist:
+verify-all-config-files-exist: # Verified that all configuration files exists in the user_config folder.
 	@if [ ! -e $(CONFIG_BACKEND_SETTINGS) ]; then \
 		echo "Error: $(CONFIG_BACKEND_SETTINGS) does not exist. Please copy the example settings file from the user_config folder to this location and write your own configurations first."; \
 		exit 1; \
@@ -37,9 +37,23 @@ verify-all-config-files-exist:
 		exit 1; \
 	fi
 
-setup-webservers: verify-all-config-files-exist ## Setups the web servers. Run this at least once before calling run-webservers. Installs and configures all required services (like mariadb, nginx, npm, nodejs, python...)
+check-os-ubuntu: # Checks if the operating system is Ubuntu. Stops executing if not.
+	@OS_NAME=$$(lsb_release -si 2>/dev/null || echo "Unknown") && \
+	if [ "$$OS_NAME" != "Ubuntu" ]; then \
+		echo "\n$(RED)Error: This setup script is only compatible with Ubuntu Linux. Please refer to the readme documentation for manual steps. Exiting.$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)Operating system is Ubuntu Linux. Proceeding with setup.$(RESET)"
+
+# Production targets
+
+install-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for web servers. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
+	# TODO: Run the scripts/install script
+	@./scripts/install.bash
+
+setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Setups the web servers. Run this at least once before calling run-webservers. Installs and configures all required services (like mariadb, nginx, npm, nodejs, python...)
 	# TODO: Install NGINX, MariaDB etc...
-	pip3 install -r webapp/backend/requirements.txt --break-system-packages
+	$(PIP) install -r webapp/backend/requirements.txt --break-system-packages
 	cd webapp/frontend && npm install
 
 run-webservers: verify-all-config-files-exist ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 

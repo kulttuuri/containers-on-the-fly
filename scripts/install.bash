@@ -1,8 +1,11 @@
 #!/bin/bash
 
-##############################################################
-### This script installs all needed things to run aiserver ### 
-##############################################################
+################################################################################
+### This script installs all requirements for containers on the fly to work. ### 
+################################################################################
+
+# TODO: NGINX
+# TODO: MARIADB
 
 # Check if the script is run as root
 if [ "$EUID" -ne 0 ]; then
@@ -10,7 +13,6 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Rest of your script goes here
 echo "Running with sudo privileges."
 
 # Update and install initial packages
@@ -19,6 +21,7 @@ sudo apt install -y python3-pip libsasl2-dev libldap2-dev libssl-dev
 sudo ubuntu-drivers install nvidia:535-server
 
 # Configure Git (this is idempotent, so running it multiple times is fine)
+# TODO: Grab from settings file
 git config --global user.email "toni.aaltonen@samk.fi"
 git config --global user.name "Toni Aaltonen"
 
@@ -42,7 +45,7 @@ fi
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# test that docker works
+# Test that docker works
 sudo docker run hello-world
 
 # Install Node.js and npm if they are not installed
@@ -58,9 +61,10 @@ if ! command -v pm2 > /dev/null; then
 fi
 
 # Install Python requirements (assumes requirements.txt is present)
+# TODO: Path should not be absolute
 pip install -r /home/aiserver/aiserver/webapp/backend/requirements.txt
 
-#nvidia docker runtime
+# Install Nvidia Docker Runtime
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia.gpg
 curl -fsSL https://nvidia.github.io/nvidia-container-runtime/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia-container-runtime.gpg
 curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia-docker.gpg
@@ -68,7 +72,8 @@ curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey | sudo gpg --dearmor -o
 sudo apt-get update
 sudo apt-get install -y nvidia-docker2
 
-# make sure that autoupdate don't update nvidia drivers, that will need reboot, so system is broken until that
+# Make sure that apt autoupdate does not update Nvidia drivers.
+# If it would update, then Nvidia drivers will stop working until system has been rebooted (not good!)
 # Path to the unattended-upgrades configuration file
 CONFIG_FILE="/etc/apt/apt.conf.d/50unattended-upgrades"
 
@@ -87,12 +92,13 @@ fi
 echo "Unattended upgrades configuration updated successfully."
 
 
-# make sure that your docker can use the local repo, that has no sertificate
+# Make sure that the Docker can use a local repository, that has no sertificate
 sudo apt install -y jq
 # Docker Daemon Configuration File
 DOCKER_DAEMON_CONFIG="/etc/docker/daemon.json"
 
 # Registry Address
+# TODO: Grab from settings file
 INSECURE_REGISTRY="10.103.6.20:5000"
 
 # Function to update the Docker daemon configuration
@@ -118,14 +124,14 @@ update_docker_daemon_config() {
 
 # Main execution
 update_docker_daemon_config
-# add user to docker group
+
+# Add user to docker group
+# TODO: Does this user exist? Have we actually created it yet alongside the group?
+# TODO: Does the aiserver user also need root permissions?
 sudo usermod -aG docker aiserver
 
 # Restart Docker Daemon to apply changes
 sudo systemctl restart docker
-
 echo "Docker daemon configuration updated and Docker service restarted."
 
-
-
-echo "you need to restart the machine before the nvidia drivers will work"
+echo "You need to restart the machine before the Nvidia drivers will work."
