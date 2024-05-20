@@ -50,6 +50,10 @@ check-os-ubuntu: # Checks if the operating system is Ubuntu. Stops executing if 
 	fi
 	@echo "$(GREEN)Operating system is Ubuntu Linux. Proceeding with setup.$(RESET)"
 
+merge-settings: # Merges the settings file into frontend and backend settings.
+	@chmod +x scripts/merge_settings.sh
+	@./scripts/merge_settings.sh
+
 # Production targets
 
 setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for web servers. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
