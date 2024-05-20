@@ -47,14 +47,12 @@ check-os-ubuntu: # Checks if the operating system is Ubuntu. Stops executing if 
 
 # Production targets
 
-install-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for web servers. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
+setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for web servers. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
 	@chmod +x scripts/install_webserver_dependencies.bash
 	@./scripts/install_webserver_dependencies.bash
-
-setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Setups the web servers. Run this at least once before calling run-webservers. Installs and configures all required services (like mariadb, nginx, npm, nodejs, python...)
-	# TODO: Install NGINX, MariaDB etc...
-	$(PIP) install -r webapp/backend/requirements.txt --break-system-packages
+	$(PIP) install -r webapp/backend/requirements.txt
 	cd webapp/frontend && npm install
+	echo "\n$(GREEN)Setup successful! Now run 'make run-webservers' to start the web servers.\n"
 
 run-webservers: verify-all-config-files-exist ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 
 	@cp user_config/backend_settings.json webapp/backend/settings.json
@@ -75,9 +73,10 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 		echo "Error: $(CONFIG_BACKEND_SETTINGS) does not exist. This utility uses the $(CONFIG_BACKEND_SETTINGS) file to connect to the database, please configure this file first."; \
 		exit 1; \
 	fi
+	@chmod +x scripts/install_docker_dependencies.bash
+	@./scripts/install_webserver_dependencies.bash
 	@pip3 install -r webapp/backend/requirements.txt --break-system-packages
 	@echo "$(GREEN)The Docker utility has been setupped.$(RESET)"
-	# TODO: Other required configurations
 
 run-docker-utility: ## Runs the Docker utility. pm2 process manager is used to run the script in the background.
 	@echo "Verifying that connection to the database can be made using the $(CONFIG_BACKEND_SETTINGS) setting engineUri..."

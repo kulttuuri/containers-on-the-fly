@@ -4,8 +4,14 @@
 ### This script installs all requirements for containers on the fly to work. ### 
 ################################################################################
 
-# TODO: NGINX
-# TODO: MARIADB
+CURRENT_DIR=$(pwd)
+
+# Load settings
+source "$CURRENT_DIR/user_config/settings"
+
+INSECURE_REGISTRY=$DOCKER_REGISTRY_ADDRESS
+echo $INSECURE_REGISTRY
+exit 1
 
 # Check if the script is run as root
 if [ "$EUID" -ne 0 ]; then
@@ -50,7 +56,7 @@ sudo docker run hello-world
 
 # Install Node.js and npm if they are not installed
 if ! command -v node > /dev/null || ! command -v npm > /dev/null; then
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
     sudo apt install -y nodejs
 fi
 
@@ -59,10 +65,6 @@ if ! command -v pm2 > /dev/null; then
     sudo npm install pm2 -g
     pm2 startup
 fi
-
-# Install Python requirements (assumes requirements.txt is present)
-# TODO: Path should not be absolute
-pip install -r /home/aiserver/aiserver/webapp/backend/requirements.txt
 
 # Install Nvidia Docker Runtime
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia.gpg
@@ -98,8 +100,7 @@ sudo apt install -y jq
 DOCKER_DAEMON_CONFIG="/etc/docker/daemon.json"
 
 # Registry Address
-# TODO: Grab from settings file
-INSECURE_REGISTRY="10.103.6.20:5000"
+INSECURE_REGISTRY=$DOCKER_REGISTRY_ADDRESS
 
 # Function to update the Docker daemon configuration
 update_docker_daemon_config() {
@@ -126,9 +127,8 @@ update_docker_daemon_config() {
 update_docker_daemon_config
 
 # Add user to docker group
-# TODO: Does this user exist? Have we actually created it yet alongside the group?
-# TODO: Does the aiserver user also need root permissions?
-sudo usermod -aG docker aiserver
+CURRENT_USER=$(whoami)
+sudo usermod -aG docker $CURRENT_USER
 
 # Restart Docker Daemon to apply changes
 sudo systemctl restart docker
