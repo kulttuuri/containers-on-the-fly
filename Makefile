@@ -60,7 +60,8 @@ setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and 
 	@chmod +x scripts/install_webserver_dependencies.bash
 	@./scripts/install_webserver_dependencies.bash
 	$(PIP) install -r webapp/backend/requirements.txt
-	cd webapp/frontend && npm install
+	# Need to run the next command without sudo, as otherwise the node_modules folder created would be owned by root
+	cd webapp/frontend && sudo -u $(shell who am i | awk '{print $$1}') npm install
 	echo "\n$(GREEN)Setup successful! Now run 'make run-webservers' to start the web servers.\n"
 
 run-webservers: verify-all-config-files-exist ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 
