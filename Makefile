@@ -64,9 +64,7 @@ setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and 
 	cd webapp/frontend && sudo -u $(shell who am i | awk '{print $$1}') npm install
 	echo "\n$(GREEN)Setup successful! Now run 'make run-webservers' to start the web servers.\n"
 
-run-webservers: verify-all-config-files-exist ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 
-	# TODO: Move settings from the settings file to backend and frontend settings files.
-	
+run-webservers: verify-all-config-files-exist merge-settings ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 
 	@cp user_config/backend_settings.json webapp/backend/settings.json
 	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	@systemctl reload nginx
@@ -108,7 +106,7 @@ run-docker-utility: ## Runs the Docker utility. pm2 process manager is used to r
 	@echo "Containers will now automatically start, stop, and restart on this server."
 
 logs: ## View log entries for started servers (pm2)
-	pm2 logs --lines 300
+	pm2 logs --lines 10000
 
 status: ## Views the status of the started servers (pm2)
 	pm2 list
