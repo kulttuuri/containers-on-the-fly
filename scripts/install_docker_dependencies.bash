@@ -4,18 +4,17 @@
 ### This script installs all requirements for containers on the fly to work. ### 
 ################################################################################
 
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+RESET='\033[0m'
 CURRENT_DIR=$(pwd)
 
 # Load settings
 source "$CURRENT_DIR/user_config/settings"
 
-INSECURE_REGISTRY=$DOCKER_REGISTRY_ADDRESS
-echo $INSECURE_REGISTRY
-exit 1
-
 # Check if the script is run as root
 if [ "$EUID" -ne 0 ]; then
-    echo "This script must be run with sudo privileges."
+    echo -e "\n${RED}This script must be run with sudo privileges. Please run this with sudo permissions. Exiting.${RESET}"
     exit 1
 fi
 
@@ -67,9 +66,9 @@ if ! command -v pm2 > /dev/null; then
 fi
 
 # Install Nvidia Docker Runtime
-curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia.gpg
-curl -fsSL https://nvidia.github.io/nvidia-container-runtime/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia-container-runtime.gpg
-curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nvidia-docker.gpg
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo tee /etc/apt/trusted.gpg.d/nvidia.gpg > /dev/null
+curl -fsSL https://nvidia.github.io/nvidia-container-runtime/gpgkey | sudo tee /etc/apt/trusted.gpg.d/nvidia-container-runtime.gpg > /dev/null
+curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey | sudo tee /etc/apt/trusted.gpg.d/nvidia-docker.gpg > /dev/null
 
 sudo apt-get update
 sudo apt-get install -y nvidia-docker2
