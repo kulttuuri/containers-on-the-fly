@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ######
 # This script is used to merge settings from the user_config/settings file to

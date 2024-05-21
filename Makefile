@@ -51,8 +51,8 @@ check-os-ubuntu: # Checks if the operating system is Ubuntu. Stops executing if 
 	@echo "$(GREEN)Operating system is Ubuntu Linux. Proceeding with setup.$(RESET)"
 
 merge-settings: # Merges the settings file into frontend and backend settings.
-	@chmod +x scripts/merge_settings.sh
-	@./scripts/merge_settings.sh
+	@chmod +x scripts/merge_settings.bash
+	@./scripts/merge_settings.bash
 
 # Production targets
 
