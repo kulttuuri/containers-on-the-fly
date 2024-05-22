@@ -25,19 +25,77 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 
 ![image](/additional_documentation/architecture.png)
 
-By default, the Main Server contains the web servers, database, and local docker registry. These services can also be distributed to other servers.
+The installation consists of two parts:
+- the ``Main Server``, which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from one server.
+- ``Container Server(s)`` from which the virtual Docker reservations can be made. The container server can reside at the same location as the Main Server, or in multiple other servers. Users can make container reservations from these Container Servers.
 
-The Container Servers run, stop, and restart the containers reserved. The container server can also be distributed to the Main Server. It is possible to scale the service to multiple servers by adding more servers running the Container Server.
+### Automatic Installation
 
-This web app should be run on the host computer where you want to be able to reserve these Docker containers. It is recommended to only use the computer for this specific software for security reasons.
+Heads up! The automatic installation scripts only work with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be conducted manually.
 
-Both the `webapp/frontend` and `webapp/backend` folders contain individual setup instructions for settings up those systems. It is recommended to first setup the frontend part running on a computer and then after that the backend part.
+#### Main Server
 
-The automatic installation scripts only work with Ubuntu Linux 22.04. For any other operating system, the installation procedure is required to be conducted manually.
+The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
+
+##### Copy Configurations
+
+Copy the settings files from `user_config/examples` to `user_config` folder. If you do not require an SSL certificate (your web interface is accessed using the HTTP protocol), then copy the `nginx_settings.conf` file. If you plan to use an SSL certificate (your web server will be accessed using the HTTPS protocol) then copy the file `nginx_settings_ssl.conf`.
+
+##### Create Configurations
+
+After copying the files, make configurations to the files. You can mainly start with the `user_config/settings` file first, and then look at the other files to determine if there is something more specific to configure.
+
+##### Setup the servers
+
+After the configurations are ready, start setting up web servers with the command:
+
+```bash
+sudo make setup-webservers
+```
+
+##### Start the servers
+
+After the web server setup is complete, run the servers with:
+
+```bash
+make run-webservers
+```
+
+That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make run-webservers` command.
+
+#### Container Server Installation
+
+The installation procedure of the Container Server is as follows:
+
+##### Copy Configurations
+
+Copy the settings files `user_config/examples/settings` and `user_config/examples/backend_settings.json` to the `user_config` folder.
+
+##### Create Configurations
+
+After copying the files, make configurations to the files.
+
+##### Setup the Docker Utility
+
+After the configurations are ready, set up the docker utility with:
+
+```bash
+make setup-docker-utility
+```
+
+##### Start Docker Utility
+
+After the setup is complete, run the Docker utility with:
+
+```bash
+make run-docker-utility
+```
+
+That's it!
 
 ## Technical Details
 
-The app is split into two projects: frontend and backend. The frontend can be located from `webapp/frontend` and backend from `webapp/backend`. Both the frontend and backend will run on different ports. The backend also includes a separate script for starting and stopping the reserved containers.
+The app is split into two projects: frontend and backend. The frontend can be located from `webapp/frontend` and backend from `webapp/backend`. Both the frontend and backend will run on different ports. The backend also includes a separate script for starting and stopping the reserved containers, called `dockerUtil.py`.
 
 ### Frontend
 
