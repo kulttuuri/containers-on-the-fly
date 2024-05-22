@@ -86,6 +86,8 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 	@chmod +x scripts/install_docker_dependencies.bash
 	@./scripts/install_docker_dependencies.bash
 	@pip3 install -r webapp/backend/requirements.txt
+	@usermod -aG docker $(shell who am i | awk '{print $$1}')
+	@newgrp docker
 	@echo "$(GREEN)The Docker utility has been setupped.$(RESET)"
 
 run-docker-utility: ## Runs the Docker utility. pm2 process manager is used to run the script in the background.
