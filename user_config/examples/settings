@@ -1,5 +1,6 @@
 ###
 # WEB SERVER CONFIGURATIONS
+# 
 # The web server configurations below are only required to be set in the server where you will host the web servers.
 # They will only be used by the 'make setup-webservers' and 'make run-webservers' make tasks.
 ###
@@ -30,6 +31,7 @@ MARIADB_DB_USER_PASSWORD="password"
 
 ###
 # GIT CONFIGURATIONS
+# 
 ###
 
 # Your name for git operations
@@ -39,6 +41,7 @@ GIT_EMAIL="your email address here"
 
 ###
 # EMAIL
+# 
 ###
 
 # Email address which is shown for support contacts
@@ -46,6 +49,7 @@ CONTACT_EMAIL="support@foo.com"
 
 ###
 # DOCKER CONFIGURATIONS
+# 
 ###
 
 # In what address is the Docker registry (local Docker distributions) running.
@@ -54,6 +58,7 @@ DOCKER_REGISTRY_ADDRESS="127.0.0.1:5000"
 
 ###
 # OTHER
+# 
 ###
 
 # Timezone in TZ format, view all available timezones from here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
