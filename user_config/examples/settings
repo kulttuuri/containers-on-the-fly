@@ -1,11 +1,13 @@
 ###
-# SERVER CONFIGURATIONS
+# WEB SERVER CONFIGURATIONS
+# The web server configurations below are only required to be set in the server where you will host the web servers.
+# They will only be used by the 'make setup-webservers' and 'make run-webservers' make tasks.
 ###
 
-# IP address of your server.
-SERVER_IP_ADDRESS="127.0.0.1"
+# The full address to your web server which you can access from the browser.
+# For example: "http://127.0.0.1", "https://mycoolserver.com", "http://4.512.512.712"
 SERVER_WEB_ADDRESS="http://127.0.0.1"
-# Name of your app. Shown in the 
+# Name of your app.
 APP_NAME="Containers on the Fly"
 
 #####
