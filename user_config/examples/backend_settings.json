@@ -1,22 +1,20 @@
 {
     // Settings related to the app
     "app": {
-      // Name of the app
-      "name": "SAMK AI Server",
-      // Path to app's icon
-      "logoUrl": "/static/logos/logo.png",
-      // IP (or domain) address of the server, without the protocol. For example: 127.0.0.1
-      "host": "127.0.0.1",
-      // URL address to the server, with the protocol. For example: http://localhost
+      // Edit in settings file, overridden by 'run-webservers' make task.
+      "name": "Containers on the Fly",
+      // Edit in settings file, overridden by 'run-webservers' make task.
       "url": "http://localhost",
-      // URL to the client application, with the protocol. For example: http://localhost:8080
+      // Edit in settings file, overridden by 'run-webservers' make task.
       "clientUrl": "http://localhost:8080",
-      // Backend's port
-      "port": 8000,
-      // Timezone of the application
+      // Edit in settings file, overridden by 'run-webservers' make task.
       "timezone": "Europe/Helsinki",
+      // Path to app logo shown in the main login page of the web interface.
+      "logoUrl": "/static/logos/logo.png",
+      // Port of the backend web application. Leave it to default 8000 if you are unsure what you are doing.
+      "port": 8000,
       // Set to true when running in production. Reduces the amount of info messages in the console.
-      "production": false,
+      "production": true,
       // Set to true if you want test data to be added when the server starts (if it does not exist yet)
       "addTestDataInDevelopment": true
     },
@@ -33,7 +31,7 @@
       // If this is password, logins are executed directly with email and password combination
       // If this is LDAP, logins are done against an (external) LDAP server. Users are created on-the-fly in the system if they exist in the LDAP server
       "loginType": "password",
-      // If enabled, user email will need to be found in Whitelist table in the server to login
+      // If enabled, user email will need to be found in Whitelist table in the server to login.
       "useWhitelist": false
     },
     // Related to logged in user
@@ -43,10 +41,8 @@
     },
     // Database settings
     "database": {
-      // Database connection URI.
-      // For example: "sqlite+pysqlite:///aiserver.db" for sqlite.
-      // For example: "mysql+pymysql://root:root@localhost/aiserver" for mysql.
-      "engineUri": "sqlite+pysqlite:///aiserver.db",
+      // Edit in settings file, overridden by 'run-webservers' and 'run-docker-utility' make tasks.
+      "engineUri": "",
       // If set to true, prints all database operations to console
       "debugPrinting": false
     },

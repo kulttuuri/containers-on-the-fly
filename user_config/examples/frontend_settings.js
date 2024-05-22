@@ -7,14 +7,20 @@
  * General settings for the app.
  */
  AppSettings.General = {
+    // Edit in settings file, overridden by 'run-webservers' make task.
   contactEmail: "support@youremaildomain.com",
+   // Edit in settings file, overridden by 'run-webservers' make task.
   appName: "Containers on the fly",
-  timezone: "Europe/Helsinki", // https://day.js.org/docs/en/timezone/timezone
+   // Edit in settings file, overridden by 'run-webservers' make task.
+  timezone: "Europe/Helsinki",
  }
  
  AppSettings.Login = {
+  // Text visible in the login screen in the web interface
   loginText: "Login with your credentials.",
+  // Username field help label in the login screen in the web interface
   usernameField: "Username",
+  // Password field help label in the login screen in the web interface
   passwordField: "Password"
  }
  
@@ -22,6 +28,7 @@
  * API urls
  */
  AppSettings.APIServer = {
+    // Edit in settings file, overridden by 'run-webservers' make task.
   baseAddress: "http://localhost:8000/api/",
  }
  const createUrls = require("./AppUrls.js");
