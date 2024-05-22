@@ -31,9 +31,9 @@ The installation consists of two parts:
 
 ### Automatic Installation
 
-Heads up! The automatic installation scripts only work with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be conducted manually.
-
 #### Main Server
+
+> Heads up! The automatic installation script for the **main server** only works with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be conducted manually.
 
 The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
 
@@ -45,7 +45,7 @@ Copy the settings files from `user_config/examples` to `user_config` folder. If 
 
 After copying the files, make configurations to the files. You can mainly start with the `user_config/settings` file first, and then look at the other files to determine if there is something more specific to configure.
 
-##### Setup the servers
+##### Setup the Servers
 
 After the configurations are ready, start setting up web servers with the command:
 
@@ -53,7 +53,7 @@ After the configurations are ready, start setting up web servers with the comman
 sudo make setup-webservers
 ```
 
-##### Start the servers
+##### Start the Servers
 
 After the web server setup is complete, run the servers with:
 
@@ -92,6 +92,56 @@ make run-docker-utility
 ```
 
 That's it!
+
+### Manual Installation
+
+#### Main Server
+
+The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
+
+##### Install Dependencies
+
+Install:
+- Python
+- Pip
+- Nginx
+- MariaDB
+- pm2 Process Manager
+- NPM & NodeJS (version 20)
+
+##### Configure the Dependencies
+
+Set MariaDB to launch at startup.
+
+In MariaDB, create a database and a user that has access to it.
+
+Disable the default nginx site:
+```
+sudo rm /etc/nginx/sites-enabled/default
+```
+
+Add custom nginx configurations to the nginx file:
+```
+sudo sed -i "/http {/a \\    include /path/to/your/user_config/nginx_settings.conf;" /path/to/your/user_config/nginx_settings.conf
+```
+
+##### Copy Configurations
+
+Copy the settings files from `user_config/examples` to `user_config` folder. If you do not require an SSL certificate (your web interface is accessed using the HTTP protocol), then copy the `nginx_settings.conf` file. If you plan to use an SSL certificate (your web server will be accessed using the HTTPS protocol) then copy the file `nginx_settings_ssl.conf`.
+
+##### Create Configurations
+
+After copying the files, make configurations to the files. You can mainly start with the `user_config/settings` file first, and then look at the other files to determine if there is something more specific to configure.
+
+##### Start the Servers
+
+After the web server setup is complete, run the servers with:
+
+```bash
+make run-webservers
+```
+
+That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make run-webservers` command.
 
 ## Technical Details
 
