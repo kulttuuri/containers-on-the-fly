@@ -71,10 +71,10 @@ run-webservers: verify-all-config-files-exist merge-settings ## Runs the web ser
 	@cd webapp/frontend && pm2 restart frontend 2>/dev/null || pm2 start "npm run production" --name frontend
 	@cd webapp/backend && pm2 restart backend 2>/dev/null || pm2 start "python3 main.py" --name backend
 	@pm2 save
-	@CLIENT_URL=$$(grep '"clientUrl"' user_config/backend_settings.json | sed 's/.*"clientUrl": "\(.*\)".*/\1/') && \
+	@URL=$$(grep '"url"' user_config/backend_settings.json | sed 's/.*"url": "\(.*\)".*/\1/') && \
 	echo "" && \
 	echo "$(GREEN)Web servers (frontend, backend) have been started / restarted!$(RESET)" && \
-	echo "Access the launched web interface at: $(GREEN)$$CLIENT_URL$(RESET) (it can take several seconds for the server to launch)" && \
+	echo "Access the launched web interface at: $(GREEN)$$URL$(RESET) (it can take several seconds for the server to launch)" && \
 	echo "You can view any logs (errors) using the $(GREEN)make logs$(RESET) command."
 
 setup-docker-utility: ## Setups the Docker utility. The Docker utility will start, stop, and restart the containers on this machine. Call 'make run-docker-utility' after setup.
