@@ -47,7 +47,6 @@ class Settings:
         if not hasattr(s, 'app'): die("app")
         if "name" not in s.app: die("app.name")
         if "logoUrl" not in s.app: die("app.logoUrl")
-        if "host" not in s.app: die("app.host")
         if "url" not in s.app: die("app.url")
         if "clientUrl" not in s.app: die("app.clientUrl")
         if "port" not in s.app: die("app.port")
