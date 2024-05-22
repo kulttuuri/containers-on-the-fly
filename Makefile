@@ -87,10 +87,10 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 	@./scripts/install_docker_dependencies.bash
 	@$(PIP) install -r webapp/backend/requirements.txt
 	@usermod -aG docker $(shell who am i | awk '{print $$1}')
-	@newgrp docker
-	@echo "$(GREEN)The Docker utility has been setupped.$(RESET)"
+	@echo "$(GREEN)The Docker utility has been setup."
+	@echo "!!!! Please log out and log back in or start a new shell session to apply group changes !!!$(RESET)"
 
-run-docker-utility: ## Runs the Docker utility. pm2 process manager is used to run the script in the background.
+run-docker-utility: merge-settings ## Runs the Docker utility. pm2 process manager is used to run the script in the background.
 	@echo "Verifying that connection to the database can be made using the $(CONFIG_BACKEND_SETTINGS) setting engineUri..."
 	@CONNECTION_URI=$$(grep '"engineUri"' $(CONFIG_BACKEND_SETTINGS) | sed 's/.*"engineUri": "\(.*\)".*/\1/') && \
 	CONNECTION_OK=$$($(PYTHON) scripts/verify_db_connection.py "$$CONNECTION_URI") && \
