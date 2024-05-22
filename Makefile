@@ -1,4 +1,4 @@
-PYTHON=python
+PYTHON=python3
 PIP=pip
 
 # Define variables
@@ -69,7 +69,7 @@ run-webservers: verify-all-config-files-exist merge-settings ## Runs the web ser
 	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	@systemctl reload nginx
 	@cd webapp/frontend && pm2 restart frontend 2>/dev/null || pm2 start "npm run production" --name frontend
-	@cd webapp/backend && pm2 restart backend 2>/dev/null || pm2 start "python3 main.py" --name backend
+	@cd webapp/backend && pm2 restart backend 2>/dev/null || pm2 start "$(PYTHON) main.py" --name backend
 	@pm2 save
 	@URL=$$(grep '"url"' user_config/backend_settings.json | sed 's/.*"url": "\(.*\)".*/\1/') && \
 	echo "" && \
@@ -85,7 +85,7 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 	fi
 	@chmod +x scripts/install_docker_dependencies.bash
 	@./scripts/install_docker_dependencies.bash
-	@pip3 install -r webapp/backend/requirements.txt
+	@$(PIP) install -r webapp/backend/requirements.txt
 	@usermod -aG docker $(shell who am i | awk '{print $$1}')
 	@newgrp docker
 	@echo "$(GREEN)The Docker utility has been setupped.$(RESET)"
@@ -93,7 +93,7 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 run-docker-utility: ## Runs the Docker utility. pm2 process manager is used to run the script in the background.
 	@echo "Verifying that connection to the database can be made using the $(CONFIG_BACKEND_SETTINGS) setting engineUri..."
 	@CONNECTION_URI=$$(grep '"engineUri"' $(CONFIG_BACKEND_SETTINGS) | sed 's/.*"engineUri": "\(.*\)".*/\1/') && \
-	CONNECTION_OK=$$(python scripts/verify_db_connection.py "$$CONNECTION_URI") && \
+	CONNECTION_OK=$$($(PYTHON) scripts/verify_db_connection.py "$$CONNECTION_URI") && \
 	if [ "$$CONNECTION_OK" = "CONNECTION_OK" ]; then \
 		echo "Connection to the database was successful. Proceeding."; \
 	else \
@@ -102,7 +102,7 @@ run-docker-utility: ## Runs the Docker utility. pm2 process manager is used to r
 	fi
 
 	@cp user_config/backend_settings.json webapp/backend/settings.json
-	@cd webapp/backend && pm2 restart backendDockerUtil 2>/dev/null || pm2 start "python3 dockerUtil.py" --name backendDockerUtil --log-date-format="DD-MM-YYYY HH:mm"
+	@cd webapp/backend && pm2 restart backendDockerUtil 2>/dev/null || pm2 start "$(PYTHON) dockerUtil.py" --name backendDockerUtil --log-date-format="DD-MM-YYYY HH:mm"
 	@pm2 save
 	@echo "\n$(GREEN)Docker utility is now running.$(RESET)"
 	@echo "Containers will now automatically start, stop, and restart on this server."
@@ -126,7 +126,7 @@ run-dev-frontend:
 	cd webapp/frontend && npm run serve
 
 run-dev-backend:
-	cd webapp/backend && python3 main.py
+	cd webapp/backend && $(PYTHON) main.py
 
 run-dev-docker-utility:
-	cd webapp/backend && python3 dockerUtil.py
+	cd webapp/backend && $(PYTHON) dockerUtil.py
