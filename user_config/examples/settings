@@ -1,23 +1,58 @@
-# Server Configurations
+###
+# SERVER CONFIGURATIONS
+###
+
+# IP address of your server.
 SERVER_IP_ADDRESS="127.0.0.1"
 SERVER_WEB_ADDRESS="http://127.0.0.1"
+# Name of your app. Shown in the 
 APP_NAME="Containers on the Fly"
 
-# MySQL Database Configurations
+#####
+# MARIADB DATABASE CONFIGURATIONS
+# 
+# While installing, these configurations are used to configure the installed MariaDB database.
+# While starting the servers or docker utility, these configurations are used to connect to the database.
+#####
+
+# MariaDB server address. Leave it as "localhost" if running the database on the current computer.
+# Otherwise, specify the IP address or domain of another server here.
 MARIADB_SERVER_ADDRESS="localhost"
+# Name of the database to use.
 MARIADB_DB_NAME="containerfly"
+# User in the database to use.
 MARIADB_DB_USER="containerflyuser"
+# Database user password.
+# Configure this to something more secure before proceeding with setup / installation.
 MARIADB_DB_USER_PASSWORD="password"
 
-# Git Configurations
+###
+# GIT CONFIGURATIONS
+###
+
+# Your name for git operations
 GIT_NAME="Your name here"
+# Your email address for git operations
 GIT_EMAIL="your email address here"
 
+###
 # EMAIL
+###
+
+# Email address which is shown for support contacts
 CONTACT_EMAIL="support@foo.com"
 
-# Docker Configurations
+###
+# DOCKER CONFIGURATIONS
+###
+
+# In what address is the Docker registry (local Docker distributions) running.
+# If it is running in your current server, then just use the default option "127.0.0.1:5000"
 DOCKER_REGISTRY_ADDRESS="127.0.0.1:5000"
 
-# Other
+###
+# OTHER
+###
+
+# Timezone in TZ format, view all available timezones from here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 TIMEZONE="Europe/Helsinki"
