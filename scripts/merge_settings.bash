@@ -15,10 +15,6 @@ escape_sed() {
     echo "$1" | sed 's/[\/&]/\\&/g'
 }
 
-
-# IP Address
-sed -i.bak "s/^\([[:space:]]*\"host\": \).*/\1\"$SERVER_IP_ADDRESS\",/" user_config/backend_settings.json
-
 # Timezone
 ESCAPED_TIMEZONE=$(escape_sed "$TIMEZONE")
 sed -i.bak "s/^\([[:space:]]*\"timezone\": \).*/\1\"$ESCAPED_TIMEZONE\",/" user_config/backend_settings.json
@@ -42,5 +38,3 @@ sed -i.bak "s/^\([[:space:]]*contactEmail: \).*/\1\"$ESCAPED_EMAIL_ADDRESS\",/" 
 URI="mysql+pymysql://"$MARIADB_DB_USER":"$MARIADB_DB_USER_PASSWORD"@"$MARIADB_SERVER_ADDRESS"/"$MARIADB_DB_NAME
 ESCAPED_URI=$(escape_sed "$URI")
 sed -i.bak "s/^\([[:space:]]*\"engineUri\": \).*/\1\"$ESCAPED_URI\",/" user_config/backend_settings.json
-# "engineUri": mysql+pymysql://root:root@localhost/aiserver
-# "engineUri": "mysql+pymysql://root:root@localhost/aiserver",
