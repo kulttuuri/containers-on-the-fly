@@ -50,10 +50,10 @@ After copying the files, make configurations to the files. The files to configur
 
 #### Setup the Main Server
 
-After the configurations are ready, start setting up web servers with the command:
+After the configurations are ready, start setting up the main server and it's dependencies with:
 
 ```bash
-sudo make setup-webservers
+sudo make setup-main-server
 ```
 
 #### Start the Main Server
