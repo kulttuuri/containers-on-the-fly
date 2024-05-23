@@ -56,7 +56,7 @@ merge-settings: # Merges the settings file into frontend and backend settings.
 
 # Production targets
 
-setup-main-server: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for main server. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
+setup-main-server: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for main server. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps. Call 'make start-main-server' after setup.
 	@chmod +x scripts/install_webserver_dependencies.bash
 	@./scripts/install_webserver_dependencies.bash
 	$(PIP) install -r webapp/backend/requirements.txt
@@ -77,7 +77,7 @@ start-main-server: verify-all-config-files-exist merge-settings ## Starts all th
 	echo "Access the launched web interface at: $(GREEN)$$URL$(RESET) (it can take several seconds for the server to launch)" && \
 	echo "You can view any logs (errors) using the $(GREEN)make logs$(RESET) command."
 
-setup-docker-utility: ## Setups the Docker utility. The Docker utility will start, stop, and restart the containers on this machine. Call 'make run-docker-utility' after setup.
+setup-docker-utility: ## Setups the Docker utility. The Docker utility will start, stop, and restart the containers on this machine. Call 'make start-docker-utility' after setup.
 	# Check that the backend settings configuration file exists
 	@if [ ! -e $(CONFIG_BACKEND_SETTINGS) ]; then \
 		echo "Error: $(CONFIG_BACKEND_SETTINGS) does not exist. This utility uses the $(CONFIG_BACKEND_SETTINGS) file to connect to the database, please configure this file first."; \
