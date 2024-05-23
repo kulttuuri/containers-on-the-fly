@@ -24,8 +24,6 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 
 ## Getting Started
 
-![image](/additional_documentation/architecture.png)
-
 The installation consists of two parts:
 - [Install the Main Server](#automatic-installation-main-server), which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from one server.
 - [Install the Container Server](#automatic-installation-container-server) from which the virtual Docker reservations can be made. This container server script handles starting, stopping, and restarting container reservations on the server. The container server can reside at the same location as the Main Server, or in multiple other servers from which users can reserve containers.
@@ -156,6 +154,8 @@ make start-main-server
 That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make start-main-server` command.
 
 ## Technical Details
+
+![image](/additional_documentation/architecture.png)
 
 The app is split into two projects: frontend and backend. The frontend can be located from `webapp/frontend` and backend from `webapp/backend`. Both the frontend and backend will run on different ports. The backend also includes a separate script for starting and stopping the reserved containers, called `dockerUtil.py`.
 
