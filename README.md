@@ -27,7 +27,7 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 
 The installation consists of two parts:
 - [Install the Main Server](#automatic-installation-main-server), which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from one server.
-- Install the [Container Server](#automatic-installation-container-server) from which the virtual Docker reservations can be made. The container server can reside at the same location as the Main Server, or in multiple other servers from which users can reserve containers.
+- [Install the Container Server](#automatic-installation-container-server) from which the virtual Docker reservations can be made. The container server can reside at the same location as the Main Server, or in multiple other servers from which users can reserve containers.
 
 ### Automatic Installation: Main Server
 
