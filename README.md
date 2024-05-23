@@ -29,23 +29,21 @@ The installation consists of two parts:
 - the ``Main Server``, which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from one server.
 - ``Container Server(s)`` from which the virtual Docker reservations can be made. The container server can reside at the same location as the Main Server, or in multiple other servers. Users can make container reservations from these Container Servers.
 
-### Automatic Installation
+### Automatic Installation: Main Server
 
-#### Main Server
-
-> Heads up! The automatic installation script for the **main server** only works with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be conducted manually.
+> Heads up! The automatic installation script for the **main server** only works with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be [conducted manually](#manual-installation-:-main-server).
 
 The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
 
-##### Copy Configurations
+#### Copy Configurations
 
 Copy the settings files from `user_config/examples` to `user_config` folder. If you do not require an SSL certificate (your web interface is accessed using the HTTP protocol), then copy the `nginx_settings.conf` file. If you plan to use an SSL certificate (your web server will be accessed using the HTTPS protocol) then copy the file `nginx_settings_ssl.conf`.
 
-##### Create Configurations
+#### Create Configurations
 
 After copying the files, make configurations to the files. You can mainly start with the `user_config/settings` file first, and then look at the other files to determine if there is something more specific to configure.
 
-##### Setup the Servers
+#### Setup the Servers
 
 After the configurations are ready, start setting up web servers with the command:
 
@@ -53,7 +51,7 @@ After the configurations are ready, start setting up web servers with the comman
 sudo make setup-webservers
 ```
 
-##### Start the Servers
+#### Start the Servers
 
 After the web server setup is complete, run the servers with:
 
@@ -63,19 +61,21 @@ make run-webservers
 
 That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make run-webservers` command.
 
-#### Container Server Installation
+### Automatic Installation: Container Server
+
+> The automatic installation fo the Container Server 
 
 The installation procedure of the Container Server is as follows:
 
-##### Copy Configurations
+#### Copy Configurations
 
 Copy the settings files `user_config/examples/settings` and `user_config/examples/backend_settings.json` to the `user_config` folder.
 
-##### Create Configurations
+#### Create Configurations
 
 After copying the files, make configurations to the files.
 
-##### Setup the Docker Utility
+#### Setup the Docker Utility
 
 After the configurations are ready, set up the docker utility with:
 
@@ -83,7 +83,7 @@ After the configurations are ready, set up the docker utility with:
 make setup-docker-utility
 ```
 
-##### Start Docker Utility
+#### Start Docker Utility
 
 After the setup is complete, run the Docker utility with:
 
@@ -93,9 +93,7 @@ make run-docker-utility
 
 That's it!
 
-### Manual Installation
-
-#### Main Server
+### Manual Installation: Main Server
 
 The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
 
