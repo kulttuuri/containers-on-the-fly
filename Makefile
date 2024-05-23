@@ -56,15 +56,15 @@ merge-settings: # Merges the settings file into frontend and backend settings.
 
 # Production targets
 
-setup-webservers: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for web servers. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
+setup-main-server: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for main server. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps.
 	@chmod +x scripts/install_webserver_dependencies.bash
 	@./scripts/install_webserver_dependencies.bash
 	$(PIP) install -r webapp/backend/requirements.txt
 	# Need to run the next command without sudo, as otherwise the node_modules folder created would be owned by root
 	cd webapp/frontend && sudo -u $(shell who am i | awk '{print $$1}') npm install
-	echo "\n$(GREEN)Setup successful! Now run 'make run-webservers' to start the web servers.\n"
+	echo "\n$(GREEN)Setup successful! Now run 'make start-main-server' to start all main server services.\n"
 
-run-webservers: verify-all-config-files-exist merge-settings ## Runs the web servers or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run other servers in the background. 
+start-main-server: verify-all-config-files-exist merge-settings ## Starts all the main server services or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run the frontend and backend.
 	@cp user_config/backend_settings.json webapp/backend/settings.json
 	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	@systemctl reload nginx
@@ -90,7 +90,7 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 	@echo "$(GREEN)The Docker utility has been setup."
 	@echo "!!!! Please log out and log back in or start a new shell session to apply group changes !!!$(RESET)"
 
-run-docker-utility: merge-settings ## Runs the Docker utility. pm2 process manager is used to run the script in the background.
+start-docker-utility: merge-settings ## Starts the Docker utility. The utility starts, stops, restarts reserved containers on this server. pm2 process manager is used to run the script in the background.
 	@echo "Verifying that connection to the database can be made using the $(CONFIG_BACKEND_SETTINGS) setting engineUri..."
 	@CONNECTION_URI=$$(grep '"engineUri"' $(CONFIG_BACKEND_SETTINGS) | sed 's/.*"engineUri": "\(.*\)".*/\1/') && \
 	CONNECTION_OK=$$($(PYTHON) scripts/verify_db_connection.py "$$CONNECTION_URI") && \
@@ -122,11 +122,11 @@ stop-servers: ## Kills (stops) the frontend, backend and docker utility servers 
 
 # Scripts for development
 
-run-dev-frontend:
+start-dev-frontend:
 	cd webapp/frontend && npm run serve
 
-run-dev-backend:
+start-dev-backend:
 	cd webapp/backend && $(PYTHON) main.py
 
-run-dev-docker-utility:
+start-dev-docker-utility:
 	cd webapp/backend && $(PYTHON) dockerUtil.py

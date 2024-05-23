@@ -26,7 +26,7 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 ![image](/additional_documentation/architecture.png)
 
 The installation consists of two parts:
-- the ``Main Server``, which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from one server.
+- [Install the Main Server](#automatic-installation-main-server), which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from one server.
 - ``Container Server(s)`` from which the virtual Docker reservations can be made. The container server can reside at the same location as the Main Server, or in multiple other servers. Users can make container reservations from these Container Servers.
 
 ### Automatic Installation: Main Server
@@ -41,9 +41,14 @@ Copy the settings files from `user_config/examples` to `user_config` folder. If 
 
 #### Create Configurations
 
-After copying the files, make configurations to the files. You can mainly start with the `user_config/settings` file first, and then look at the other files to determine if there is something more specific to configure.
+After copying the files, make configurations to the files. The files to configure are:
 
-#### Setup the Servers
+- `user_config/settings`: The main settings file. You should at least review and configure the settings here.
+- `user_config/backend_settings.json`: Settings for the backend (web api) of the web interface. Would be good to review this file for any extra configurations.
+- `user_config/frontend_settings.js`: Settings for the frontend of the web interface. Might not require any extra configurations.
+- `user_config/nginx_settings.conf`: Contains the configurations for the Nginx proxy server. Does not require any extra configurations.
+
+#### Setup the Main Server
 
 After the configurations are ready, start setting up web servers with the command:
 
@@ -51,15 +56,15 @@ After the configurations are ready, start setting up web servers with the comman
 sudo make setup-webservers
 ```
 
-#### Start the Servers
+#### Start the Main Server
 
-After the web server setup is complete, run the servers with:
+After the main server setup is complete, run all the main server dependencies with:
 
 ```bash
-make run-webservers
+make start-main-server
 ```
 
-That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make run-webservers` command. If the web servers crash or something happens, then you should only need to run the `make run-webservers` command again.
+That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make start-main-server` command. If the servers crash or something happens, then you should only need to run the `make start-main-server` command again.
 
 ### Automatic Installation: Container Server
 
@@ -73,7 +78,10 @@ Copy the settings files `user_config/examples/settings` and `user_config/example
 
 #### Create Configurations
 
-After copying the files, make configurations to the files.
+After copying the files, make configurations to the files. The files to configure are:
+
+- `user_config/settings`: The main settings file. You should at least review and configure the settings here.
+- `user_config/backend_settings.json`: Settings for the backend (web api) of the web interface. Would be good to review this file for any extra configurations.
 
 #### Setup the Docker Utility
 
@@ -88,10 +96,10 @@ make setup-docker-utility
 After the setup is complete, run the Docker utility with:
 
 ```bash
-make run-docker-utility
+make start-docker-utility
 ```
 
-That's it! If the container crashes or something happens to the utility, then you should only need to run the `make run-docker-utility` command again.
+That's it! If the container crashes or something happens to the utility, then you should only need to run the `make start-docker-utility` command again.
 
 ### Manual Installation: Main Server
 
@@ -129,17 +137,22 @@ Copy the settings files from `user_config/examples` to `user_config` folder. If 
 
 ##### Create Configurations
 
-After copying the files, make configurations to the files. You can mainly start with the `user_config/settings` file first, and then look at the other files to determine if there is something more specific to configure.
+After copying the files, make configurations to the files. The files to configure are:
+
+- `user_config/settings`: The main settings file. You should at least review and configure the settings here.
+- `user_config/backend_settings.json`: Settings for the backend (web api) of the web interface. Would be good to review this file for any extra configurations.
+- `user_config/frontend_settings.js`: Settings for the frontend of the web interface. Might not require any extra configurations.
+- `user_config/nginx_settings.conf`: Contains the configurations for the Nginx proxy server. Does not require any extra configurations.
 
 ##### Start the Servers
 
-After the web server setup is complete, run the servers with:
+After the setup is complete, run the main server dependencies with:
 
 ```bash
-make run-webservers
+make start-main-server
 ```
 
-That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make run-webservers` command.
+That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make start-main-server` command.
 
 ## Technical Details
 
