@@ -55,6 +55,18 @@ After the configurations are ready, start setting up the main server and it's de
 sudo make setup-main-server
 ```
 
+Default admin and a regular user accounts are added to the system automatically, if the backend setting addTestDataInDevelopment is set to true (true by default). The accounts are as follows:
+
+```
+username: admin@foo.com
+password: test
+```
+
+```
+username: user@foo.com
+password: test
+```
+
 #### Start the Main Server
 
 After the main server setup is complete, run all the main server dependencies with:
