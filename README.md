@@ -31,7 +31,7 @@ The installation consists of two parts:
 
 ### Automatic Installation: Main Server
 
-> Heads up! The automatic installation script for the **main server** only works with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be [conducted manually](#manual-installation-:-main-server).
+> Heads up! The automatic installation script for the **main server** only works with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be [conducted manually](#manual-installation-main-server).
 
 The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
 
@@ -59,11 +59,11 @@ After the web server setup is complete, run the servers with:
 make run-webservers
 ```
 
-That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make run-webservers` command.
+That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make run-webservers` command. If the web servers crash or something happens, then you should only need to run the `make run-webservers` command again.
 
 ### Automatic Installation: Container Server
 
-> The automatic installation fo the Container Server 
+> The automatic installation of the Container Server has been at least tested with with Ubuntu Linux and MacOS and should work with other Unix systems. If you encounter any problems in the installation, then review the make commands to run from the Makefile and manually run the commands.
 
 The installation procedure of the Container Server is as follows:
 
@@ -91,7 +91,7 @@ After the setup is complete, run the Docker utility with:
 make run-docker-utility
 ```
 
-That's it!
+That's it! If the container crashes or something happens to the utility, then you should only need to run the `make run-docker-utility` command again.
 
 ### Manual Installation: Main Server
 
