@@ -73,7 +73,7 @@ start-main-server: verify-all-config-files-exist merge-settings ## Starts all th
 	@pm2 save
 	@URL=$$(grep '"url"' user_config/backend_settings.json | sed 's/.*"url": "\(.*\)".*/\1/') && \
 	echo "" && \
-	echo "$(GREEN)Web servers (frontend, backend) have been started / restarted!$(RESET)" && \
+	echo "$(GREEN)Web servers (nginx proxy, frontend, backend) have been started / restarted!$(RESET)" && \
 	echo "Access the launched web interface at: $(GREEN)$$URL$(RESET) (it can take several seconds for the server to launch)" && \
 	echo "You can view any logs (errors) using the $(GREEN)make logs$(RESET) command."
 
