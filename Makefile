@@ -68,8 +68,8 @@ start-main-server: verify-all-config-files-exist merge-settings ## Starts all th
 	@cp user_config/backend_settings.json webapp/backend/settings.json
 	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	@systemctl reload nginx
-	@cd webapp/frontend && pm2 restart frontend 2>/dev/null || pm2 start "npm run production" --name frontend
-	@cd webapp/backend && pm2 restart backend 2>/dev/null || pm2 start "$(PYTHON) main.py" --name backend
+	@cd webapp/frontend && pm2 restart frontend 2>/dev/null || pm2 start "npm run production" --name frontend --log-date-format="YYYY-MM-DD HH:mm Z"
+	@cd webapp/backend && pm2 restart backend 2>/dev/null || pm2 start "$(PYTHON) main.py" --name backend --log-date-format="YYYY-MM-DD HH:mm Z"
 	@pm2 save
 	@URL=$$(grep '"url"' user_config/backend_settings.json | sed 's/.*"url": "\(.*\)".*/\1/') && \
 	echo "" && \
@@ -102,7 +102,7 @@ start-docker-utility: merge-settings ## Starts the Docker utility. The utility s
 	fi
 
 	@cp user_config/backend_settings.json webapp/backend/settings.json
-	@cd webapp/backend && pm2 restart backendDockerUtil 2>/dev/null || pm2 start "$(PYTHON) dockerUtil.py" --name backendDockerUtil --log-date-format="DD-MM-YYYY HH:mm"
+	@cd webapp/backend && pm2 restart backendDockerUtil 2>/dev/null || pm2 start "$(PYTHON) dockerUtil.py" --name backendDockerUtil --log-date-format="YYYY-MM-DD HH:mm Z"
 	@pm2 save
 	@echo "\n$(GREEN)Docker utility is now running.$(RESET)"
 	@echo "Containers will now automatically start, stop, and restart on this server."
