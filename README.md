@@ -32,6 +32,8 @@ The installation consists of two parts:
 
 > Heads up! The automatic installation script for the **main server** only works with Ubuntu Linux 22.04. It is HIGHLY RECOMMENDED to use a fresh Ubuntu installation, due to various software being installed and configured. For any other operating system, the installation procedure is required to be [conducted manually](#manual-installation-main-server).
 
+Before proceeding, make sure you are logged in as the user with which you want to setup the Main Server. The user should have sudo permissions. For example: `containeruser`. Root user is not recommended to be used.
+
 The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
 
 #### Copy Configurations
@@ -84,6 +86,8 @@ That's it! Now you should be able to access the web interface using a browser. T
 ### Automatic Installation: Container Server
 
 > The automatic installation of the Container Server has been at least tested with with Ubuntu Linux and MacOS and should work with other Unix systems. If you encounter any problems in the installation, then review the make commands to run from the Makefile and manually run the commands.
+
+Before proceeding, make sure you are logged in as the user with which you want to setup the Main Server. The user should have sudo permissions. For example: `containeruser`. Root user is not recommended to be used.
 
 The installation procedure of the Container Server is as follows:
 
