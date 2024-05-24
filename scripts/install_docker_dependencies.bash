@@ -8,6 +8,7 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 RESET='\033[0m'
 CURRENT_DIR=$(pwd)
+CURRENT_USER=$(whoami)
 
 # Load settings
 source "$CURRENT_DIR/user_config/settings"
@@ -25,10 +26,10 @@ sudo apt update
 sudo apt install -y python3-pip libsasl2-dev libldap2-dev libssl-dev
 sudo ubuntu-drivers install nvidia:535-server
 
-# Configure Git (this is idempotent, so running it multiple times is fine)
-# TODO: Grab from settings file
-git config --global user.email "toni.aaltonen@samk.fi"
-git config --global user.name "Toni Aaltonen"
+# Configure Git
+# TODO: Is this necessary.. ?
+git config --global user.email "$GIT_NAME"
+git config --global user.name "$GIT_EMAIL"
 
 # Add Docker's official GPG key if it's not already added
 if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
@@ -64,6 +65,9 @@ if ! command -v pm2 > /dev/null; then
     sudo npm install pm2 -g
     pm2 startup
 fi
+
+# Set up pm2 to launch on system restart with the current user
+env PATH=$PATH:/usr/bin pm2 startup systemd -u $CURRENT_USER --hp /home/$CURRENT_USER
 
 # Install Nvidia Docker Runtime
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo tee /etc/apt/trusted.gpg.d/nvidia.gpg > /dev/null
@@ -126,7 +130,6 @@ update_docker_daemon_config() {
 update_docker_daemon_config
 
 # Add user to docker group
-CURRENT_USER=$(whoami)
 sudo usermod -aG docker $CURRENT_USER
 
 # Restart Docker Daemon to apply changes
