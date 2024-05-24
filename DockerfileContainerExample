@@ -1,0 +1,28 @@
+####
+# BASE CONFIGURATIONS - DO NOT EDIT
+# The configurations below sets the default configurations for this image to work with the containers on the fly project.
+# Version 1
+####
+
+# Use an official Ubuntu base image
+FROM ubuntu:latest
+
+# Update the package list and install necessary packages
+RUN apt-get update && \
+    apt-get install -y \
+    passwd \
+    sudo
+
+# Create a user with username 'user'
+# When spinning up a new container from this image, the password will be randomly set for the user by the docker utility.
+RUN useradd -m user && \
+    echo 'user:password' | chpasswd
+
+# Set the default command to run in the container
+CMD ["/bin/bash"]
+
+####
+# YOUR OWN MODIFICATIONS BELOW
+# You can write your own extra instructions below for the image.
+# Copy this file to some other location to not lose your changes if updating the repository later with the git pull command.
+####
