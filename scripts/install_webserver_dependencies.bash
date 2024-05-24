@@ -8,6 +8,7 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 RESET='\033[0m'
 CURRENT_DIR=$(pwd)
+CURRENT_USER=$(whoami)
 
 # Load settings
 source "$CURRENT_DIR/user_config/settings"
@@ -204,3 +205,6 @@ if ! command -v pm2 > /dev/null; then
     sudo npm install pm2 -g
     pm2 startup
 fi
+
+# Set up pm2 to launch on system restart with the current user
+env PATH=$PATH:/usr/bin pm2 startup systemd -u $CURRENT_USER --hp /home/$CURRENT_USER
