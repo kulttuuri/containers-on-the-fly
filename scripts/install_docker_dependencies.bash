@@ -102,10 +102,11 @@ sudo apt install -y jq
 # Docker Daemon Configuration File
 DOCKER_DAEMON_CONFIG="/etc/docker/daemon.json"
 
-# Registry Address
+# Add 127.0.0.1 and server IP address to docker insecure-registry configuration.
+# This allows (insecure) HTTP protocol to be used for pushing / pulling with the given IP addresses.
 INSECURE_REGISTRY=$DOCKER_REGISTRY_ADDRESS
-
-# Function to update the Docker daemon configuration
+LOCAL_REGISTRY="127.0.0.1:5000"
+DOCKER_DAEMON_CONFIG="/etc/docker/daemon.json"
 update_docker_daemon_config() {
     # Check if the Docker daemon configuration file exists
     if [ -f "$DOCKER_DAEMON_CONFIG" ]; then
@@ -114,19 +115,22 @@ update_docker_daemon_config() {
 
         # Check if insecure-registries is already in the config
         if grep -q '"insecure-registries"' "$DOCKER_DAEMON_CONFIG"; then
-            # Add the registry to the existing array
-            jq --arg reg "$INSECURE_REGISTRY" '.["insecure-registries"] += [$reg]' "$DOCKER_DAEMON_CONFIG" > temp.json && mv temp.json "$DOCKER_DAEMON_CONFIG"
+            # Ensure both registries are in the list, avoiding duplicates
+            jq --arg local "$LOCAL_REGISTRY" --arg reg "$INSECURE_REGISTRY" '
+                .["insecure-registries"] += [$local, $reg] |
+                .["insecure-registries"] |= unique
+            ' "$DOCKER_DAEMON_CONFIG" > temp.json && mv temp.json "$DOCKER_DAEMON_CONFIG"
         else
-            # Add insecure-registries to the config
-            jq --arg reg "$INSECURE_REGISTRY" '. + {"insecure-registries": [$reg]}' "$DOCKER_DAEMON_CONFIG" > temp.json && mv temp.json "$DOCKER_DAEMON_CONFIG"
+            # Add insecure-registries with both registries to the config
+            jq --arg local "$LOCAL_REGISTRY" --arg reg "$INSECURE_REGISTRY" '
+                . + {"insecure-registries": [$local, $reg]}
+            ' "$DOCKER_DAEMON_CONFIG" > temp.json && mv temp.json "$DOCKER_DAEMON_CONFIG"
         fi
     else
-        # Create the configuration file with insecure-registries
-        echo "{\"insecure-registries\" : [\"$INSECURE_REGISTRY\"]}" > "$DOCKER_DAEMON_CONFIG"
+        # If the configuraration file did not exist, then create the configuration file with insecure-registries setting
+        echo "{\"insecure-registries\" : [\"$LOCAL_REGISTRY\", \"$INSECURE_REGISTRY\"]}" > "$DOCKER_DAEMON_CONFIG"
     fi
 }
-
-# Main execution
 update_docker_daemon_config
 
 # Add user to docker group

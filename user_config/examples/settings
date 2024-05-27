@@ -53,8 +53,9 @@ CONTACT_EMAIL="support@foo.com"
 ###
 
 # In what address is the Docker registry (local Docker distributions) running.
-# If it is running in your current server, then just use the default option "127.0.0.1:5000"
-DOCKER_REGISTRY_ADDRESS="127.0.0.1:5000"
+# If it is running in the current server (main server), then just put your current server IP address here.
+# Otherwise, insert the IP server address here where you run the main server.
+DOCKER_REGISTRY_ADDRESS="YOUR_IP_ADDRESS:5000"
 
 ###
 # OTHER
