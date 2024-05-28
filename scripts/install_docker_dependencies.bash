@@ -26,11 +26,6 @@ sudo apt update
 sudo apt install -y python3-pip libsasl2-dev libldap2-dev libssl-dev
 sudo ubuntu-drivers install nvidia:535-server
 
-# Configure Git
-# TODO: Is this necessary.. ?
-git config --global user.email "$GIT_NAME"
-git config --global user.name "$GIT_EMAIL"
-
 # Add Docker's official GPG key if it's not already added
 if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
     sudo apt install -y ca-certificates curl gnupg

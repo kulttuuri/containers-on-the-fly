@@ -30,16 +30,6 @@ MARIADB_DB_USER="containerflyuser"
 MARIADB_DB_USER_PASSWORD="password"
 
 ###
-# GIT CONFIGURATIONS
-# 
-###
-
-# Your name for git operations
-GIT_NAME="Your name here"
-# Your email address for git operations
-GIT_EMAIL="your email address here"
-
-###
 # EMAIL
 # 
 ###
