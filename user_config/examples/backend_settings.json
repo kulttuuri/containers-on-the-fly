@@ -1,13 +1,13 @@
 {
     // Settings related to the app
     "app": {
-      // Edit in settings file, overridden by 'run-webservers' make task.
+      // Edit in settings file, overridden by 'start-main-server' make task.
       "name": "Containers on the Fly",
-      // Edit in settings file, overridden by 'run-webservers' make task.
+      // Edit in settings file, overridden by 'start-main-server' make task.
       "url": "http://localhost",
-      // Edit in settings file, overridden by 'run-webservers' make task.
+      // Edit in settings file, overridden by 'start-main-server' make task.
       "clientUrl": "http://localhost:8080",
-      // Edit in settings file, overridden by 'run-webservers' make task.
+      // Edit in settings file, overridden by 'start-main-server' make task.
       "timezone": "Europe/Helsinki",
       // Path to app logo shown in the main login page of the web interface.
       "logoUrl": "/static/logos/logo.png",
@@ -41,13 +41,15 @@
     },
     // Database settings
     "database": {
-      // Edit in settings file, overridden by 'run-webservers' and 'run-docker-utility' make tasks.
+      // Edit in settings file, overridden by 'start-main-server' and 'start-docker-utility' make tasks.
       "engineUri": "",
       // If set to true, prints all database operations to console
       "debugPrinting": false
     },
     // Docker settings
     "docker": {
+      // Edit in settings file, overridden by 'start-main-server' make task.
+      "registryAddress": "",
       // Set to true to enable starting virtual servers.
       "enabled": true,
       // Name of the server. This is used by the backend docker utility to start docker container in the correct server.

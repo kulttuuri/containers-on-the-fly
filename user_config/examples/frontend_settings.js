@@ -7,11 +7,11 @@
  * General settings for the app.
  */
  AppSettings.General = {
-    // Edit in settings file, overridden by 'run-webservers' make task.
+    // Edit in settings file, overridden by 'start-main-server' make task.
   contactEmail: "support@youremaildomain.com",
-   // Edit in settings file, overridden by 'run-webservers' make task.
+   // Edit in settings file, overridden by 'start-main-server' make task.
   appName: "Containers on the fly",
-   // Edit in settings file, overridden by 'run-webservers' make task.
+   // Edit in settings file, overridden by 'start-main-server' make task.
   timezone: "Europe/Helsinki",
  }
  
@@ -28,7 +28,7 @@
  * API urls
  */
  AppSettings.APIServer = {
-    // Edit in settings file, overridden by 'run-webservers' make task.
+    // Edit in settings file, overridden by 'start-main-server' make task.
   baseAddress: "http://localhost:8000/api/",
  }
  const createUrls = require("./AppUrls.js");

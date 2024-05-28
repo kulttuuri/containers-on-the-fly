@@ -15,26 +15,44 @@ escape_sed() {
     echo "$1" | sed 's/[\/&]/\\&/g'
 }
 
+# Function to perform sed operation
+perform_sed() {
+    local file=$1
+    local search=$2
+    local replace=$3
+    if sed --version >/dev/null 2>&1; then
+        # GNU sed
+        sed -i -e "$search" "$file"
+    else
+        # BSD sed (macOS)
+        sed -i '' -e "$search" "$file"
+    fi
+}
+
 # Timezone
 ESCAPED_TIMEZONE=$(escape_sed "$TIMEZONE")
-sed -i "s/^\([[:space:]]*\"timezone\": \).*/\1\"$ESCAPED_TIMEZONE\",/" user_config/backend_settings.json
-sed -i "s/^\([[:space:]]*timezone: \).*/\1\"$ESCAPED_TIMEZONE\",/" user_config/frontend_settings.js
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"timezone\": \).*/\1\"$ESCAPED_TIMEZONE\",/"
+perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*timezone: \).*/\1\"$ESCAPED_TIMEZONE\",/"
+
+# Docker Registry Address
+ESCAPED_REGISTRY_ADDRESS=$(escape_sed "$DOCKER_REGISTRY_ADDRESS")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"registryAddress\": \).*/\1\"$ESCAPED_REGISTRY_ADDRESS\",/"
 
 # Server address in frontend settings file
 ESCAPED_SERVER_WEB_ADDRESS=$(escape_sed "$SERVER_WEB_ADDRESS")
-sed -i "s/^\([[:space:]]*baseAddress: \).*/\1\"$ESCAPED_SERVER_WEB_ADDRESS\/api\/\",/" user_config/frontend_settings.js
+perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*baseAddress: \).*/\1\"$ESCAPED_SERVER_WEB_ADDRESS\/api\/\",/"
 
 # App name
 ESCAPED_APP_NAME=$(escape_sed "$APP_NAME")
-sed -i "s/^\([[:space:]]*\"name\": \).*/\1\"$APP_NAME\",/" user_config/backend_settings.json
-sed -i "s/^\([[:space:]]*appName: \).*/\1\"$APP_NAME\",/" user_config/frontend_settings.js
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"name\": \).*/\1\"$ESCAPED_APP_NAME\",/"
+perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*appName: \).*/\1\"$ESCAPED_APP_NAME\",/"
 
 # Email address
 ESCAPED_EMAIL_ADDRESS=$(escape_sed "$CONTACT_EMAIL")
-sed -i "s/^\([[:space:]]*\"helpEmailAddress\": \).*/\1\"$ESCAPED_EMAIL_ADDRESS\"/" user_config/backend_settings.json
-sed -i "s/^\([[:space:]]*contactEmail: \).*/\1\"$ESCAPED_EMAIL_ADDRESS\",/" user_config/frontend_settings.js
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"helpEmailAddress\": \).*/\1\"$ESCAPED_EMAIL_ADDRESS\"/"
+perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*contactEmail: \).*/\1\"$ESCAPED_EMAIL_ADDRESS\",/"
 
 # Database URI
 URI="mysql+pymysql://"$MARIADB_DB_USER":"$MARIADB_DB_USER_PASSWORD"@"$MARIADB_SERVER_ADDRESS"/"$MARIADB_DB_NAME
 ESCAPED_URI=$(escape_sed "$URI")
-sed -i "s/^\([[:space:]]*\"engineUri\": \).*/\1\"$ESCAPED_URI\",/" user_config/backend_settings.json
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"engineUri\": \).*/\1\"$ESCAPED_URI\",/"
