@@ -99,8 +99,8 @@ DOCKER_DAEMON_CONFIG="/etc/docker/daemon.json"
 
 # Add 127.0.0.1 and server IP address to docker insecure-registry configuration.
 # This allows (insecure) HTTP protocol to be used for pushing / pulling with the given IP addresses.
-INSECURE_REGISTRY=$SERVER_IP_ADDRESS
-LOCAL_REGISTRY="127.0.0.1:5000"
+INSECURE_REGISTRY="${SERVER_IP_ADDRESS}:${DOCKER_REGISTRY_PORT}"
+LOCAL_REGISTRY="127.0.0.1:${DOCKER_REGISTRY_PORT}"
 DOCKER_DAEMON_CONFIG="/etc/docker/daemon.json"
 update_docker_daemon_config() {
     # Check if the Docker daemon configuration file exists

@@ -38,6 +38,14 @@ perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*timezone: \).*/\1
 ESCAPED_REGISTRY_ADDRESS=$(escape_sed "$DOCKER_REGISTRY_ADDRESS")
 perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"registryAddress\": \).*/\1\"$ESCAPED_REGISTRY_ADDRESS\",/"
 
+# Docker Reservation Start Port
+ESCAPED_PORT=$(escape_sed "$DOCKER_RESERVATION_PORT_RANGE_START")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"port_range_start\": \).*/\1\"$ESCAPED_PORT\",/"
+
+# Docker Reservation End Port
+ESCAPED_PORT=$(escape_sed "$DOCKER_RESERVATION_PORT_RANGE_END")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"port_range_end\": \).*/\1\"$ESCAPED_PORT\",/"
+
 # Server address in frontend settings file
 ESCAPED_SERVER_WEB_ADDRESS=$(escape_sed "$SERVER_WEB_ADDRESS")
 perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*baseAddress: \).*/\1\"$ESCAPED_SERVER_WEB_ADDRESS\/api\/\",/"

@@ -66,9 +66,9 @@
       "mountGroup": "docker",
       // Sets the shm_size for the docker container. For example: 1g. Read more: https://docs.docker.com/compose/compose-file/build/#shm_size
       "shm_size": "1g",
-      // Starting range of ports where the docker container ports will be mapped to. For example: 2000
+      // Edit in settings file, overridden by 'start-main-server' make task.
       "port_range_start": 2020,
-      // Ending range of ports where the docker container ports will be mapped to. For example: 2200
+      // Edit in settings file, overridden by 'start-main-server' make task.
       "port_range_end": 2200,
       // If set to true, user will be notified by email about the started container. The email will be sent only after the actual container has been started, not directly after reservation.
       "sendEmail": true,

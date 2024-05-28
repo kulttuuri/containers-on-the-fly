@@ -45,10 +45,16 @@ CONTACT_EMAIL="support@foo.com"
 # 
 ###
 
-# In what address is the Docker registry (local Docker distributions) running.
-# If it is running in the current server (main server), then just leave "localhost:5000" here.
-# Otherwise, if you are running the main server in different server (thus this would be a separate container server), then insert MAIN_SERVER_IP_ADDRESS:5000 of the main server here, replacing MAIN_SERVER_IP_ADDRESS with your main server IP address. For example: 51.115.104.42:5000
-DOCKER_REGISTRY_ADDRESS="localhost:5000"
+# In what address is the Docker registry (local Docker image distribution) running.
+# If it is running in the current server (main server), then just leave the default values "localhost" and 5000 here.
+# Otherwise, if you are running the main server in different server (thus this would be a separate container server), then insert the IP and port of the main server here. For example: "51.115.104.42" and 5000.
+DOCKER_REGISTRY_ADDRESS="localhost"
+DOCKER_REGISTRY_PORT=5000
+
+# This is the port range from which reserved containers can be accessed through.
+# Note that if you want these reserved containers to be accessed outside the server, then you need to open these ports in the firewall(s).
+DOCKER_RESERVATION_PORT_START=2000
+DOCKER_RESERVATION_PORT_END=3000
 
 ###
 # OTHER
