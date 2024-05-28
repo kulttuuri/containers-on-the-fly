@@ -1,5 +1,10 @@
 #!/bin/bash
 
+CURRENT_DIR=$(pwd)
+
+# Load settings
+source "$CURRENT_DIR/user_config/settings"
+
 # Check if the registry container is already running
 if [ ! "$(docker ps -q -f name=registry)" ]; then
     if [ "$(docker ps -aq -f status=exited -f name=registry)" ]; then
@@ -7,5 +12,5 @@ if [ ! "$(docker ps -q -f name=registry)" ]; then
         docker rm registry
     fi
     # Start the Docker registry container
-    docker run -d -p 5000:5000 --restart=always --name registry registry:2
+    docker run -d -p ${DOCKER_REGISTRY_PORT}:5000 --restart=always --name registry registry:2
 fi
