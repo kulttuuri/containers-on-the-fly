@@ -173,6 +173,25 @@ make start-main-server
 
 That's it! Now you should be able to access the web interface using a browser. There will be more information printed on your console after running the `make start-main-server` command.
 
+## Additional Tasks
+
+### Adding Images to Containers
+Using the admin interface, user can add new containers. These containers still require an image added to it manually.
+
+The process of adding an image that users can reserve is as follows:
+
+1. Create the image in the admin interface. This can be done using the **Containers** section.
+2. Create a new container and make a note of the image name. By default, you should add at least the SSH port for the image (service name: SSH, port: 22). Make the image public in order for users to reserve it.
+3. Create image for the container in the server where you have the **Main Server** installed. Copy the file ``DockerfileContainerExample`` to some safe location and make your own modifications to the image as required.
+4. In the same folder where you copied the file ``DockerfileContainerExample``, run these two commands to build the image and push it to local Docker registry, replacing the **IMAGENAME** with the name of your image in the admin web interface:
+
+```bash
+docker build -t 127.0.0.1:5000/IMAGENAME:latest -f DockerfileContainerExample .
+docker push 127.0.0.1:5000/IMAGENAME:latest
+```
+
+And that's it. Now you should be able to reserve the container!
+
 ## Technical Details
 
 ![image](/additional_documentation/architecture.png)
