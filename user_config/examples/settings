@@ -52,6 +52,7 @@ DOCKER_REGISTRY_ADDRESS="localhost"
 DOCKER_REGISTRY_PORT=5000
 
 # This is the port range from which reserved containers can be accessed through.
+# When user reserves a container and the container is being started, a random available port is selected from this range.
 # Note that if you want these reserved containers to be accessed outside the server, then you need to open these ports in the firewall(s).
 DOCKER_RESERVATION_PORT_START=2000
 DOCKER_RESERVATION_PORT_END=3000
