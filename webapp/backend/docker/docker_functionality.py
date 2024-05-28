@@ -84,14 +84,6 @@ def start_container(pars):
                 else:
                     volumes.append((mount["mountLocation"], f"/home/{pars['username']}/{mount['containerFolderName']}"))
 
-        # EXTRA: Do not commit this. Adds shared volume for Toni, Juuso, Eetu.
-        try:
-            roboai_ids = [4, 18, 19, 112]
-            if pars['dbUserId'] in roboai_ids:
-                volumes.append(("/home/aiserver/roboai_green", f"/home/{pars['username']}/roboai_green"))
-        except Exception as e:
-            print(e)
-        
         #testing ram disk
         mount_path = "/home/user/ram_disk"
         ram_disk_size = "1073741824" # 1G in bytes, if I understanded correctly, this need to be in bytes, not 1GB etc
