@@ -350,15 +350,7 @@ def cancelReservation(userId : int, reservationId: str):
     reservation = session.query(Reservation).filter( Reservation.reservationId == reservationId ).first()
     if reservation is None: return Response(False, "No reservation found.")
 
-    if (reservation.status == "started"):
-      try:
-        stop_container(reservation.reservedContainer.containerDockerName)
-      except Exception as e:
-        print(e)
-
-    reservation.status = "stopped"
     reservation.endDate = datetime.datetime.now(datetime.timezone.utc)
-
     session.commit()
 
   return Response(True, "Reservation cancelled.")
