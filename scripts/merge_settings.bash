@@ -29,24 +29,48 @@ perform_sed() {
     fi
 }
 
+# Reservation min duration
+MIN_DUR=$(escape_sed "$RESERVATION_MIN_DURATION")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"minimumDuration\": \).*/\1$MIN_DUR,/"
+
+# Reservation max duration
+MAX_DUR=$(escape_sed "$RESERVATION_MAX_DURATION")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"maximumDuration\": \).*/\1$MAX_DUR/"
+
+# Reservation port start
+RES_PORT_START=$(escape_sed "$DOCKER_RESERVATION_PORT_RANGE_START")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"port_range_start\": \).*/\1$RES_PORT_START,/"
+
+# Reservation port end
+RES_PORT_END=$(escape_sed "$DOCKER_RESERVATION_PORT_RANGE_END")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"port_range_end\": \).*/\1$RES_PORT_END,/"
+
 # Timezone
 ESCAPED_TIMEZONE=$(escape_sed "$TIMEZONE")
 perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"timezone\": \).*/\1\"$ESCAPED_TIMEZONE\",/"
 perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*timezone: \).*/\1\"$ESCAPED_TIMEZONE\",/"
+
+# Docker server name
+ESC_SERV_NAME=$(escape_sed "$DOCKER_SERVER_NAME")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"serverName\": \).*/\1\"$ESC_SERV_NAME\",/"
+
+# Docker mount location
+ESC_MOUNT_LOCATION=$(escape_sed "$DOCKER_USER_MOUNT_LOCATION")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"mountLocation\": \).*/\1\"$ESC_MOUNT_LOCATION\",/"
+
+# Docker mount user
+ESC_MOUNT_USER=$(escape_sed "$DOCKER_MOUNT_USER")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"mountUser\": \).*/\1\"$ESC_MOUNT_USER\",/"
+
+# Docker mount group
+ESC_MOUNT_GROUP=$(escape_sed "$DOCKER_MOUNT_GROUP")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"mountGroup\": \).*/\1\"$ESC_MOUNT_GROUP\",/"
 
 # Docker Registry Address
 ESCAPED_REGISTRY_ADDRESS=$(escape_sed "$DOCKER_REGISTRY_ADDRESS")
 ESCAPED_REGISTRY_PORT=$(escape_sed "$DOCKER_REGISTRY_PORT")
 ESCAPED_REGISTRY_FULL="${ESCAPED_REGISTRY_ADDRESS}:${ESCAPED_REGISTRY_PORT}"
 perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"registryAddress\": \).*/\1\"$ESCAPED_REGISTRY_FULL\",/"
-
-# Docker Reservation Start Port
-ESCAPED_PORT=$(escape_sed "$DOCKER_RESERVATION_PORT_RANGE_START")
-perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"port_range_start\": \).*/\1\"$ESCAPED_PORT\",/"
-
-# Docker Reservation End Port
-ESCAPED_PORT=$(escape_sed "$DOCKER_RESERVATION_PORT_RANGE_END")
-perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"port_range_end\": \).*/\1\"$ESCAPED_PORT\",/"
 
 # Server address in frontend settings file
 ESCAPED_SERVER_WEB_ADDRESS=$(escape_sed "$SERVER_WEB_ADDRESS")

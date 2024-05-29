@@ -92,9 +92,6 @@ def startDockerContainer(reservationId: str):
         "outsidePort": outsidePort
       })
 
-    userEmailParsed = removeSpecialCharacters(reservation.user.email)
-    mountLocation = f'{settings.docker["mountLocation"]}/{userEmailParsed}'
-
     # Create the GPUs string to be passed to Docker
     gpusString = ""
     # Loop through all hwSpecs and find the reserved GPU internal IDs (Nvidia / cuda IDs), if any
@@ -119,10 +116,15 @@ def startDockerContainer(reservationId: str):
       "memory": f"{hwSpecs['ram']['amount']}g",
       "shm_size": settings.docker["shm_size"],
       "ports": portsForContainer,
-      "localMountFolderPath": mountLocation,
       "password": sshPassword,
       "dbUserId": reservation.userId
     }
+
+    if "mountLocation" in settings.docker and settings.docker["mountLocation"] != "":
+      userEmailParsed = removeSpecialCharacters(reservation.user.email)
+      mountLocation = f'{settings.docker["mountLocation"]}/{userEmailParsed}'
+      details["localMountFolderPath"] = mountLocation
+
     cont_was_started = False
     #print(details)
 
