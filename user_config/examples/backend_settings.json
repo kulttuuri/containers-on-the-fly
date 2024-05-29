@@ -57,7 +57,7 @@
       // Edit in settings file, overridden by 'start-main-server' make task.
       "serverName": "server1",
       // Edit in settings file, overridden by 'start-main-server' make task.
-      "mountLocation": "",
+      "userMountLocation": "",
       // Edit in settings file, overridden by 'start-main-server' make task.
       "mountUser": "root",
       // Edit in settings file, overridden by 'start-main-server' make task.

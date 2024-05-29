@@ -56,7 +56,7 @@ perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"serverName\": 
 
 # Docker mount location
 ESC_MOUNT_LOCATION=$(escape_sed "$DOCKER_USER_MOUNT_LOCATION")
-perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"mountLocation\": \).*/\1\"$ESC_MOUNT_LOCATION\",/"
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"userMountLocation\": \).*/\1\"$ESC_MOUNT_LOCATION\",/"
 
 # Docker mount user
 ESC_MOUNT_USER=$(escape_sed "$DOCKER_MOUNT_USER")
