@@ -78,7 +78,7 @@ def start_container(pars):
             # Set correct file permissions for the mount folder
             os.chmod(pars["localMountFolderPath"], 0o777)
             volumes.append(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent")
-        volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent")]
+            volumes = [(pars['localMountFolderPath'], f"/home/{pars['username']}/persistent")]
         if "extraMounts" in settings.docker and len(settings.docker["extraMounts"]) > 0:
             for mount in settings.docker["extraMounts"]:
                 if mount["readOnly"]:
