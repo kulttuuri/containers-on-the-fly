@@ -6,6 +6,7 @@ from settings import settings
 from python_on_whales.exceptions import NoSuchContainer
 import os
 import shutil
+import traceback
 
 def start_container(pars):
     """
@@ -68,7 +69,7 @@ def start_container(pars):
 
         # Add volumes and mounts
         volumes = []
-        if "localMountFolderPath" in pars:
+        if "localMountFolderPath" in pars and "localMountFolderPath" != "":
             # Create directory for mounting if it does not exist
             if not os.path.isdir(pars["localMountFolderPath"]):
                 os.makedirs(pars["localMountFolderPath"], exist_ok=True)
@@ -121,6 +122,8 @@ def start_container(pars):
     except Exception as e:
         print(f"Something went wrong starting container {container_name}. Trying to stop the container. Error:")
         print(e)
+        print("Stack trace:")
+        print(traceback.format_exc())
         stop_container(container_name)
         return False, "", "", e, None
 
