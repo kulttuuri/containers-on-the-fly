@@ -36,7 +36,9 @@ perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*timezone: \).*/\1
 
 # Docker Registry Address
 ESCAPED_REGISTRY_ADDRESS=$(escape_sed "$DOCKER_REGISTRY_ADDRESS")
-perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"registryAddress\": \).*/\1\"$ESCAPED_REGISTRY_ADDRESS\",/"
+ESCAPED_REGISTRY_PORT=$(escape_sed "$DOCKER_REGISTRY_PORT")
+ESCAPED_REGISTRY_FULL="${ESCAPED_REGISTRY_ADDRESS}:${ESCAPED_REGISTRY_PORT}"
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"registryAddress\": \).*/\1\"$ESCAPED_REGISTRY_FULL\",/"
 
 # Docker Reservation Start Port
 ESCAPED_PORT=$(escape_sed "$DOCKER_RESERVATION_PORT_RANGE_START")
