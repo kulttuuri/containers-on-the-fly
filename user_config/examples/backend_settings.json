@@ -79,17 +79,17 @@
       // Default: ""
       "generalText": ""
       // Optional extra mounts to be mounted to the container. For example, if you want to mount a folder from the host system to the container.
-      /*"extraMounts": [
-        {
-          // Full path to the location in the host system where docker will mount user files, without the ending slash. For example: /home/containerfly/read_only_data
-          "mountLocation": "/home/containerfly/read_only_data",
-          // Will be the name of the folder in the container under the user home folder.
-          // For example: "read_only_data" would appear in the container under "/home/user/read_only_data/"
-          "containerFolderName": "read_only_data",
-          // If set to true, will be mounted as read-only so the container user cannot make any changes to the folder
-          "readOnly": true
-        }
-      ]*/
+      //"extraMounts": [
+      //{
+      //    // Full path to the location in the host system where docker will mount user files, without the ending slash. For example: /home/containerfly/read_only_data
+      //    "mountLocation": "/home/containerfly/read_only_data",
+      //    // Will be the name of the folder in the container under the user home folder.
+      //    // For example: "read_only_data" would appear in the container under "/home/user/read_only_data/"
+      //    "containerFolderName": "read_only_data",
+      //    // If set to true, will be mounted as read-only so the container user cannot make any changes to the folder
+      //    "readOnly": true
+      //  }
+      //]
     },
     // SMTP server details for sending emails (optional)
     // Email is sent for ex. for an user when their reservation begins.
