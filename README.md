@@ -24,10 +24,11 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 
 ## Getting Started
 
-The installation consists of two parts and one additional part:
+The installation consists of four main parts:
 1. [Install the Main Server](#automatic-installation-main-server), which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from this main server.
 2. [Install the Container Server](#automatic-installation-container-server) from which the virtual Docker reservations can be made. This container server script handles starting, stopping, and restarting container reservations on the server. The container server can reside at the same location as the Main Server, and/or in multiple other servers from which users can reserve containers.
-3. (Optional) [Secure the server by closing any additional ports](#securing-the-server).
+3. [Secure the server by closing any additional ports](#securing-the-server).
+4. [Create reservable containers (images)](#creating-reservable-containers)
 
 ### Automatic Installation: Main Server
 
@@ -196,7 +197,7 @@ The port range 2000-3000 set above can be set to your own range. This setting ca
 
 Note that if you want to set-up an additional container server, you need to also open the incoming docker registry port (defaults to 5000), which can be set in the ``user_config/settings` file.
 
-### Adding Images to Containers
+### Creating Reservable Containers
 Using the admin interface, user can add new containers. These containers still require an image added to it manually.
 
 The process of adding an image that users can reserve is as follows:
