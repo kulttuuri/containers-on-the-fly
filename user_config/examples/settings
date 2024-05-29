@@ -5,11 +5,12 @@
 # They will only be used by the 'make setup-webservers' and 'make run-webservers' make tasks.
 ###
 
-# The IP address of your server.
+# The IP address of your server. This value is required to be set correctly.
 SERVER_IP_ADDRESS="YOUR_IP_HERE"
 
 # The full address to your web server which you can access from the browser.
-# For example: "http://127.0.0.1", "https://mycoolserver.com", "http://4.512.512.712"
+# For example: "http://127.0.0.1", or "https://mycoolserver.com", or "http://4.512.512.712"
+# Note that if you want to access the server from the internet, then you need to make sure that there is no firewall blocking the access to the server (port 80 for HTTP and port 443 for HTTPS).
 SERVER_WEB_ADDRESS="http://127.0.0.1"
 
 # Name of your app.
@@ -27,6 +28,7 @@ RESERVATION_MAX_DURATION=72
 # 
 # While installing, these configurations are used to configure the installed MariaDB database.
 # While starting the servers or docker utility, these configurations are used to connect to the database.
+# You can leave the default options here, but be sure to change the password.
 #####
 
 # MariaDB server address. Leave it as "localhost" if running the database on the current computer.
@@ -55,13 +57,13 @@ CONTACT_EMAIL="support@foo.com"
 
 # In what address is the Docker registry (local Docker image distribution) running.
 # If it is running in the current server (main server), then just leave the default values "localhost" and 5000 here.
-# Otherwise, if you are running the main server in different server (thus this would be a separate container server), then insert the IP and port of the main server here. For example: "51.115.104.42" and 5000.
+# Otherwise, if you are running the main server in a different server (thus this would be a separate container server), then insert the IP and port of the main server here. For example: "51.115.104.42" and 5000.
 DOCKER_REGISTRY_ADDRESS="localhost"
 DOCKER_REGISTRY_PORT=5000
 
 # This is the port range from which reserved containers can be accessed through.
 # When user reserves a container and the container is being started, a random available port is selected from this range.
-# Note that if you want these reserved containers to be accessed outside the server, then you need to open these ports in the firewall(s).
+# Note that if you want these reserved containers to be accessed outside the server, then you need to open this port range in the firewall(s).
 DOCKER_RESERVATION_PORT_RANGE_START=2000
 DOCKER_RESERVATION_PORT_RANGE_END=3000
 
@@ -75,6 +77,7 @@ DOCKER_SERVER_NAME="server1"
 # you can specify here the full path in the host operating system where the files are stored at.
 # Each user will have a folder in this location for saving persistent data, with the user's email (special characters removed) as the folder name.
 # For example: "/home/containerfly/persistent_mounts"
+# It could then store user test@foo.com data as: "/home/containerfly/persistent_mounts/test_foo_com/"
 DOCKER_USER_MOUNT_LOCATION=""
 
 # User in the host system who will own the mounted folder. This needs to exist.
