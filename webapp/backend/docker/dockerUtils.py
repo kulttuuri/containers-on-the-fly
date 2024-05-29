@@ -120,7 +120,7 @@ def startDockerContainer(reservationId: str):
       "dbUserId": reservation.userId
     }
 
-    if "mountLocation" in settings.docker and settings.docker["mountLocation"] != "":
+    if settings.docker.get("mountLocation"):
       userEmailParsed = removeSpecialCharacters(reservation.user.email)
       mountLocation = f'{settings.docker["mountLocation"]}/{userEmailParsed}'
       details["localMountFolderPath"] = mountLocation
