@@ -87,8 +87,12 @@
       ]
     },
     // SMTP server details for sending emails (optional)
-    // Remove the following object if you do not want to send emails from the system
+    // Email is sent for ex. for an user when their reservation begins.
+    // SMTP is used as local email sending usually fails.
+    // You can create or use an existing Google or Outlook email address and pass their details here.
     "email": {
+      // Switch to true if you want to send email from the system. After switching to true, configure the SMTP settings below.
+      "sendEmail": false,
       // Address of the SMTP server
       "smtpAddress": "smtp.office365.com",
       // Port of the SMTP server
