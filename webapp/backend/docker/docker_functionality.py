@@ -69,7 +69,7 @@ def start_container(pars):
 
         # Add volumes and mounts
         volumes = []
-        if "localMountFolderPath" in pars and "localMountFolderPath" != "":
+        if "localMountFolderPath" in pars and pars["localMountFolderPath"] != "":
             # Create directory for mounting if it does not exist
             if not os.path.isdir(pars["localMountFolderPath"]):
                 os.makedirs(pars["localMountFolderPath"], exist_ok=True)
