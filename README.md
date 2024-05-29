@@ -207,8 +207,8 @@ The process of adding an image that users can reserve is as follows:
 4. In the same folder where you copied the file ``DockerfileContainerExample``, run these two commands to build the image and push it to local Docker registry, replacing the **IMAGENAME** with the name of your image in the admin web interface:
 
 ```bash
-docker build -t 127.0.0.1:5000/IMAGENAME:latest -f DockerfileContainerExample .
-docker push 127.0.0.1:5000/IMAGENAME:latest
+docker build -t localhost:5000/IMAGENAME:latest -f DockerfileContainerExample .
+docker push localhost:5000/IMAGENAME:latest
 ```
 
 And that's it. Now you should be able to reserve the container!
