@@ -175,6 +175,26 @@ That's it! Now you should be able to access the web interface using a browser. T
 
 ## Additional Tasks
 
+### Securing the Server
+You should definitely close all unnecessary incoming ports from the server and only allow what you wish. The example ufw configuration below achieves this:
+
+```bash
+sudo ufw reset
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw allow 2000:3000/tcp
+sudo ufw allow 2000:3000/udp
+sudo ufw enable
+sudo ufw status
+```
+
+The port range 2000-3000 set above can be set to your own range. This setting can be set in the ``user_config/settings`` file.
+
+Note that if you want to set-up an additional container server, you need to also open the incoming docker registry port (defaults to 5000), which can be set in the ``user_config/settings` file.
+
 ### Adding Images to Containers
 Using the admin interface, user can add new containers. These containers still require an image added to it manually.
 
