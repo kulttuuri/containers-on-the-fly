@@ -24,11 +24,39 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 
 ## Getting Started
 
-The installation consists of four main parts:
-1. [Install the Main Server](#automatic-installation-main-server), which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from this main server.
-2. [Install the Container Server](#automatic-installation-container-server) from which the virtual Docker reservations can be made. This container server script handles starting, stopping, and restarting container reservations on the server. The container server can reside at the same location as the Main Server, and/or in multiple other servers from which users can reserve containers.
-3. [Enable all connections to the main server](#allow-connections-to-main-server)
-4. [Create reservable containers (images)](#creating-reservable-containers)
+The installation is split into two parts: **main server** and **container server**. The main server contains the web interface, database, local docker registry. The container server contains the script that handles starting, stopping, and restarting the reserved containers.
+
+### Installing Main Server
+
+If you wish to install the **main server** which contains the web interface, database, local docker registry, then follow these steps:
+
+1. Create fresh Ubuntu 22.04 server
+2. Enable all connections to that server. This means that if you have some external firewall (like Azure firewall) before your server, you should allow all connections from that firewall to your main server. The main server will automatically configure the UFW firewall and handle the firewall tasks.
+3. [Install the Main Server](#automatic-installation-main-server)
+4. [Install the Container Server](#automatic-installation-container-server)
+5. [Create reservable containers (images)](#creating-reservable-containers)
+
+Default admin and a regular user accounts are added to the system automatically, if the backend setting addTestDataInDevelopment is set to true (true by default). The accounts are as follows:
+
+```
+username: admin@foo.com
+password: test
+```
+
+```
+username: user@foo.com
+password: test
+```
+
+### Installing Additional Container Servers
+
+Note that this step is only required to be followed if you have multiple (physical) servers and want reservations to be made from multiple different servers.
+
+After the main server has been installed, it is possible to create more Ubuntu 22.04 servers in which the **container server** can run and from which container reservations can be made. If you wish to expand the main server with additional container servers, then in another servers you need to:
+1. Create fresh Ubuntu 22.04 server to be used with additional container server
+2. Run command ``make allow-container-server IP=CONTAINER_SERVER_IP`` in the main server to allow connection from the container server to the main server
+3. Add the computer through the main server admin web interface (Computers -> Create new Computer). Make a note of the name that you set for the computer as you need to configure this in your settings file.
+4. [Install the Container Server](#automatic-installation-container-server) in the new server
 
 ### Automatic Installation: Main Server
 
@@ -61,18 +89,6 @@ After the configurations are ready, start setting up the main server and it's de
 
 ```bash
 sudo make setup-main-server
-```
-
-Default admin and a regular user accounts are added to the system automatically, if the backend setting addTestDataInDevelopment is set to true (true by default). The accounts are as follows:
-
-```
-username: admin@foo.com
-password: test
-```
-
-```
-username: user@foo.com
-password: test
 ```
 
 #### Start the Main Server
@@ -177,15 +193,6 @@ That's it! Now you should be able to access the web interface using a browser. T
 
 ## Additional Tasks
 
-### Allow Connections to Main Server
-After installing the main server, all incoming connections are automatically denied on the server using UFW and only these connections are allowed:
-
-- SSH (port 22)
-- HTTP and HTTPS (ports 80 and 443)
-- Docker port range (defaults to 2000-3000)
-
-This means that if you have some external firewall (like Azure firewall) before your server, you should allow all connections from that firewall to your main server. The main server already has the firewall setup and enabled and handles the firewall tasks.
-
 ### Creating Reservable Containers
 Using the admin interface, user can add new containers. These containers still require an image added to it manually.
 
@@ -197,8 +204,8 @@ The process of adding an image that users can reserve is as follows:
 4. In the same folder where you copied the file ``DockerfileContainerExample``, run these two commands to build the image and push it to local Docker registry, replacing the **IMAGENAME** with the name of your image in the admin web interface:
 
 ```bash
-docker build -t localhost:5000/IMAGENAME:latest -f DockerfileContainerExample .
-docker push localhost:5000/IMAGENAME:latest
+docker build -t YOUR_DOCKER_REGISTRY_IP:5000/IMAGENAME:latest -f DockerfileContainerExample .
+docker push YOUR_DOCKER_REGISTRY_IP:5000/IMAGENAME:latest
 ```
 
 And that's it. Now you should be able to reserve the container!
