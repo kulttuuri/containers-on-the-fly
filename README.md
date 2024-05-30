@@ -27,7 +27,7 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 The installation consists of four main parts:
 1. [Install the Main Server](#automatic-installation-main-server), which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from this main server.
 2. [Install the Container Server](#automatic-installation-container-server) from which the virtual Docker reservations can be made. This container server script handles starting, stopping, and restarting container reservations on the server. The container server can reside at the same location as the Main Server, and/or in multiple other servers from which users can reserve containers.
-3. [Secure the server by closing any additional ports](#securing-the-server).
+3. [Enable all connections to the main server](#allow-connections-to-main-server).
 4. [Create reservable containers (images)](#creating-reservable-containers)
 
 ### Automatic Installation: Main Server
@@ -36,7 +36,7 @@ The installation consists of four main parts:
 
 Before proceeding, make sure you are logged in as the user with which you want to setup the Main Server. The user should have sudo permissions. For example: `containeruser`. Root user is not recommended to be used.
 
-The installation procedure of the Main Server (web servers, database, local Docker registry) is as follows:
+The installation procedure of the Main Server (web servers, database, local Docker registry, setting up firewall) is as follows:
 
 #### Copy Configurations
 
@@ -177,25 +177,14 @@ That's it! Now you should be able to access the web interface using a browser. T
 
 ## Additional Tasks
 
-### Securing the Server
-You should definitely close all unnecessary incoming ports from the server and only allow what you wish. The example ufw configuration below achieves this:
+### Allow Connections to Main Server
+After installing the main server, all incoming connections are automatically denied on the server using UFW and only these connections are allowed:
 
-```bash
-sudo ufw reset
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow 22
-sudo ufw allow 80
-sudo ufw allow 443
-sudo ufw allow 2000:3000/tcp
-sudo ufw allow 2000:3000/udp
-sudo ufw enable
-sudo ufw status
-```
+- SSH (port 22)
+- HTTP and HTTPS (ports 80 and 443)
+- Docker port range (defaults to 2000-3000)
 
-The port range 2000-3000 set above can be set to your own range. This setting can be set in the ``user_config/settings`` file.
-
-Note that if you want to set-up an additional container server, you need to also open the incoming docker registry port (defaults to 5000), which can be set in the ``user_config/settings` file.
+This means that if you have some external firewall (like Azure firewall) before your server, you should allow all connections from that firewall to your main server. The main server already has the firewall setup and enabled and handles the firewall tasks.
 
 ### Creating Reservable Containers
 Using the admin interface, user can add new containers. These containers still require an image added to it manually.
