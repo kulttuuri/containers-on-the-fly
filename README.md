@@ -79,10 +79,6 @@ After copying the files, make configurations to the files. The files to configur
 - `user_config/frontend_settings.js`: Settings for the frontend of the web interface. Might not require any extra configurations.
 - `user_config/nginx_settings.conf`: Contains the configurations for the Nginx proxy server. Does not require any extra configurations.
 
-If you plan to use LDAP login (it is highly recommended to set it up only after you have verified that the default server installation and login works first), then you need to run these extra commands:
-
-on Ubuntu you have to run ``sudo apt install python3-ldap``, but on other operating systems you have to run: ``pip3 install python-ldap``.
-
 #### Setup the Main Server
 
 After the configurations are ready, start setting up the main server and it's dependencies with:
