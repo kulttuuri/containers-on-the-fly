@@ -1,8 +1,6 @@
 ###
-# WEB SERVER CONFIGURATIONS
+# MAIN SERVER CONFIGURATIONS
 # 
-# The web server configurations below are only required to be set in the server where you will host the web servers.
-# They will only be used by the 'make setup-webservers' and 'make run-webservers' make tasks.
 ###
 
 # The IP address of your server. This value is required to be set correctly.
@@ -56,10 +54,10 @@ CONTACT_EMAIL="support@foo.com"
 ###
 
 # In what address is the Docker registry (local Docker image distribution) running.
-# If it is running in the current server (main server), then just leave the default values "localhost" and 5000 here.
-# Otherwise, if you are running the main server in a different server (thus this would be a separate container server), then insert the IP and port of the main server here. For example: "51.115.104.42" and 5000.
-DOCKER_REGISTRY_ADDRESS="localhost"
-DOCKER_REGISTRY_PORT=5000
+# If this is your main server, then just leave the default value and port here.
+# Otherwise, if this is a separate container server, then insert the IP and port of the main server here. For example: "51.115.104.42" and 5000.
+DOCKER_REGISTRY_ADDRESS=$SERVER_IP_ADDRESS
+DOCKER_REGISTRY_PORT=5000 # Change this port only if you know what you are doing :)
 
 # This is the port range from which reserved containers can be accessed through.
 # When user reserves a container and the container is being started, a random available port is selected from this range.
