@@ -24,6 +24,10 @@ help:
 
 # Helper targets
 
+apply-firewall-rules: # Applies ufw firewall rules to the server
+	@chmod +x scripts/apply_firewall_rules.bash
+	@./scripts/apply_firewall_rules.bash
+
 verify-all-config-files-exist: # Verify that all configuration files exists in the user_config folder.
 	@if [ ! -e $(CONFIG_SETTINGS) ]; then \
 		echo "Error: $(CONFIG_SETTINGS) does not exist. Please copy the example settings file from the user_config/examples folder to user_config location and write your own configurations first."; \
@@ -56,13 +60,14 @@ merge-settings: # Merges the settings file into frontend and backend settings.
 
 # Production targets
 
-setup-main-server: check-os-ubuntu verify-all-config-files-exist ## Installs and configures all dependencies for main server. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps. Call 'make start-main-server' after setup.
+setup-main-server: check-os-ubuntu verify-all-config-files-exist apply-firewall-rules ## Installs and configures all dependencies for main server. Only works on Ubuntu Linux. If using any other operating system, then refer to the readme documentation for manual steps. Call 'make start-main-server' after setup.
 	@chmod +x scripts/install_webserver_dependencies.bash
 	@./scripts/install_webserver_dependencies.bash
 	$(PIP) install -r webapp/backend/requirements.txt
 	# Need to run the next command without sudo, as otherwise the node_modules folder created would be owned by root
 	cd webapp/frontend && sudo -u $(shell who am i | awk '{print $$1}') npm install
-	echo "\n$(GREEN)Setup successful! Now run 'make start-main-server' to start all main server services.\n"
+
+	echo "\n$(GREEN)Setup successful! SERVER RESTART IS REQUIRED and after that you can run 'make start-main-server' to start all main server services.\n"
 
 start-main-server: verify-all-config-files-exist merge-settings ## Starts all the main server services or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run the frontend and backend.
 	@cp user_config/backend_settings.json webapp/backend/settings.json
@@ -106,6 +111,21 @@ start-docker-utility: merge-settings ## Starts the Docker utility. The utility s
 	@pm2 save
 	@echo "\n$(GREEN)Docker utility is now running.$(RESET)"
 	@echo "Containers will now automatically start, stop, and restart on this server."
+
+allow-container-server: check-os-ubuntu ## Allows an external given container server to access this main server. For example: make allow-container-server IP=62.151.151.151
+	@if [ -z "$(IP)" ]; then \
+		echo "No IP address provided. Usage: make allow-container-server IP=<IP_ADDRESS>"; \
+		exit 1; \
+	fi; \
+	echo "Allowing container server with IP: $(IP)"; \
+	# Check if the script is run as root; \
+	if [ "$$(id -u)" -ne 0 ]; then \
+		echo "This script must be run with sudo privileges. Please run this with sudo permissions. Exiting."; \
+		exit 1; \
+	fi; \
+	echo "Running as root, proceeding with firewall configuration"; \
+	sudo ufw route insert 1 allow from $(IP) to any port 5000
+	sudo ufw insert 1 allow from $(IP)
 
 logs: ## View log entries for started servers (pm2)
 	pm2 logs --lines 10000

@@ -136,6 +136,11 @@ if [ $? -ne 0 ]; then
     install_mariadb
 fi
 
+# Allow MariaDB to listen on all interfaces to allow remote connections
+# Don't worry, we have disabled by default all incoming connections to ports with UFW before this.
+# We just need to do this to in the future allow remote connections from possible container servers.
+sudo sed -i 's/^bind-address\s*=.*$/bind-address = 0.0.0.0/' "/etc/mysql/mariadb.conf.d/50-server.cnf"
+
 # Ensure MariaDB starts on boot and start the service
 sudo systemctl enable mariadb
 sudo systemctl start mariadb
@@ -163,8 +168,8 @@ if [ "$RESULT" -eq 1 ]; then
   echo "User '$MARIADB_DB_USER' already exists. Continuing."
 else
   echo "User '$MARIADB_DB_USER' does not exist."
-  mysql -e "CREATE USER IF NOT EXISTS '$MARIADB_DB_USER'@'localhost' IDENTIFIED BY '$MARIADB_DB_USER_PASSWORD';"
-  mysql -e "GRANT ALL PRIVILEGES ON $MARIADB_DB_NAME.* TO '$MARIADB_DB_USER'@'localhost';"
+  mysql -e "CREATE USER IF NOT EXISTS '$MARIADB_DB_USER'@'%' IDENTIFIED BY '$MARIADB_DB_USER_PASSWORD';"
+  mysql -e "GRANT ALL PRIVILEGES ON $MARIADB_DB_NAME.* TO '$MARIADB_DB_USER'@'%';"
   mysql -e "FLUSH PRIVILEGES;"
   echo -e "${GREEN}In mariadb/mysql, created the user ${MARIADB_DB_USER} and granted the user full access to the database ${MARIADB_DB_NAME}."
 fi
