@@ -61,9 +61,6 @@ if ! command -v pm2 > /dev/null; then
     pm2 startup
 fi
 
-# Set up pm2 to launch on system restart with the current user
-env PATH=$PATH:/usr/bin pm2 startup systemd -u $CURRENT_USER --hp /home/$CURRENT_USER
-
 # Install Nvidia Docker Runtime
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo tee /etc/apt/trusted.gpg.d/nvidia.gpg > /dev/null
 curl -fsSL https://nvidia.github.io/nvidia-container-runtime/gpgkey | sudo tee /etc/apt/trusted.gpg.d/nvidia-container-runtime.gpg > /dev/null

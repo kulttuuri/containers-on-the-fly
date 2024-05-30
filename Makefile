@@ -12,6 +12,7 @@ CONFIG_FRONTEND_SETTINGS = "user_config/frontend_settings.js"
 CONFIG_NGINX_SETTINGS = "user_config/nginx_settings.conf"
 
 GREEN=\033[0;32m
+BOLD=\033[1m
 RED=\033[0;31m
 RESET=\033[0m
 
@@ -67,7 +68,10 @@ setup-main-server: check-os-ubuntu verify-all-config-files-exist apply-firewall-
 	# Need to run the next command without sudo, as otherwise the node_modules folder created would be owned by root
 	cd webapp/frontend && sudo -u $(shell who am i | awk '{print $$1}') npm install
 
-	@echo "\n$(GREEN)Setup successful! SERVER RESTART IS REQUIRED and after that you can run 'make start-main-server' to start all main server services.\n"
+	@echo "\n$(GREEN)The main server has been setup.\n"
+	@echo "NEXT STEPS:"
+	@echo "1. Run command $(BOLD)pm2 startup$(RESET)$(GREEN) and copy/paste the command to your terminal."
+	@echo "2. Restart the machine for all the changes to take effect.$(RESET)\n"
 
 start-main-server: verify-all-config-files-exist merge-settings ## Starts all the main server services or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run the frontend and backend.
 	@cp user_config/backend_settings.json webapp/backend/settings.json
@@ -92,8 +96,10 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 	@./scripts/install_docker_dependencies.bash
 	@$(PIP) install -r webapp/backend/requirements.txt
 	@usermod -aG docker $(shell who am i | awk '{print $$1}')
-	@echo "$(GREEN)The Docker utility has been setup."
-	@echo "!!!! RESTART THE SERVER for group changes to take effect !!!$(RESET)"
+	@echo "\n$(GREEN)The Docker utility has been setup.\n"
+	@echo "NEXT STEPS:"
+	@echo "1. Run command $(BOLD)pm2 startup$(RESET)$(GREEN) and copy/paste the command to your terminal."
+	@echo "2. Restart the machine for all the changes to take effect.$(RESET)\n"
 
 start-docker-utility: merge-settings ## Starts the Docker utility. The utility starts, stops, restarts reserved containers on this server. pm2 process manager is used to run the script in the background.
 	@echo "Verifying that connection to the database can be made using the $(CONFIG_BACKEND_SETTINGS) setting engineUri..."

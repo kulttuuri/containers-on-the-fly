@@ -214,6 +214,3 @@ if ! command -v pm2 > /dev/null; then
     sudo npm install pm2 -g
     pm2 startup
 fi
-
-# Set up pm2 to launch on system restart with the current user
-env PATH=$PATH:/usr/bin pm2 startup systemd -u $CURRENT_USER --hp /home/$CURRENT_USER
