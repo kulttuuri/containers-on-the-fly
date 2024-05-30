@@ -131,6 +131,10 @@ update_docker_daemon_config
 # Add user to docker group
 sudo usermod -aG docker $CURRENT_USER
 
+# Build base-ubuntu image to be used as an example with default setup
+sudo -u $CURRENT_USER docker build -t $INSECURE_REGISTRY/ubuntu-base:latest -f DockerfileContainerExample .
+sudo -u $CURRENT_USER docker push $INSECURE_REGISTRY/ubuntu-base:latest
+
 # Restart Docker Daemon to apply changes
 sudo systemctl restart docker
 echo "Docker daemon configuration updated and Docker service restarted."
