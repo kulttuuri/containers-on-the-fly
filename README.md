@@ -27,7 +27,7 @@ Originally created in Satakunta University of Applied Sciences to give AI studen
 The installation consists of four main parts:
 1. [Install the Main Server](#automatic-installation-main-server), which contains the web servers (web interface), database, and local docker registry. All Docker images will be added to the local docker registry and other servers can then utilize these images from this main server.
 2. [Install the Container Server](#automatic-installation-container-server) from which the virtual Docker reservations can be made. This container server script handles starting, stopping, and restarting container reservations on the server. The container server can reside at the same location as the Main Server, and/or in multiple other servers from which users can reserve containers.
-3. [Enable all connections to the main server](#allow-connections-to-main-server).
+3. [Enable all connections to the main server](#allow-connections-to-main-server)
 4. [Create reservable containers (images)](#creating-reservable-containers)
 
 ### Automatic Installation: Main Server
