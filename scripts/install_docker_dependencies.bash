@@ -131,6 +131,16 @@ update_docker_daemon_config
 # Add user to docker group
 sudo usermod -aG docker $CURRENT_USER
 
+# Start private (local) docker registry
+if [ ! "$(sudo -u $CURRENT_USER docker ps -q -f name=registry)" ]; then
+    if [ "$(sudo -u $CURRENT_USER docker ps -aq -f status=exited -f name=registry)" ]; then
+        # Cleanup any exited registry container
+        sudo -u $CURRENT_USER docker rm registry
+    fi
+    # Start the Docker registry container
+    sudo -u $CURRENT_USER docker run -d -p ${DOCKER_REGISTRY_PORT}:5000 --restart=always --name registry registry:2
+fi
+
 # Build base-ubuntu image to be used as an example with default setup
 sudo -u $CURRENT_USER docker build -t $INSECURE_REGISTRY/ubuntu-base:latest -f DockerfileContainerExample .
 sudo -u $CURRENT_USER docker push $INSECURE_REGISTRY/ubuntu-base:latest
