@@ -25,11 +25,10 @@ router.include_router(adminReservations.router)
 
 if settings.app["production"] == True:
   print("Running server in production mode")
-
-# Add test data if running in development mode
-if settings.app["production"] == False:
+else:
   print("Running server in development mode")
 
+if settings.app["addTestDataInDevelopment"]:
   with Session() as session:
     # Admin role
     adminRole = session.query(Role).filter( Role.name == "admin" ).first()
