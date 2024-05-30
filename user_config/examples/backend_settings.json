@@ -6,6 +6,8 @@
       // Edit in settings file, overridden by 'start-main-server' make task.
       "url": "http://localhost",
       // Edit in settings file, overridden by 'start-main-server' make task.
+      "serverIp": "",
+      // Edit in settings file, overridden by 'start-main-server' make task.
       "clientUrl": "http://localhost:8080",
       // Edit in settings file, overridden by 'start-main-server' make task.
       "timezone": "Europe/Helsinki",

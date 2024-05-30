@@ -33,6 +33,10 @@ perform_sed() {
 ESC_SERV_URL=$(escape_sed "$SERVER_WEB_ADDRESS")
 perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"url\": \).*/\1\"$ESC_SERV_URL\",/"
 
+# Server IP
+ESC_SERV_IP=$(escape_sed "$SERVER_IP_ADDRESS")
+perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"serverIp\": \).*/\1\"$ESC_SERV_IP\",/"
+
 # Reservation min duration
 MIN_DUR=$(escape_sed "$RESERVATION_MIN_DURATION")
 perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"minimumDuration\": \).*/\1$MIN_DUR,/"
