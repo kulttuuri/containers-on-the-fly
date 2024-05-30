@@ -31,7 +31,7 @@ sudo ufw allow 443
 sudo ufw allow $DOCKER_RESERVATION_PORT_RANGE_START:$DOCKER_RESERVATION_PORT_RANGE_END/tcp
 sudo ufw allow $DOCKER_RESERVATION_PORT_RANGE_START:$DOCKER_RESERVATION_PORT_RANGE_END/udp
 sudo ufw route allow from any to any
-sudo ufw enable
+yes | sudo ufw enable
 
 # Apply Docker specific UFW firewall rules if not applied yet
 # These are taken from here: https://github.com/chaifeng/ufw-docker
