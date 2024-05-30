@@ -93,7 +93,7 @@ setup-docker-utility: ## Setups the Docker utility. The Docker utility will star
 	@$(PIP) install -r webapp/backend/requirements.txt
 	@usermod -aG docker $(shell who am i | awk '{print $$1}')
 	@echo "$(GREEN)The Docker utility has been setup."
-	@echo "!!!! Please log out and log back in or start a new shell session to apply group changes !!!$(RESET)"
+	@echo "!!!! RESTART THE SERVER for group changes to take effect !!!$(RESET)"
 
 start-docker-utility: merge-settings ## Starts the Docker utility. The utility starts, stops, restarts reserved containers on this server. pm2 process manager is used to run the script in the background.
 	@echo "Verifying that connection to the database can be made using the $(CONFIG_BACKEND_SETTINGS) setting engineUri..."
