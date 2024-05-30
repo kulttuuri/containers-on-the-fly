@@ -73,7 +73,7 @@ if settings.app["addTestDataInDevelopment"]:
     computer = session.query(Computer).filter( Computer.name == "server1" ).first()
     if computer is None:
       print("Creating test data: computer named server1")
-      computer = Computer( name = "server1", ip = settings.app["host"], public = True )
+      computer = Computer( name = "server1", ip = settings.app["url"], public = True )
       session.add(computer)
       session.commit()
 
