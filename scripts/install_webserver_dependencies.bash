@@ -24,6 +24,10 @@ echo "Running with sudo privileges."
 # Update and install initial packages
 sudo apt update
 
+# Install required libraries
+sudo apt --assume-yes install python3 python3-pip libldap2-dev libsasl2-dev libssl-dev
+sudo apt --assume-yes install python3-ldap
+
 # Function to check if Nginx is installed
 check_nginx_installed() {
     if dpkg -l | grep -q nginx; then

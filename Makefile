@@ -67,7 +67,7 @@ setup-main-server: check-os-ubuntu verify-all-config-files-exist apply-firewall-
 	# Need to run the next command without sudo, as otherwise the node_modules folder created would be owned by root
 	cd webapp/frontend && sudo -u $(shell who am i | awk '{print $$1}') npm install
 
-	echo "\n$(GREEN)Setup successful! SERVER RESTART IS REQUIRED and after that you can run 'make start-main-server' to start all main server services.\n"
+	@echo "\n$(GREEN)Setup successful! SERVER RESTART IS REQUIRED and after that you can run 'make start-main-server' to start all main server services.\n"
 
 start-main-server: verify-all-config-files-exist merge-settings ## Starts all the main server services or restarts them if started. Nginx is used to create a reverse proxy. pm2 process manager is used to run the frontend and backend.
 	@cp user_config/backend_settings.json webapp/backend/settings.json
