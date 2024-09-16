@@ -148,11 +148,17 @@ stop-servers: ## Kills (stops) the frontend, backend and docker utility servers 
 
 # Scripts for development
 
-start-dev-frontend:
+start-dev-frontend: merge-settings
+	@cp user_config/backend_settings.json webapp/backend/settings.json
+	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	cd webapp/frontend && npm run serve
 
-start-dev-backend:
+start-dev-backend: merge-settings
+	@cp user_config/backend_settings.json webapp/backend/settings.json
+	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	cd webapp/backend && $(PYTHON) main.py
 
-start-dev-docker-utility:
+start-dev-docker-utility: merge-settings
+	@cp user_config/backend_settings.json webapp/backend/settings.json
+	@cp user_config/frontend_settings.js webapp/frontend/src/AppSettings.js
 	cd webapp/backend && $(PYTHON) dockerUtil.py
