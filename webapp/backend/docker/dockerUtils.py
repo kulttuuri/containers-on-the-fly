@@ -190,6 +190,14 @@ def stopDockerContainer(reservationId: str):
     print("Error stopping server:")
     print(e)
 
+def stopOrphanDockerContainer(containerName):
+  if not containerName: return
+  try:
+    stop_container(containerName)
+  except Exception as e:
+    print("Error stopping orphan container:")
+    print(e)
+
 def restartDockerContainer(reservationId: str):
   try:
     with Session() as session:
@@ -337,4 +345,18 @@ def getComputerId(computerName: str):
     print(f"Something went wrong getting computer ID for name: {computerName}. Error:")
     print(e)
     return None
-  
+
+def getRunningReservedDockerContainers():
+  '''
+  Finds all Docker containers with name starting with "reservation-".
+  Basically all reservations that are physically running on this computer.
+  '''
+  running_containers = docker.ps()
+
+  # Filter containers whose names start with "reservation-"
+  reservation_containers = [
+  container for container in running_containers
+    if container.name.startswith("reservation-")
+  ]
+
+  return reservation_containers
