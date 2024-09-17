@@ -97,3 +97,12 @@ DOCKER_MOUNT_GROUP="docker"
 
 # Timezone in TZ format, view all available timezones from here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 TIMEZONE="Europe/Helsinki"
+
+###
+# DEVELOPMENT SETTINGS
+#
+###
+
+# Can be used to set an additional port for the backend that the frontend connects to when making API calls from the browser.
+# Useful when the backend is running in development environment port (like 8000)
+BACKEND_ADDITIONAL_PORT=""

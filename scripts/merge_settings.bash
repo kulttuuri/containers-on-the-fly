@@ -81,8 +81,14 @@ ESCAPED_REGISTRY_FULL="${ESCAPED_REGISTRY_ADDRESS}:${ESCAPED_REGISTRY_PORT}"
 perform_sed user_config/backend_settings.json "s/^\([[:space:]]*\"registryAddress\": \).*/\1\"$ESCAPED_REGISTRY_FULL\",/"
 
 # Server address in frontend settings file
+# This is the backend API server address that the frontend connects to.
 ESCAPED_SERVER_WEB_ADDRESS=$(escape_sed "$SERVER_WEB_ADDRESS")
-perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*baseAddress: \).*/\1\"$ESCAPED_SERVER_WEB_ADDRESS\/api\/\",/"
+ESCAPED_BACKEND_ADDITIONAL_PORT=$(escape_sed "$BACKEND_ADDITIONAL_PORT")
+# If backend additional port was set, then prepend it with :
+if [ -n "$ESCAPED_BACKEND_ADDITIONAL_PORT" ]; then
+  ESCAPED_BACKEND_ADDITIONAL_PORT=":$ESCAPED_BACKEND_ADDITIONAL_PORT"
+fi
+perform_sed user_config/frontend_settings.js "s/^\([[:space:]]*baseAddress: \).*/\1\"$ESCAPED_SERVER_WEB_ADDRESS$ESCAPED_BACKEND_ADDITIONAL_PORT\/api\/\",/"
 
 # App name
 ESCAPED_APP_NAME=$(escape_sed "$APP_NAME")
