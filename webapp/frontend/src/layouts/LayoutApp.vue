@@ -12,6 +12,7 @@
           <a href="/admin/hardware">Hardware</a>
           <a href="/admin/computers">Computers</a>
           <a href="/admin/containers">Containers</a>
+          <a href="/admin/groups">Groups</a>
         </div>
         <p class="loggedInText" v-if="isLoggedIn == true">
           Logged in as

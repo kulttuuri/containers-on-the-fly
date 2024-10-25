@@ -34,6 +34,12 @@ function createUrls(baseAddress) {
     URLS.admin.remove_computer = baseAdminUrl + "remove_computer"
     URLS.admin.get_ports = baseAdminUrl + "ports"
     URLS.admin.edit_reservation = baseAdminUrl + "edit_reservation"
+    URLS.admin.get_groups = baseAdminUrl + "groups"
+    URLS.admin.add_group = baseAdminUrl + "add_group"
+    URLS.admin.remove_group = baseAdminUrl + "remove_group"
+    URLS.admin.edit_group = baseAdminUrl + "edit_group"
+    URLS.admin.add_user_to_group = baseAdminUrl + "add_user_to_group"
+    URLS.admin.remove_user_from_group = baseAdminUrl + "remove_user_from_group"
 
     return URLS;
 }
