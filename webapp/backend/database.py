@@ -83,7 +83,7 @@ class Container(Base):
 class ContainerPort(Base):
   __tablename__ = "ContainerPort"
 
-  containerPortId = Column(Integer, primary_key = True, autoincrement = True)
+  containerPortId = Column(Integer, primary key = True, autoincrement = True)
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   serviceName = Column(Text, nullable = False)
   port = Column(Integer, nullable = False)
@@ -96,7 +96,7 @@ class ContainerPort(Base):
 class ReservedContainer(Base):
   __tablename__ = "ReservedContainer"
 
-  reservedContainerId = Column(Integer, primary_key = True, autoincrement = True)
+  reservedContainerId = Column(Integer, primary key = True, autoincrement = True)
   containerId = Column(ForeignKey("Container.containerId"), nullable = False)
   startedAt = Column(DateTime, nullable = True)
   stoppedAt = Column(DateTime, nullable = True)
@@ -116,7 +116,7 @@ class ReservedContainer(Base):
 class ReservedContainerPort(Base):
   __tablename__ = "ReservedContainerPort"
   
-  reservedContainerPortId = Column(Integer, primary_key = True, autoincrement = True)
+  reservedContainerPortId = Column(Integer, primary key = True, autoincrement = True)
   reservedContainerId = Column(ForeignKey("ReservedContainer.reservedContainerId"), nullable = False)
   containerPortForeign = Column(ForeignKey("ContainerPort.containerPortId"), nullable = False)
   outsidePort = Column(Integer, nullable = False)
@@ -130,13 +130,13 @@ class ReservedContainerPort(Base):
 class Reservation(Base):
   __tablename__ = "Reservation"
 
-  reservationId = Column(Integer, primary_key = True, autoincrement = True)
+  reservationId = Column(Integer, primary key = True, autoincrement = True)
   reservedContainerId = Column(ForeignKey("ReservedContainer.reservedContainerId"), nullable = False)
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
   userId = Column(ForeignKey("User.userId"), nullable = False)
   startDate = Column(DateTime, nullable = False)
   endDate = Column(DateTime, nullable = False)
-  createdAt = Column(DateTime(timezone=True), server_default=func.now())
+  createdAt = Column(DateTime(timezone=True), server default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
   status = Column(Text, nullable = False) # reserved, started, stopped, error, restart
 
@@ -148,12 +148,12 @@ class Reservation(Base):
 class Computer(Base):
   __tablename__ = "Computer"
 
-  computerId = Column(Integer, primary_key = True, autoincrement = True)
+  computerId = Column(Integer, primary key = True, autoincrement = True)
   public = Column(Boolean, nullable = False)
   name = Column(Text, nullable = False, unique = True)
   removed = Column(Boolean, nullable = True) # TODO: Add to diagram
   ip = Column(Text, nullable = False)
-  createdAt = Column(DateTime(timezone=True), server_default=func.now())
+  createdAt = Column(DateTime(timezone=True), server default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
   hardwareSpecs = relationship("HardwareSpec", back_populates = "computer")
@@ -162,7 +162,7 @@ class Computer(Base):
 class HardwareSpec(Base):
   __tablename__ = "HardwareSpec"
 
-  hardwareSpecId = Column(Integer, primary_key = True, autoincrement = True)
+  hardwareSpecId = Column(Integer, primary key = True, autoincrement = True)
   computerId = Column(ForeignKey("Computer.computerId"), nullable = False)
   internalId = Column(Text, nullable = True) # TODO: Add to diagram
   type = Column(Text, nullable = False)
@@ -171,7 +171,7 @@ class HardwareSpec(Base):
   maximumAmountForUser = Column(Float, nullable = False)
   defaultAmountForUser = Column(Float, nullable = False)
   format = Column(Text, nullable = False)
-  createdAt = Column(DateTime(timezone=True), server_default=func.now())
+  createdAt = Column(DateTime(timezone=True), server default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
   computer = relationship("Computer", back_populates = "hardwareSpecs")
@@ -180,16 +180,35 @@ class HardwareSpec(Base):
 class ReservedHardwareSpec(Base):
   __tablename__ = "ReservedHardwareSpec"
   
-  reservedHardwareSpecId = Column(Integer, primary_key = True, autoincrement = True)
+  reservedHardwareSpecId = Column(Integer, primary key = True, autoincrement = True)
   reservationId = Column(ForeignKey("Reservation.reservationId"), nullable = False)
   hardwareSpecId = Column(ForeignKey("HardwareSpec.hardwareSpecId"), nullable = False)
   amount = Column(Float, nullable = False)
   #UniqueConstraint('reservationId', 'hardwareSpecId', name='uniqueHardwareSpec')
-  createdAt = Column(DateTime(timezone=True), server_default=func.now())
+  createdAt = Column(DateTime(timezone=True), server default=func.now())
   updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
   hardwareSpec = relationship("HardwareSpec", back_populates = "reservations")
   reservation = relationship("Reservation", back_populates = "reservedHardwareSpecs")
+
+class Group(Base):
+  __tablename__ = "Group"
+
+  groupId = Column(Integer, primary key = True, autoincrement = True)
+  name = Column(Text, nullable = False, unique = True)
+  createdAt = Column(DateTime(timezone=True), server default=func.now())
+  updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
+
+  users = relationship("User", secondary = "UserGroup", back_populates = "groups", single_parent=True)
+
+class UserGroup(Base):
+  __tablename__ = "UserGroup"
+
+  userGroupId = Column(Integer, primary key = True, autoincrement = True)
+  userId = Column(ForeignKey("User.userId"), nullable = False)
+  groupId = Column(ForeignKey("Group.groupId"), nullable = False)
+  createdAt = Column(DateTime(timezone=True), server default=func.now())
+  updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
 # Create the tables
 Base.metadata.create_all(engine)
