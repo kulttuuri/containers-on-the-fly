@@ -129,7 +129,7 @@
       fetch() {
         let _this = this
         let currentUser = this.$store.getters.user
-
+        
         axios({
           method: "get",
           url: this.AppSettings.APIServer.admin.get_groups,

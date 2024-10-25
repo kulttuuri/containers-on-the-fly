@@ -471,3 +471,133 @@ def editReservation(reservationId : int, endDate : str) -> object:
       session.commit()
 
   return Response(True, "Reservation was edited succesfully.")
+
+def getGroups() -> object:
+  '''
+  Returns a list of all groups.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  data = []
+
+  with Session() as session:
+    query = session.query(Group)
+    for group in query:
+      addable = {}
+      addable["groupId"] = group.groupId
+      addable["name"] = group.name
+      addable["createdAt"] = group.createdAt
+      addable["updatedAt"] = group.updatedAt
+      data.append(addable)
+  
+  return Response(True, "Groups fetched.", { "groups": data })
+
+def addGroup(name: str) -> object:
+  '''
+  Adds a new group.
+
+  Parameters:
+    name: name of the group to add.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  with Session() as session:
+    group = Group(name=name)
+    session.add(group)
+    session.commit()
+  
+  return Response(True, "Group added successfully")
+
+def removeGroup(groupId: int) -> object:
+  '''
+  Removes the given group.
+
+  Parameters:
+    groupId: id of the group to remove.
+  
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  with Session() as session:
+    group = session.query(Group).filter(Group.groupId == groupId).first()
+    if group is None:
+      return Response(False, "Group not found.")
+    else:
+      session.delete(group)
+      session.commit()
+  
+  return Response(True, "Group removed successfully")
+
+def editGroup(groupId: int, newName: str = None) -> object:
+  '''
+  Edits the given group.
+
+  Parameters:
+    groupId: id of the group to edit.
+    newName: New name for the group.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  with Session() as session:
+    group = session.query(Group).filter(Group.groupId == groupId).first()
+    if group is None:
+      return Response(False, "Group not found.")
+    else:
+      if newName is not None:
+        group.name = newName
+      session.commit()
+  
+  return Response(True, "Group edited successfully")
+
+def addUserToGroup(groupId: int, userId: int) -> object:
+  '''
+  Adds a user to the given group.
+
+  Parameters:
+    groupId: id of the group.
+    userId: id of the user to add to the group.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  with Session() as session:
+    group = session.query(Group).filter(Group.groupId == groupId).first()
+    user = session.query(User).filter(User.userId == userId).first()
+    if group is None or user is None:
+      return Response(False, "Group or user not found.")
+    else:
+      group.users.append(user)
+      session.commit()
+  
+  return Response(True, "User added to group successfully")
+
+def removeUserFromGroup(groupId: int, userId: int) -> object:
+  '''
+  Removes a user from the given group.
+
+  Parameters:
+    groupId: id of the group.
+    userId: id of the user to remove from the group.
+
+  Returns:
+    object: Response object with status, message and data.
+  '''
+
+  with Session() as session:
+    group = session.query(Group).filter(Group.groupId == groupId).first()
+    user = session.query(User).filter(User.userId == userId).first()
+    if group is None or user is None:
+      return Response(False, "Group or user not found.")
+    else:
+      group.users.remove(user)
+      session.commit()
+  
+  return Response(True, "User removed from group successfully")
