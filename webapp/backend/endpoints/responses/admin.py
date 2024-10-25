@@ -1,4 +1,4 @@
-from database import Session, Computer, ContainerPort, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec
+from database import Session, Computer, ContainerPort, User, Reservation, Container, ReservedContainer, ReservedHardwareSpec, HardwareSpec, Group
 from dateutil import parser
 from dateutil.relativedelta import *
 from datetime import timezone, timedelta
