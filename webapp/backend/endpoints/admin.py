@@ -73,3 +73,32 @@ async def editReservation(reservationId : int, endDate : str, token: str = Depen
   ForceAuthentication(token, "admin")
   return functionality.editReservation(reservationId, endDate)
 
+@router.get("/groups")
+async def getGroups(token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.getGroups()
+
+@router.post("/add_group")
+async def addGroup(name: str, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.addGroup(name)
+
+@router.post("/remove_group")
+async def removeGroup(groupId: int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.removeGroup(groupId)
+
+@router.post("/edit_group")
+async def editGroup(groupId: int, newName: str = None, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.editGroup(groupId, newName)
+
+@router.post("/add_user_to_group")
+async def addUserToGroup(groupId: int, userId: int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.addUserToGroup(groupId, userId)
+
+@router.post("/remove_user_from_group")
+async def removeUserFromGroup(groupId: int, userId: int, token: str = Depends(oauth2_scheme)):
+  ForceAuthentication(token, "admin")
+  return functionality.removeUserFromGroup(groupId, userId)
